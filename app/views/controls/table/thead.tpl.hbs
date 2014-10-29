@@ -1,0 +1,6 @@
+<tr>
+    {{#each columns}}
+    <th data-id="{{this.id}}" data-index="{{@index}}" class="{{this.className}}">{{#if this.name}}{{{this.name}}}{{else}}&nbsp;{{/if}}</th>
+    {{/each}}
+</tr>
+
