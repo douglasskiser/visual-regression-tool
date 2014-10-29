@@ -1,4 +1,3 @@
-
 define(function(require) {
     var Backbone = require('backbone'),
         _ = require('underscore'),
@@ -59,6 +58,23 @@ define(function(require) {
         }, this);
         return serializedData;
     };
+
+    View.prototype.clearFields = function() {
+        _.forEach(this.$el.find('.' + this.getId('field')), function(element) {
+            var e = $(element);
+            var val;
+            if (e.is('.radio-group')) {
+                e.find('input[name=' + e.attr('id') + ']:checked').removeAttr('checked');
+            }
+            else if (e.is('input[type=checkbox]') || e.is('input[type=radio]')) {
+                e.removeAttr('checked');
+            }
+            else {
+                e.val('');
+            }
+        }, this);
+    };
+
 
     View.prototype.getId = function(suffix) {
         var id = this.id || this.options.id;

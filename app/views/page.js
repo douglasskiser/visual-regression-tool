@@ -76,7 +76,7 @@ define(function (require) {
         _.forEach(keys, function (index) {
             var value = params[index];
 
-            if (value !== undefined) {
+            if (value !== undefined && value !== '') {
                 parts.push(index);
                 parts.push(encodeURIComponent(value));
             }

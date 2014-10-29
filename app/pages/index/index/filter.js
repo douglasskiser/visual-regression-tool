@@ -78,16 +78,10 @@ define(function(require) {
     };
 
 
-    View.prototype.renderFields = function() {
-        var that = this;
-        
-        that.find(that.toId('fields')).html(Template({
-            id: that.id,
-            data: that.options.params
-        }));
-
-        return B.resolve();
+    View.prototype.getFieldTemplate = function(){
+        return Template;
     };
+    
 
     return View;
 });

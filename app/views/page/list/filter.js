@@ -42,18 +42,26 @@ define(function(require) {
     };
 
     View.prototype.renderFields = function() {
-        console.log('called')
-        //render the fields and prepopulated values from this.options.params
+        var that = this;
+        console.log(that.find(that.toId('fields')));
+        
+        that.find(that.toId('fields')).html(that.getFieldTemplate()({
+            id: that.id,
+            data: that.options.params
+        }));
+
+        return B.resolve();
     };
 
+    View.prototype.getFieldTemplate = function() {
+        return function(){};
+    };
     View.prototype.postRender = function() {
 
     };
 
 
-    View.prototype.clearFields = function() {
 
-    };
     
     View.prototype.getTemplate = function() {
         return Template;
