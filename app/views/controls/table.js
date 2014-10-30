@@ -29,7 +29,6 @@ define(function(require) {
                 }));
 
                 that.mapControls();
-                console.log('about to call renderHead()');
                 that.renderHead();
                 that.renderBody();
 
@@ -38,20 +37,44 @@ define(function(require) {
                 that.delegateEvents(events);
 
                 that.collection.on('sync add remove', that.renderBody.bind(that));
+                that.on('sort', that.sortHandler.bind(that));
             });
 
     };
-    View.prototype.sortableColumnClickHandler = function(event){
-        var e = $(event.currentTarget);
+    View.prototype.sortableColumnClickHandler = function(event) {
         var that = this;
-        
-        var column = that.columns.get(e.data('id'));
-        that.trigger('sort', {
-            column: column, 
-            direction: e.data('direction') === 'asc' ? 'desc': 'asc'
+        var e = $(event.currentTarget);
+        var field = e.data('id');
+        var column = that.columns.get(field);
+        var direction = '';
+
+
+        that.columns.forEach(function(column) {
+            if (column.id !== field) {
+                column.set('direction', '');
+            }
         });
+
+        switch (column.get('direction')) {
+            case 'asc':
+                direction = 'desc';
+                break;
+            case 'desc':
+                direction = '';
+                break;
+            default:
+                direction = 'asc';
+        }
+        column.set('direction', direction);
+        that.trigger('sort');
+
     };
-    
+
+    View.prototype.sortHandler = function(event) {
+        var that = this;
+        that.renderHead();
+    };
+
     View.prototype.renderHead = function() {
         var that = this;
         // console.log('renderHead()', that.columns.toJSON());
@@ -69,7 +92,33 @@ define(function(require) {
 
 
     View.prototype.tranformColumn = function(column, index) {
-        return column.toJSON();
+        return _.extend(column.toJSON(), {
+            sortIcon: (function() {
+                if (column.get('sortable')) {
+                    if (column.get('direction') === 'asc') {
+                        if (column.get('type') === 'number') {
+                            return 'fa-sort-numeric-asc text-success';
+                        }
+                        else {
+                            return 'fa-sort-alpha-asc text-success';
+                        }
+                    }
+                    else if (column.get('direction') === 'desc') {
+                        if (column.get('type') === 'number') {
+                            return 'fa-sort-numeric-desc text-warning';
+                        }
+                        else {
+                            return 'fa-sort-alpha-desc text-warning';
+                        }
+                    }
+                    else {
+                        return 'fa-sort';
+                    }
+                }else{
+                    return '';
+                }
+            })()
+        });
     };
 
 
@@ -120,6 +169,15 @@ define(function(require) {
         return function(model, column, rowIndex, columnIndex) {
             return model.get(column.id);
         };
+    };
+
+    View.prototype.getSortedColumn = function() {
+        var that = this;
+
+        return that.columns.find(function(column) {
+            return column.get('direction') === 'asc' || column.get('direction') === 'desc';
+
+        });
     };
 
     return View;

@@ -6,10 +6,6 @@ define(function(require) {
     var Collection = Super.extend({
         model: Model,
         url: 'rest/collection/execution'
-        // ,
-        // comparator: function(model) {
-        //     return parseInt(model.id, 10);
-        // }
     });
 
 

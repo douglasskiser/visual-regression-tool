@@ -5,8 +5,7 @@ define(function(require) {
 
     var Collection = Super.extend({
         model: Model,
-        url: 'rest/collection/box',
-        comparator: 'name'
+        url: 'rest/collection/box'
     });
 
     Collection.prototype.toDropdown = function(target, options) {

@@ -11,8 +11,10 @@ define(function(require) {
             newBoxId: 2,
             scriptId: 1,
             deviceId: 1
-        }
+        },
+        name: 'execution'
     });
+    
     Model.STATUS_CREATED = 0;
     Model.STATUS_RUNNING = 10;
     Model.STATUS_COMPLETED = 20;

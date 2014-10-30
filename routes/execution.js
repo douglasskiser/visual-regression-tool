@@ -7,7 +7,7 @@ module.exports = function (app) {
 
     app.post('/rest/model/execution', controller.create);
     app.get('/rest/model/execution/:id', controller.fetchOne);
-    app.get('/rest/collection/execution', controller.fetchMany);
+    // app.get('/rest/collection/execution', controller.fetchMany);
     app.delete('/rest/model/execution/:id', controller.delete);
     
     

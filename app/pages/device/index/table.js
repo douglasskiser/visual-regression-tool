@@ -18,10 +18,13 @@ define(function(require) {
         var that = this;
         return new View.Columns([{
             id: 'id',
-            name: '#'
+            name: '#',
+            type: 'number',
+            sortable: true
         }, {
             id: 'name',
             name: 'Name',
+            sortable: true,
             renderer: function(model, column, rowIndex, columnIndex) {
                 return model.get('name');
             }

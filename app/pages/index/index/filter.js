@@ -66,6 +66,7 @@ define(function(require) {
         data.newBoxIds = that.controls.newBoxIds.val();
         data.scriptIds = that.controls.scriptIds.val();
         data.deviceIds = that.controls.deviceIds.val();
+        data.statuses = that.controls.statuses.val();
         return data;
     };
     
@@ -75,6 +76,7 @@ define(function(require) {
         that.controls.newBoxIds.select2('data', null);
         that.controls.scriptIds.select2('data', null);
         that.controls.deviceIds.select2('data', null);
+        that.controls.statuses.select2('data', null);
     };
 
 

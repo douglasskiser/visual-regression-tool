@@ -5,8 +5,7 @@ define(function(require) {
 
     var Collection = Super.extend({
         model: Model,
-        url: 'rest/collection/script',
-        comparator: 'name'
+        url: 'rest/collection/script'
     });
     
     

@@ -73,7 +73,6 @@ define(function(require) {
     };
 
     Page.prototype.renderResult = function() {
-        console.log('call renderResult()');
         var that = this;
         var ResultClass = that.getResultClass();
         var params = {
@@ -90,7 +89,6 @@ define(function(require) {
 
     Page.prototype.resultSortHandler = function(event) {
         var that = this;
-        that.children.filter.setOrder(event.column.id, event.direction);
         that.refresh();
     };
 
@@ -152,8 +150,32 @@ define(function(require) {
 
     Page.prototype.fetch = function() {
         var that = this;
+        var data = that.children.filter.serialize();
+        var selection = _.reduce(_.omit(data, 'perPage', 'page', 'orderBy'), function(memo, value, key) {
+            memo.push({
+                field: key,
+                value: value,
+                operand: 'eq'
+            });
+            return memo;
+        }, []);
+        
+        var column = that.children.result.getTable().getSortedColumn();
+        var orderBy = {};
+        if (column) {
+            orderBy[column.id] = column.get('direction');
+        }
+        
+        var page = data.page || 1;
+        var perPage = data.perPage || 20;
+
         return that.collection.fetch({
-            data: that.children.filter.serialize()
+            data: {
+                selection: selection,
+                orderBy: orderBy,
+                limit: perPage,
+                offset: (page - 1) * perPage
+            }
         });
     };
 

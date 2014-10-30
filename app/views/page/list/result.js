@@ -26,7 +26,6 @@ define(function(require) {
                  that.mapControls();
             })
             .then(function() {
-                console.log('about to call renderTable()');
                 return that.renderTable();
             })
             .then(function() {
@@ -43,11 +42,9 @@ define(function(require) {
     };
 
     View.prototype.renderTable = function() {
-        console.log('called renderTable()');
         var that = this;
         var TableClass = that.getTableClass();
         
-        console.log(that.controls);
 
         var options = {
             el: that.controls.table,
@@ -88,6 +85,10 @@ define(function(require) {
     };
 
 
+    View.prototype.getTable = function(){
+        return this.children.table;
+    };
+    
     return View;
 
 

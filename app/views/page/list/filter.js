@@ -25,7 +25,6 @@ define(function(require) {
                 }));
             })
             .then(function() {
-                console.log('calling renderFields()');
                 that.renderFields();
             })
             .then(function() {
@@ -43,7 +42,6 @@ define(function(require) {
 
     View.prototype.renderFields = function() {
         var that = this;
-        console.log(that.find(that.toId('fields')));
         
         that.find(that.toId('fields')).html(that.getFieldTemplate()({
             id: that.id,

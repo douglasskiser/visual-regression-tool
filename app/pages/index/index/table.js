@@ -49,7 +49,7 @@ define(function(require) {
             id: 'createdAt',
             name: 'Date Created',
             className: 'hidden-xs hidden-sm',
-            type: 'datetime',
+            type: 'number',
             td: CreatedAtTDTemplate,
             renderer: function(model, column, rowIndex, columnIndex) {
                 return model.get('createdAt');
@@ -58,7 +58,7 @@ define(function(require) {
         }, {
             id: 'updatedAt',
             name: 'Date Last Updated',
-            type: 'datetime',
+            type: 'number',
             td: UpdatedAtTDTemplate,
             renderer: function(model, column, rowIndex, columnIndex) {
                 return model.get('updatedAt');

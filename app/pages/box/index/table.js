@@ -18,10 +18,20 @@ define(function(require) {
         var that = this;
         return new View.Columns([{
             id: 'id',
-            name: '#'
+            name: '#',
+            sortable: true,
+            type: 'number'
+        }, {
+            id: 'name',
+            name: 'Name',
+            sortable: true,
+            renderer: function(model, column, rowIndex, columnIndex) {
+                return model.get('name');
+            }
         }, {
             id: 'url',
             name: 'URL',
+            sortable: true,
             renderer: function(model, column, rowIndex, columnIndex) {
                 return model.get('url');
             }
