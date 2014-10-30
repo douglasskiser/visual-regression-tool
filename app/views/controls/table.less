@@ -1,0 +1,28 @@
+table{
+    &>thead{
+        &>tr{
+            &>th{
+                 &.sortable{
+                     cursor: pointer;
+                 }
+            }      
+        }
+         
+    }
+    
+    &>tbody{
+        &>tr{
+            &>td{
+                &.text{
+                    text-align: left;
+                }
+                &.number{
+                    text-align: right;
+                }
+                &.datetime{
+                    text-align: right;
+                }
+            }       
+        }
+    }
+}

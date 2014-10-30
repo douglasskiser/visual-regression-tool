@@ -60,7 +60,11 @@ define(function(require) {
 
     };
 
-
+    View.prototype.setOrder = function(field, direction){
+        var that = this;
+        that.controls.orderBy.val(field);
+        that.controls.orderDirection.val(direction);
+    };
 
     
     View.prototype.getTemplate = function() {

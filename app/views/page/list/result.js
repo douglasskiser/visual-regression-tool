@@ -58,9 +58,16 @@ define(function(require) {
         
 
         that.children.table = new TableClass(options);
+        
+        that.children.table.on('sort', that.tableSortHandler.bind(that));
         that.children.table.render();
 
         return B.resolve();
+    };
+    
+    View.prototype.tableSortHandler = function(event){
+        var that = this;
+        that.trigger('sort', event);
     };
     
     View.prototype.getTableOptions = function(){

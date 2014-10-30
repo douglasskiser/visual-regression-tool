@@ -34,16 +34,27 @@ define(function(require) {
                 that.renderBody();
 
                 var events = {};
+                events['click th.sortable'] = 'sortableColumnClickHandler';
                 that.delegateEvents(events);
 
                 that.collection.on('sync add remove', that.renderBody.bind(that));
             });
 
     };
-
+    View.prototype.sortableColumnClickHandler = function(event){
+        var e = $(event.currentTarget);
+        var that = this;
+        
+        var column = that.columns.get(e.data('id'));
+        that.trigger('sort', {
+            column: column, 
+            direction: e.data('direction') === 'asc' ? 'desc': 'asc'
+        });
+    };
+    
     View.prototype.renderHead = function() {
         var that = this;
-        console.log('renderHead()', that.columns.toJSON());
+        // console.log('renderHead()', that.columns.toJSON());
         that.controls.thead.html(THEAD({
             id: that.id,
             columns: that.columns.map(function(column, index) {

@@ -83,8 +83,15 @@ define(function(require) {
         _.extend(params, that.getResultOptions());
 
         that.children.result = new ResultClass(params);
+        that.children.result.on('sort', that.resultSortHandler.bind(that));
 
         return that.children.result.render();
+    };
+
+    Page.prototype.resultSortHandler = function(event) {
+        var that = this;
+        that.children.filter.setOrder(event.column.id, event.direction);
+        that.refresh();
     };
 
     Page.prototype.getResultOptions = function() {};
@@ -134,8 +141,6 @@ define(function(require) {
 
     };
 
-
-
     Page.prototype.refresh = function() {
         var that = this;
         that.reload(that.children.filter.serialize(), {
@@ -151,7 +156,6 @@ define(function(require) {
             data: that.children.filter.serialize()
         });
     };
-
 
     return Page;
 

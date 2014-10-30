@@ -22,17 +22,19 @@ define(function(require) {
         var that = this;
         return new View.Columns([{
             id: 'id',
-            name: '#'
+            name: '#',
+            type: 'number',
+            sortable: true
         }, {
             id: 'description',
             name: 'Description',
+            type: 'text',
             renderer: function(model, column, rowIndex, columnIndex) {
                 return DescriptionTemplate({
                     oldBox: that.options.boxCollection.get(model.get('oldBoxId')).toJSON(),
                     newBox: that.options.boxCollection.get(model.get('newBoxId')).toJSON(),
                     script: that.options.scriptCollection.get(model.get('scriptId')).toJSON(),
                     device: that.options.deviceCollection.get(model.get('deviceId')).toJSON()
-                    
                 });
             }
         }, {
@@ -40,22 +42,28 @@ define(function(require) {
             name: 'Status',
             renderer: function(model, column, rowIndex, columnIndex) {
                 return Execution.STATUSES[model.get('status')];
-            }
+            },
+            type: 'text',
+            sortable: true
         }, {
             id: 'createdAt',
             name: 'Date Created',
             className: 'hidden-xs hidden-sm',
+            type: 'datetime',
             td: CreatedAtTDTemplate,
             renderer: function(model, column, rowIndex, columnIndex) {
                 return model.get('createdAt');
-            }
+            },
+            sortable: true
         }, {
             id: 'updatedAt',
             name: 'Date Last Updated',
+            type: 'datetime',
             td: UpdatedAtTDTemplate,
             renderer: function(model, column, rowIndex, columnIndex) {
                 return model.get('updatedAt');
-            }
+            },
+            sortable: true
         }, {
             id: 'action',
             renderer: function(model, column, rowIndex, columnIndex) {
