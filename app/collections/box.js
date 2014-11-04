@@ -4,8 +4,7 @@ define(function(require) {
         Model = require('../models/box');
 
     var Collection = Super.extend({
-        model: Model,
-        url: 'rest/collection/box'
+        model: Model
     });
 
     Collection.prototype.toDropdown = function(target, options) {

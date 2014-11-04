@@ -3,6 +3,7 @@ define(function(require) {
     var Super = require('views/page'),
         B = require('bluebird'),
         Filter = require('./list/filter'),
+        HEAD_TOOLBAR = require('hbs!./list/head-toolbar.tpl'),
         Result = require('./list/result'),
         Template = require('hbs!./list.tpl');
 
@@ -16,10 +17,15 @@ define(function(require) {
     Page.prototype.render = function() {
         var that = this;
 
-        return B.resolve(that.preRender())
+        return B.resolve()
             .then(function() {
+                return that.preRender();
+            })
+            .then(function() {
+
                 var data = {
-                    id: that.id
+                    id: that.id,
+                    headToolbar: that.getHeadToolbarHtml()
                 };
                 return B.resolve(that.getRenderOptions())
                     .then(function(opts) {
@@ -50,6 +56,15 @@ define(function(require) {
             .finally(function() {
                 that.ready();
             });
+    };
+
+    Page.prototype.getHeadToolbarHtml = function() {
+        var that = this;
+
+        return HEAD_TOOLBAR({
+            id: that.id,
+            controller: that.options.controller
+        });
     };
 
     Page.prototype.getRenderOptions = function() {
@@ -159,13 +174,13 @@ define(function(require) {
             });
             return memo;
         }, []);
-        
+
         var column = that.children.result.getTable().getSortedColumn();
         var orderBy = {};
         if (column) {
             orderBy[column.id] = column.get('direction');
         }
-        
+
         var page = data.page || 1;
         var perPage = data.perPage || 20;
 

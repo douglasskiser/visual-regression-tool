@@ -34,7 +34,8 @@ requirejs.config({
         bootstrapSwitch: '//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.0.2/js/bootstrap-switch.min',
         resemble: 'vendors/resemblejs/resemble',
         jszip: '//cdnjs.cloudflare.com/ajax/libs/jszip/2.4.0/jszip.min',
-        FileSaver: '//cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.0.0/FileSaver.min'
+        FileSaver: '//cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.0.0/FileSaver.min',
+        ace: '//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace'
     },
     hbs: {
         helpers: true,
@@ -44,6 +45,9 @@ requirejs.config({
         disableI18n: false
     },
     shim: {
+        ace:{
+            exports: 'ace'  
+        },
         FileSaver: {
             exports: 'saveAs'  
         },

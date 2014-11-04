@@ -5,12 +5,26 @@ define(function (require) {
         Collection = Super.extend({
                                       model: Model
                                   });
-
+                                  
+    Collection.prototype.initialize = function(options){
+        var url;
+        Super.prototype.initialize.call(this, options);
+        if( _.isEmpty(_.result(this, 'url')) ){
+            url = _.result(this.model.prototype, 'url');
+            if( !_.isEmpty(url) ){
+                this.url = url;
+            }else{
+                this.url = '/rest' + (this.name || this.model.prototype.name)
+            }
+        }
+    };
+    
     
     Collection.prototype.fetch = function(options){
         
         var that = this;
         var name = that.name || that.model.prototype.name;
+        
         
         var opts = {
             distinct: [],

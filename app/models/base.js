@@ -3,7 +3,11 @@ define(function(require) {
         _ = require('underscore'),
         Super = Backbone.Model;
 
-    var Model = Super.extend({});
+    var Model = Super.extend({
+        url: function(){
+          return '/rest/' + this.name + (this.id ? '/' + this.id : '');  
+        } 
+    });
     
 
     return Model;

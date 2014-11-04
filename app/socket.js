@@ -31,6 +31,7 @@ define(function(require) {
             }.bind(this),
             error: function(jqXHR, status, errorThrown) {
                 if (!oldCallbacks.error || oldCallbacks.error(jqXHR, status, errorThrown) !== false) {
+                    console.error(jqXHR, status, errorThrown);
                     this.trigger('error', jqXHR, status, errorThrown);
                 }
             }.bind(this)
