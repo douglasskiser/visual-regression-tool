@@ -9,18 +9,15 @@ define(function(require) {
 
     var Page = Super.extend({});
 
-    Page.prototype.initialize = function(options) {
-        var that = this;
-        //super(options)
-        Super.prototype.initialize.call(that, options);
 
-        if (!that.collection) {
-            that.collection = new Collection();
-        }
-        
+    Page.prototype.getCollection = function() {
+        var that = this;
+
         that.boxCollection = new BoxCollection();
-        
+
+        return new Collection();
     };
+
     Page.prototype.getRenderOptions = function() {
         return {
             pageName: 'Health Check'
@@ -30,7 +27,7 @@ define(function(require) {
     Page.prototype.preRender = function() {
         return this.boxCollection.fetch();
     };
-    
+
     Page.prototype.getResultOptions = function() {
         return {
             boxCollection: this.boxCollection

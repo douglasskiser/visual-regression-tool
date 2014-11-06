@@ -46,8 +46,9 @@ define(function(require) {
 
             })
             .then(function() {
-                var data = that.prepareForOutput();
-
+                return that.prepareForOutput();
+            })
+            .then(function(data) {
                 that.$el.html(Template({
                     id: that.id,
                     header: that.getHeaderHtml(data),

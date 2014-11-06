@@ -45,6 +45,23 @@ define(function(require) {
         }]);
     };
 
+    View.prototype.renderBody = function() {
+        var that = this;
+
+        return B.resolve(that.options.boxCollection.fetch({
+                data: {
+                    selection: [{
+                        field: 'id',
+                        operand: 'in',
+                        value: that.collection.pluck('boxId')
+                    }]
+                }
+            }))
+            .then(function() {
+                return Super.prototype.renderBody.call(that);
+            });
+    };
+
 
     return View;
 

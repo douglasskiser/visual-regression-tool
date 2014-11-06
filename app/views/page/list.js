@@ -12,6 +12,14 @@ define(function(require) {
     Page.prototype.initialize = function(options) {
         //super(options)
         Super.prototype.initialize.call(this, options);
+        
+        if( !this.collection ){
+            this.collection = this.getCollection();
+        }
+    };
+    
+    Page.prototype.getCollection = function(){
+        throw new Error("getCollection() must be overriden!");
     };
 
     Page.prototype.render = function() {

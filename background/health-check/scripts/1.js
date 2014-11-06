@@ -10,6 +10,8 @@ var Utils = require('../utils'),
         }
     });
 
+
+
 //on resource.error, call error reporting and exit
 casper.on('resource.error', function(e) {
     Utils.handleError(e);

@@ -11,7 +11,7 @@
   "dependencies": {
     "accounting": "~0.3.2",
     "bluebird": "~1.2.4",
-    "bookshelf": "^0.6.12",
+    "bookshelf": "latest",
     "checkit": "^0.2.0-pre",
     "colors": "~0.6.2",
     "connect": "^2.14.3",
@@ -21,6 +21,7 @@
     "express-load": "^1.1.9",
     "glob": "^4.0.6",
     "handlebars": "~2.0.0-alpha.2",
+    "knex": "^0.7.3",
     "minimist": "^1.1.0",
     "moment": "^2.5.1",
     "mysql": "^2.5.1",

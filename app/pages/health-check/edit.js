@@ -25,6 +25,7 @@ define(function(require) {
     Page.prototype.getFieldsTemplate = function() {
         return FIELDS;
     };
+    
 
     Page.prototype.preRender = function() {
         var that = this;
