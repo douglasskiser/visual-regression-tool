@@ -8,116 +8,167 @@ var Super = require('./base'),
     path = require('path'),
     nexpect = require('nexpect'),
     glob = require("glob"),
+    ExecutionStatus = require('./execution-status'),
+    JobType = require('./job-type'),
+    Script = require('./script'),
+    Box = require('./box'),
+    Job = require('./job'),
+    Device = require('./device'),
     Model = Super.extend({
         tableName: 'Execution',
         defaults: {
-            status: 0 //0 - created, 10-running, 20-completed, 400 - error
+            statusId: ExecutionStatus.ID_SCHEDULED //0 - created, 10-running, 20-completed, 400 - error
         }
     });
 
-Model.STATUS_CREATED = 0;
-Model.STATUS_RUNNING = 10;
-Model.STATUS_COMPLETED = 20;
-Model.STATUS_ERROR = 400;
-
-Model.STATUSES = {};
-
-Model.STATUSES[Model.STATUS_CREATED] = 'Created';
-Model.STATUSES[Model.STATUS_RUNNING] = 'Running';
-Model.STATUSES[Model.STATUS_COMPLETED] = 'Completed';
-Model.STATUSES[Model.STATUS_ERROR] = 'Error';
-
 
 Model.prototype.run = function() {
-    var script, oldBox, newBox, device, that = this;
-    return B.all([
-            that.script().fetch(),
-            that.oldBox().fetch(),
-            that.newBox().fetch(),
-            that.device().fetch()
-        ])
-        .spread(function(s, o, n, d) {
-            script = s;
-            oldBox = o;
-            newBox = n;
-            device = d;
+    var script, oldBox, newBox, device, that = this,
+        job = new Job({
+            id: that.get('jobId')
+        });
+    return job.fetch()
+        .then(function() {
+            oldBox = new Box({
+                id: job.get('oldBoxId')
+            });
 
+            script = new Script({
+                id: job.get('scriptId')
+            });
+
+            if (job.get('typeId') == JobType.ID_VISUAL_REGRESSION) {
+                newBox = new Box({
+                    id: job.get('newBoxId')
+                });
+
+                device = new Device({
+                    id: job.get('deviceId')
+                });
+
+                return B.all([oldBox.fetch(), newBox.fetch(), script.fetch(), device.fetch()]);
+            }
+            else {
+                return B.all([oldBox.fetch(), script.fetch()]);
+            }
+
+        })
+        .then(function() {
             return that.save({
-                status: Model.STATUS_RUNNING
+                statusId: ExecutionStatus.ID_RUNNING
             }, {
                 patch: true
             });
         })
         .then(function() {
-            // console.log(script, oldBox, newBox, device);
-            var scriptAbsPath = [config.rootPath, 'background', 'scripts', script.get('path')].join('/');
-            var screenshotsPath = [config.rootPath, 'screenshots', that.id].join('/');
-            var oldScreenshotsPath = [screenshotsPath, 'old'].join('/');
-            var oldUrl = oldBox.get('url');
-            var oldCmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + oldScreenshotsPath, '--url=' + oldUrl, '--width=' + device.get('width'), '--height=' + device.get('height')].join(' ');
+            var scriptAbsPath = script.getAbsolutePath();
+            var executionBasePath = [config.rootPath, 'data', 'executions', that.id].join('/')
+            var logPath = [executionBasePath, 'log.txt'].join('/');
+            var url = oldBox.get('url');
 
-            var newUrl = newBox.get('url');
-            var newScreenshotsPath = [screenshotsPath, 'new'].join('/');
-            var newCmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + newScreenshotsPath, '--url=' + newUrl, '--width=' + device.get('width'), '--height=' + device.get('height')].join(' ');
+            if (job.get('typeId') == JobType.ID_VISUAL_REGRESSION) {
+                var screenshotsPath = [executionBasePath, 'screenshots'].join('/');
+                var oldScreenshotsPath = [screenshotsPath, 'old'].join('/');
+                var newScreenshotsPath = [screenshotsPath, 'new'].join('/');
 
-            console.log('Starting ' + oldCmd);
-            console.log('Starting ' + newCmd);
 
-            return B.resolve(new B(function(resolve, reject) {
-                    nexpect.spawn('rm -rf ' + screenshotsPath)
-                        .run(function(err, stdout, exitcode) {
-                            resolve({
-                                err: err,
-                                stdout: stdout,
-                                exitCode: exitcode
-                            });
+                var newUrl = newBox.get('url');
+
+                var oldCmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + oldScreenshotsPath, '--url=' + url, '--width=' + device.get('width'), '--height=' + device.get('height'), ' > ', logPath].join(' ');
+                var newCmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + newScreenshotsPath, '--url=' + newUrl, '--width=' + device.get('width'), '--height=' + device.get('height'), ' > ', logPath].join(' ');
+
+                return B.all([
+                    (function() {
+                        logger.info('start capturing the first URL. Command: ', oldCmd);
+
+                        return new B(function(resolve, reject) {
+                            nexpect.spawn(oldCmd)
+                                .run(function(err, stdout, exitcode) {
+                                    if (exitcode !== 0) {
+                                        logger.error('error on first URL', stdout);
+                                        reject({
+                                            err: err,
+                                            stdout: stdout,
+                                            exitCode: exitcode
+                                        });
+                                        return;
+                                    }
+                                    logger.info('First URL completed', oldCmd);
+                                    resolve({
+                                        err: err,
+                                        stdout: stdout,
+                                        exitCode: exitcode
+                                    });
+                                });
                         });
-                }))
-                .then(function() {
-                    return B.all([
-                        (function() {
-                            return new B(function(resolve, reject) {
-                                nexpect.spawn(oldCmd)
-                                    .run(function(err, stdout, exitcode) {
-                                        resolve({
-                                            err: err,
-                                            stdout: stdout,
-                                            exitCode: exitcode
-                                        });
-                                    });
-                            })
-                        })(),
-                        (function() {
-                            return new B(function(resolve, reject) {
-                                nexpect.spawn(newCmd)
-                                    .run(function(err, stdout, exitcode) {
-                                        resolve({
-                                            err: err,
-                                            stdout: stdout,
-                                            exitCode: exitcode
-                                        });
-                                    });
-                            });
-                        })()
+                    })(),
+                    (function() {
+                        logger.info('start capturing the second URL. Command: ', newCmd);
 
-                            ]);
+                        return new B(function(resolve, reject) {
+                            nexpect.spawn(newCmd)
+                                .run(function(err, stdout, exitcode) {
+                                    if (exitcode !== 0) {
+                                        logger.error('error on second URL', stdout);
+                                        reject({
+                                            err: err,
+                                            stdout: stdout,
+                                            exitCode: exitcode
+                                        });
+                                        return;
+                                    }
+                                    logger.info('Second URL completed', oldCmd);
+                                    resolve({
+                                        err: err,
+                                        stdout: stdout,
+                                        exitCode: exitcode
+                                    });
+                                });
+                        });
+                    })()
+                                ]);
+            }
+            else {
+                return (function() {
+                    var cmd = [config.casper.absolutePath, scriptAbsPath, '--url=' + url, ' > ', logPath].join(' ');
+                    logger.info(cmd);
+
+                    return new B(function(resolve, reject) {
+                        nexpect.spawn(cmd)
+                            .run(function(err, stdout, exitcode) {
+                                if (exitcode !== 0) {
+                                    reject({
+                                        err: err,
+                                        stdout: stdout,
+                                        exitCode: exitcode
+                                    });
+                                    return;
+                                }
+                                resolve({
+                                    err: err,
+                                    stdout: stdout,
+                                    exitCode: exitcode
+                                });
+                            });
+                    });
                 });
+            }
         })
-    .spread(function(oldResult, newResult) {
-        if (oldResult.err || newResult.err) {
+        .then(function() {
             return that.save({
-                status: Model.STATUS_ERROR
+                statusId: ExecutionStatus.ID_COMPLETED
             }, {
                 patch: true
             });
-        }
-
-        return that.save({
-            status: Model.STATUS_COMPLETED
-        }, {
-            patch: true
+        })
+        .catch(function(e) {
+            return that.save({
+                statusId: ExecutionStatus.ID_ERROR
+            }, {
+                patch: true
+            });
         });
-    });
+        
 };
 
 Model.prototype.getScreenshots = function() {
@@ -159,24 +210,11 @@ Model.prototype.getScreenshots = function() {
 };
 
 
-Model.prototype.script = function() {
-    var Other = require('./script');
-    return this.belongsTo(Other, 'scriptId');
+
+Model.prototype.job = function() {
+    var Other = require('./job');
+    return this.belongsTo(Other, 'jobId');
 };
 
-Model.prototype.oldBox = function() {
-    var Other = require('./box');
-    return this.belongsTo(Other, 'oldBoxId');
-};
-
-Model.prototype.newBox = function() {
-    var Other = require('./box');
-    return this.belongsTo(Other, 'newBoxId');
-};
-
-Model.prototype.device = function() {
-    var Other = require('./device');
-    return this.belongsTo(Other, 'deviceId');
-};
 
 module.exports = Model;

@@ -1,34 +1,37 @@
 var db = require('../db'),
+    Super = db.Collection,
     Model = require('../models/base'),
     B = require('bluebird'),
     _ = require('underscore'),
     _s = require('underscore.string');
 
-var Collection = db.Collection.extend({
+var Collection = Super.extend({
     model: Model
 });
 
-Collection.prototype.export = function(viewerId) {
+Collection.prototype.export = function(viewer, columns) {
     return this.map(function(model) {
-        return model.export(viewerId);
+        return model.export(viewer, columns);
     });
 };
 
+Collection.prototype.readColumnInfo = function() {
+    var that = this;
+    //TODO: move this into redis server
+    if (!that.columnInfo) {
+        return db.knex(_.result(that, 'tableName')).columnInfo()
+            .then(function(data) {
+                that.columnInfo = data;
+            });
+    }
+    return B.resolve();
+}
 
 
 Collection.prototype.fetchMany = function(query) {
     var that = this;
 
-    return (function() {
-            //TODO: move this into redis server
-            if (!that.columnInfo) {
-                return db.knex(_.result(that, 'tableName')).columnInfo()
-                    .then(function(data) {
-                        that.columnInfo = data;
-                    });
-            }
-            return B.resolve();
-        })()
+    return that.readColumnInfo()
         .then(function() {
             return that.query(function(qb) {
                     var availableColumns = _.keys(that.columnInfo);
@@ -42,11 +45,12 @@ Collection.prototype.fetchMany = function(query) {
                             qb.distinct(columns);
                         }
                     }
-                    else {
-                        if (!_.isEmpty(columns) && _.isArray(columns)) {
-                            qb.column(columns);
-                        }
-                    }
+
+                    // else {
+                    //     if (!_.isEmpty(columns) && _.isArray(columns)) {
+                    //         qb.column(columns);
+                    //     }
+                    // }
 
                     if (!_.isEmpty(query.selection) && _.isArray(query.selection)) {
                         var allowedOperands = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 's', 'ls', 'rs', 'in', 'nin', 'between', 'nbetween', 'null', 'nnull'];
@@ -163,7 +167,7 @@ Collection.prototype.fetchMany = function(query) {
                     if (!_.isEmpty(query.orderBy) && _.isObject(query.orderBy)) {
                         orderColumns = _.intersection(_.keys(query.orderBy), availableColumns);
                         extraOrderColumns = _.difference(_.keys(query.orderBy), orderColumns);
- 
+
                         _.forEach(orderColumns, function(field) {
                             var direction = query.orderBy[field] === 'asc' ? 'asc' : 'desc';
 
@@ -183,6 +187,7 @@ Collection.prototype.fetchMany = function(query) {
                 })
                 .fetch();
         });
+
 };
 
 
@@ -192,14 +197,15 @@ Collection.prototype.handleUnsupportedOperand = function(qb, field, operand, val
 
 Collection.prototype.handleExtraColumns = function(qb, extraColumns, extraOrderColumns) {
 
-    var columns = _.union(extraColumns, _.keys(extraOrderColumns));
+};
 
-    if (_.contains(columns, 'url')) {
-        qb.join('Box', 'Box.id', '=', 'HealthCheck.boxId');
-        if (extraOrderColumns.url) {
-            qb.orderBy('Box.url', extraOrderColumns.url);
-        }
-    }
+Collection.prototype.create = function(data, options) {
+    var that = this;
+    return that.readColumnInfo()
+        .then(function() {
+            var attributes = _.pick(data, _.keys(that.columnInfo));
+            return Super.prototype.create.call(that, attributes, options);
+        });
 };
 
 module.exports = Collection;

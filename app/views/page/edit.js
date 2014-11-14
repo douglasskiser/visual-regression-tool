@@ -73,7 +73,6 @@ define(function(require) {
     };
 
     Page.prototype.preRender = function() {
-        console.log('called preRender()');
         return B.resolve();
     };
 
@@ -170,6 +169,7 @@ define(function(require) {
 
     Page.prototype.save = function(event) {
         var that = this;
+        var isNew = that.model.isNew();
         event.preventDefault();
 
         var params = _.extend(that.serialize());
@@ -180,7 +180,12 @@ define(function(require) {
 
         B.resolve(that.model.save(params))
             .then(function() {
-                that.goTo(that.options.controller + '/view/id/' + that.model.id);
+                if( isNew ){
+                    that.goTo(that.options.controller + '/view/id/' + that.model.id);
+                }else{
+                    that.back();
+                }
+                
             })
             .finally(function() {
                 l.stop();

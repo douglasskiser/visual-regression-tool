@@ -10,49 +10,78 @@ var db = require('../db'),
     _s = require('underscore.string');
 
 
-exports.fetchMany = function(req, res, next) {
+function getCollection(req, res, next) {
     var Collection,
-        name = req.params.name;
+        name = _s.slugify(req.params.name);
     try {
-        Collection = require('../collections/' + _s.dasherize(name));
+        Collection = require('../collections/' + name);
     }
     catch (e) {
-        logger.warn('Client requested undefined collection!');
+        // logger.warn('Client requested undefined collection ' + name, e.trace());
+        logger.warn('Client requested undefined collection ' + name);
         // utils.sendError(e, req, res, next);
         res.send(404);
     }
-    return Collection.forge().fetchMany(req.query)
-        .then(function(docs) {
-            res.send(docs.export(req.user));
-        })
-        .catch(function(e) {
-            utils.sendError(e, req, res, next);
-        });
+    return Collection;
+};
+
+function fetchOne(req, res, next) {
+    var Collection = getCollection(req, res, next);
+    if (Collection) {
+        return Collection.forge().fetchMany({
+                selection: [{
+                    field: 'id',
+                    value: req.params.id
+            }],
+                limit: 1
+            }, {
+                user: req.user
+            })
+            .then(function(docs) {
+                if (docs && docs.length > 0) {
+                    return docs.at(0);
+                }
+                return undefined;
+            });
+    }
+    return undefined;
+}
+
+exports.fetchMany = function(req, res, next) {
+    var Collection = getCollection(req, res, next);
+    if (Collection) {
+        return Collection.forge().fetchMany(req.query, {
+                user: req.user
+            })
+            .then(function(docs) {
+                if (docs) {
+                    res.send(docs.export(req.user, req.query.columns ));
+                }
+            })
+            .catch(function(e) {
+                utils.sendError(e, req, res, next);
+            });
+    }
+    res.send(404);
 };
 
 
 exports.create = function(req, res, next) {
-    var Model,
-        name = req.params.name;
-    try {
-        Model = require('../models/' + _s.dasherize(name));
-    }
-    catch (e) {
-        logger.warn('Client requested undefined model!');
-        // utils.sendError(e, req, res, next);
-        res.send(404);
-    }
+    var Collection = getCollection(req, res, next);
 
-    return Model.forge(req.body)
-        .save()
-        .then(function(doc) {
-            res.send(doc.export(req.user));
-        })
-        .catch(function(e) {
-            utils.sendError(e, req, res, next);
-        });
-};
-
+    if (Collection) {
+        return Collection.forge().create(req.body, {
+                user: req.user
+            })
+            .then(function(doc) {
+                res.send(doc.export(req.user));
+            })
+            .catch(function(e) {
+                utils.sendError(e, req, res, next);
+            });
+    };
+    res.send(404);
+}
 
 
 
@@ -103,7 +132,7 @@ exports.update = function(req, res, next) {
         .then(function(doc) {
             // console.log(_.pick(req.body, _.without(_.keys(doc.toJSON()), 'id')));
             // console.log(_.without(_.keys(doc.toJSON()), 'id'));
-            
+
             return doc.save(_.pick(req.body, _.without(_.keys(doc.toJSON()), 'id')), {
                 patch: true,
                 user: req.user
@@ -119,33 +148,21 @@ exports.update = function(req, res, next) {
 
 
 exports.delete = function(req, res, next) {
-    var Model,
-        name = req.params.name;
-    try {
-        Model = require('../models/' + _s.dasherize(name));
-    }
-    catch (e) {
-        logger.warn('Client requested undefined model!');
-        // utils.sendError(e, req, res, next);
-        res.send(404);
-    }
-    Model.forge({
-            id: req.params.id
-        })
-        .fetch({
-            require: true
-        })
+    B.resolve(fetchOne(req, res, next))
         .then(function(doc) {
-            return doc.destroy({
-                user: req.user
-            });
-        })
-        .then(function(doc) {
-            res.send(doc.export(req.user));
-        })
-        .catch(function(e) {
-            utils.sendError(e, req, res, next);
+            if (doc) {
+                return doc.destroy({
+                        user: req.user
+                    })
+                    .then(function() {
+                        res.send({
+                            count: 1
+                        });
+                    });
+            }
+            res.send(404);
         });
+
 };
 
 

@@ -114,7 +114,8 @@ define(function(require) {
                     else {
                         return 'fa-sort';
                     }
-                }else{
+                }
+                else {
                     return '';
                 }
             })()
@@ -143,7 +144,12 @@ define(function(require) {
 
 
             if (typeof renderer === 'function') {
-                value = renderer(model, column, index, columnIndex);
+                try {
+                    value = renderer(model, column, index, columnIndex);
+                }
+                catch (e) {
+                    console.error(e);
+                }
             }
             if (typeof td === 'function') {
                 return td({

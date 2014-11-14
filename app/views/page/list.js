@@ -12,13 +12,13 @@ define(function(require) {
     Page.prototype.initialize = function(options) {
         //super(options)
         Super.prototype.initialize.call(this, options);
-        
-        if( !this.collection ){
+
+        if (!this.collection) {
             this.collection = this.getCollection();
         }
     };
-    
-    Page.prototype.getCollection = function(){
+
+    Page.prototype.getCollection = function() {
         throw new Error("getCollection() must be overriden!");
     };
 
@@ -194,6 +194,7 @@ define(function(require) {
 
         return that.collection.fetch({
             data: {
+                columns: that.getFetchColumns(),
                 selection: selection,
                 orderBy: orderBy,
                 limit: perPage,
@@ -202,6 +203,9 @@ define(function(require) {
         });
     };
 
+    Page.prototype.getFetchColumns = function() {
+
+    };
     return Page;
 
 

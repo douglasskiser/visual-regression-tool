@@ -5,29 +5,9 @@ define(function(require) {
         B = require('bluebird');
 
     var Model = Super.extend({
-        urlRoot: '/rest/model/execution',
-        defaults: {
-            oldBoxId: 3,
-            newBoxId: 2,
-            scriptId: 1,
-            deviceId: 1
-        },
         name: 'execution'
     });
     
-    Model.STATUS_CREATED = 0;
-    Model.STATUS_RUNNING = 10;
-    Model.STATUS_COMPLETED = 20;
-    Model.STATUS_ERROR = 400;
-
-    Model.STATUSES = {};
-
-    Model.STATUSES[Model.STATUS_CREATED] = 'Created';
-    Model.STATUSES[Model.STATUS_RUNNING] = 'Running';
-    Model.STATUSES[Model.STATUS_COMPLETED] = 'Completed';
-    Model.STATUSES[Model.STATUS_ERROR] = 'Error';
-
-
 
     Model.prototype.run = function(params) {
         var that = this;

@@ -4,8 +4,7 @@ define(function(require) {
         Model = require('../models/device');
 
     var Collection = Super.extend({
-        model: Model,
-        url: 'rest/collection/device'
+        model: Model
     });
     
     

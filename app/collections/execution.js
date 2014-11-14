@@ -4,8 +4,7 @@ define(function(require) {
         Model = require('../models/execution');
 
     var Collection = Super.extend({
-        model: Model,
-        url: 'rest/collection/execution'
+        model: Model
     });
 
 

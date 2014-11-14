@@ -8,6 +8,7 @@ define(function(require) {
         FORM = require('hbs!./view/form.tpl'),
         BUTTONS = require('hbs!./view/buttons.tpl'),
         Ladda = require('ladda'),
+        Dialog = require('views/controls/dialog'),
         Template = require('hbs!./view.tpl');
 
     var Page = Super.extend({});
@@ -28,6 +29,7 @@ define(function(require) {
     Page.prototype.getModelClass = function() {
         throw new Error("You must define Page.prototype.getModelClass()");
     };
+
 
 
     Page.prototype.render = function() {
@@ -120,9 +122,10 @@ define(function(require) {
     Page.prototype.getButtonsHtml = function(data) {
         var that = this;
         var template = that.getButtonsTemplate();
-
         return template({
             id: that.id,
+            action: that.options.action, 
+            controller: that.options.controller,
             data: data
         });
     };
@@ -135,6 +138,7 @@ define(function(require) {
         var that = this;
         var events = {};
         events['click ' + that.toId('back')] = 'backButtonClickHandler';
+        events['click ' + that.toId('delete')] = 'deleteButtonClickHandler';
         _.extend(events, that.getExtraEvents());
         that.delegateEvents(events);
     };
@@ -146,6 +150,46 @@ define(function(require) {
     Page.prototype.prepareForOutput = function() {
         return this.model.toJSON();
     };
+    
+    Page.prototype.deleteButtonClickHandler = function(event){
+        event.preventDefault();
+        
+        var that = this; 
+        
+        var confirmDlg = new Dialog({
+            body: 'Are you sure you want to delete this item?',
+            buttons: [{
+                id: 'yes',
+                label: "Yes. I'm sure.",
+                iconClass: 'fa fa-check',
+                buttonClass: 'btn-danger'
+        }, {
+                id: 'no',
+                label: 'Nope!',
+                iconClass: 'fa fa-times',
+                buttonClass: 'btn-default',
+                autoClose: true
+        }]
+        });
+        confirmDlg.on('yes', function() {
+            B.resolve()
+                .then(function() {
+                    NProgress.start();
+                })
+                .then(function() {
+                    return that.model.destroy();
+                })
+                .then(function() {
+                    that.toast.success('Item has been deleted successfully.');
+                    confirmDlg.close();
+                    that.back();
+                })
+                .catch(that.error.bind(that))
+                .finally(function() {
+                    NProgress.done();
+                });
+        });
+};
 
     return Page;
 

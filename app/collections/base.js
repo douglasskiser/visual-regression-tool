@@ -28,7 +28,7 @@ define(function (require) {
         
         var opts = {
             distinct: [],
-            columns: {},
+            columns: [],
             selection: {},
             groupBy: [],
             having: [],
