@@ -61,7 +61,7 @@ define(function(require) {
                     id: that.model.get('scriptId')
                 });
 
-                return B.all([that.type.fetch(), that.oldBox.fetch(), (function() {
+                return B.all([that.script.fetch(), that.type.fetch(), that.oldBox.fetch(), (function() {
                     if (that.model.get('typeId') == Type.ID_VISUAL_REGRESSION) {
                         return B.all([that.newBox.fetch(), that.device.fetch()]);
                     }

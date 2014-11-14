@@ -9,7 +9,7 @@ define(function(require) {
         DeviceCollection = require('collections/device'),
         TypeCollection = require('collections/job-type'),
         StatusCollection = require('collections/execution-status'),
-        Collection = require('collections/job'),
+        Collection = require('collections/execution'),
         Select2 = require('select2');
 
     var Page = Super.extend({
@@ -22,10 +22,6 @@ define(function(require) {
         //super(options)
         Super.prototype.initialize.call(that, options);
 
-        that.boxCollection = new BoxCollection();
-        that.typeCollection = new TypeCollection();
-        that.scriptCollection = new ScriptCollection();
-        that.deviceCollection = new DeviceCollection();
         that.statusCollection = new StatusCollection();
     };
 
@@ -35,17 +31,13 @@ define(function(require) {
 
     Page.prototype.getRenderOptions = function() {
         return {
-            pageName: 'Jobs'
+            pageName: 'Execution Queue'
         };
     };
 
     Page.prototype.preRender = function() {
         var that = this;
         return B.all([
-                that.boxCollection.fetch(),
-                that.scriptCollection.fetch(),
-                that.deviceCollection.fetch(),
-                that.typeCollection.fetch(),
                 that.statusCollection.fetch()
                 ]);
     };
@@ -56,23 +48,16 @@ define(function(require) {
         var that = this;
 
         return {
-            boxCollection: that.boxCollection,
-            scriptCollection: that.scriptCollection,
-            deviceCollection: that.deviceCollection,
-            statusCollection: that.statusCollection,
-            typeCollection: that.typeCollection
+
+            statusCollection: that.statusCollection
         };
     };
 
     Page.prototype.getResultOptions = function() {
         var that = this;
         return {
-            boxCollection: that.boxCollection,
-            scriptCollection: that.scriptCollection,
-            deviceCollection: that.deviceCollection,
-            statusCollection: that.statusCollection,
-            typeCollection: that.typeCollection
-        }
+            statusCollection: that.statusCollection
+        };
     };
 
     Page.prototype.getFilterClass = function() {
@@ -95,31 +80,10 @@ define(function(require) {
                 return memo;
             }, []);
         };
-        
+
         var selection = _.reduce(_.omit(data, 'perPage', 'page', 'orderBy'), function(memo, value, key) {
             if (value) {
                 switch (key) {
-                    case 'boxIds':
-                        memo.push({
-                            field: 'oldBoxId',
-                            value: parseValue(value),
-                            operand: 'in'
-                        });
-                        break;
-                    case 'scriptIds':
-                        memo.push({
-                            field: 'scriptId',
-                            value: parseValue(value),
-                            operand: 'in'
-                        });
-                        break;
-                    case 'deviceIds':
-                        memo.push({
-                            field: 'deviceId',
-                            value: parseValue(value),
-                            operand: 'in'
-                        });
-                        break;
                     case 'statusIds':
                         memo.push({
                             field: 'statusId',
@@ -149,6 +113,8 @@ define(function(require) {
             }
         });
     };
+
+
     return Page;
 
 

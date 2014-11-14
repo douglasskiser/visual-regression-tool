@@ -9,6 +9,7 @@ module.exports = function (app) {
     app.get('/rest/:name/:id', controller.fetchOne);
     app.post('/rest/:name', controller.create);
     app.put('/rest/:name/:id', controller.update);
+    app.patch('/rest/:name/:id', controller.update);
     app.delete('/rest/:name/:id', controller.delete);
     
 };

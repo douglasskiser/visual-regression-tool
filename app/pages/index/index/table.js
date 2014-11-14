@@ -2,13 +2,10 @@
 define(function(require) {
     var Super = require('views/controls/table'),
         B = require('bluebird'),
-        Execution = require('models/execution'),
-        Type = require('models/job-type'),
-        DescriptionTemplate = require('hbs!./description.tpl'),
-        ActionTemplate = require('hbs!./action.tpl'),
-        CreatedAtTDTemplate = require('hbs!./created-at-td.tpl'),
-        UpdatedAtTDTemplate = require('hbs!./updated-at-td.tpl');
-
+        JOB = require('hbs!./job.tpl'),
+        ACTION = require('hbs!./action.tpl'),
+        CREATED_AT_ID = require('hbs!./created-at-td.tpl'),
+        UPDATED_AT_ID = require('hbs!./updated-at-td.tpl');
 
     var View = Super.extend();
 
@@ -18,7 +15,6 @@ define(function(require) {
 
     };
 
-
     View.prototype.getColumns = function() {
         var that = this;
         return new View.Columns([{
@@ -27,47 +23,46 @@ define(function(require) {
             type: 'number',
             sortable: true
         }, {
-            id: 'type',
-            name: 'Type',
+            id: 'jobId',
+            name: 'Job #',
             type: 'text',
             sortable: true,
             renderer: function(model, column, rowIndex, columnIndex) {
-                return that.options.typeCollection.get(model.get('typeId')).get('name');
-            }
-        }, {
-            id: 'description',
-            name: 'Description',
-            type: 'text',
-            renderer: function(model, column, rowIndex, columnIndex) {
-                return DescriptionTemplate({
-                    oldBox: that.options.boxCollection.get(model.get('oldBoxId')).toJSON(),
-                    newBox: model.get('typeId') == Type.ID_VISUAL_REGRESSION ? that.options.boxCollection.get(model.get('newBoxId')).toJSON() : undefined,
-                    script: that.options.scriptCollection.get(model.get('scriptId')).toJSON(),
-                    device: that.options.deviceCollection.get(model.get('deviceId')).toJSON()
+                return JOB({
+                    id: model.get('jobId')
                 });
             }
         }, {
             id: 'createdAt',
             name: 'Date Created',
             type: 'number',
-            td: CreatedAtTDTemplate,
+            sortable: true,
+            td: CREATED_AT_ID,
+            direction: 'desc',
             renderer: function(model, column, rowIndex, columnIndex) {
                 return model.get('createdAt');
-            },
-            sortable: true
+            }
         }, {
             id: 'updatedAt',
             name: 'Date Last Updated',
             type: 'number',
-            td: UpdatedAtTDTemplate,
+            sortable: true,
+            td: UPDATED_AT_ID,
             renderer: function(model, column, rowIndex, columnIndex) {
                 return model.get('updatedAt');
-            },
-            sortable: true
+            }
+        }, {
+            id: 'status',
+            name: 'Status',
+            type: 'text',
+            sortable: true,
+            renderer: function(model, column, rowIndex, columnIndex) {
+                return that.options.statusCollection.get(model.get('statusId')).toHTML();
+            }
         }, {
             id: 'action',
             renderer: function(model, column, rowIndex, columnIndex) {
-                return ActionTemplate({
+                return ACTION({
                     id: model.id
                 });
             }

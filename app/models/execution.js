@@ -8,24 +8,6 @@ define(function(require) {
         name: 'execution'
     });
     
-
-    Model.prototype.run = function(params) {
-        var that = this;
-
-        return app.socket.request({
-            url: '/execution/' + that.id + '/run',
-            type: 'POST',
-            data: params
-        });
-    };
-    Model.getStatusName = function(status) {
-        return Model.STATUSES[status] || '';
-    };
-
-    Model.prototype.getStatusName = function() {
-        return Model.getStatusName(parseInt(this.get('status'), 10)) || '';
-    };
-
     Model.prototype.getScreenshots = function() {
         var that = this;
 
@@ -70,7 +52,7 @@ define(function(require) {
 
     Model.prototype.getScreenshotBaseUrl = function() {
         var that = this;
-        return ['screenshots', that.id].join('/');
+        return ['screenshots', that.id, 'screenshots'].join('/');
     };
     
     return Model;

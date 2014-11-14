@@ -29,7 +29,10 @@ define(function(require) {
     Page.prototype.getModelClass = function() {
         throw new Error("You must define Page.prototype.getModelClass()");
     };
-
+    
+    Page.prototype.getTemplate = function(){
+        return Template;  
+    };
 
 
     Page.prototype.render = function() {
@@ -42,7 +45,7 @@ define(function(require) {
             .then(function() {
                 var data = that.prepareForOutput();
 
-                that.$el.html(Template({
+                that.$el.html(that.getTemplate()({
                     id: that.id,
                     header: that.getHeaderHtml(data),
                     form: that.getFormHtml(data)

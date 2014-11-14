@@ -21,11 +21,6 @@ define(function(require) {
     View.prototype.getTableOptions = function(){
         var that = this;
         return {
-            boxCollection: that.options.boxCollection,
-            scriptCollection: that.options.scriptCollection,
-            scriptBoxCollection: that.options.scriptBoxCollection,
-            deviceCollection: that.options.deviceCollection,
-            typeCollection: that.options.typeCollection,
             statusCollection: that.options.statusCollection
         };
     };

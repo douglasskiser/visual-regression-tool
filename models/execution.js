@@ -53,7 +53,8 @@ Model.prototype.run = function() {
             }
 
         })
-        .then(function() {
+
+    .then(function() {
             return that.save({
                 statusId: ExecutionStatus.ID_RUNNING
             }, {
@@ -62,7 +63,7 @@ Model.prototype.run = function() {
         })
         .then(function() {
             var scriptAbsPath = script.getAbsolutePath();
-            var executionBasePath = [config.rootPath, 'data', 'executions', that.id].join('/')
+            var executionBasePath = that.getExecutionBasePath();
             var logPath = [executionBasePath, 'log.txt'].join('/');
             var url = oldBox.get('url');
 
@@ -77,56 +78,70 @@ Model.prototype.run = function() {
                 var oldCmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + oldScreenshotsPath, '--url=' + url, '--width=' + device.get('width'), '--height=' + device.get('height'), ' > ', logPath].join(' ');
                 var newCmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + newScreenshotsPath, '--url=' + newUrl, '--width=' + device.get('width'), '--height=' + device.get('height'), ' > ', logPath].join(' ');
 
-                return B.all([
-                    (function() {
-                        logger.info('start capturing the first URL. Command: ', oldCmd);
-
-                        return new B(function(resolve, reject) {
-                            nexpect.spawn(oldCmd)
-                                .run(function(err, stdout, exitcode) {
-                                    if (exitcode !== 0) {
-                                        logger.error('error on first URL', stdout);
-                                        reject({
-                                            err: err,
-                                            stdout: stdout,
-                                            exitCode: exitcode
-                                        });
-                                        return;
-                                    }
-                                    logger.info('First URL completed', oldCmd);
-                                    resolve({
-                                        err: err,
-                                        stdout: stdout,
-                                        exitCode: exitcode
-                                    });
+                return B.resolve(new B(function(resolve, reject) {
+                        nexpect.spawn('rm -rf ' + screenshotsPath)
+                            .run(function(err, stdout, exitcode) {
+                                resolve({
+                                    err: err,
+                                    stdout: stdout,
+                                    exitCode: exitcode
                                 });
-                        });
-                    })(),
-                    (function() {
-                        logger.info('start capturing the second URL. Command: ', newCmd);
+                            });
 
-                        return new B(function(resolve, reject) {
-                            nexpect.spawn(newCmd)
-                                .run(function(err, stdout, exitcode) {
-                                    if (exitcode !== 0) {
-                                        logger.error('error on second URL', stdout);
-                                        reject({
-                                            err: err,
-                                            stdout: stdout,
-                                            exitCode: exitcode
+                    }))
+                    .then(function() {
+                        return B.resolve(
+                            (function() {
+                                logger.info('start capturing the first URL. Command: ', oldCmd);
+
+                                return new B(function(resolve, reject) {
+                                    nexpect.spawn(oldCmd)
+                                        .run(function(err, stdout, exitcode) {
+                                            if (exitcode !== 0) {
+                                                logger.error('error on first URL', stdout);
+                                                reject({
+                                                    err: err,
+                                                    stdout: stdout,
+                                                    exitCode: exitcode
+                                                });
+                                                return;
+                                            }
+                                            logger.info('First URL completed', oldCmd);
+                                            resolve({
+                                                err: err,
+                                                stdout: stdout,
+                                                exitCode: exitcode
+                                            });
                                         });
-                                        return;
-                                    }
-                                    logger.info('Second URL completed', oldCmd);
-                                    resolve({
-                                        err: err,
-                                        stdout: stdout,
-                                        exitCode: exitcode
-                                    });
                                 });
+                            })()
+                        ).then(function() {
+                            return (function() {
+                                logger.info('start capturing the second URL. Command: ', newCmd);
+
+                                return new B(function(resolve, reject) {
+                                    nexpect.spawn(newCmd)
+                                        .run(function(err, stdout, exitcode) {
+                                            if (exitcode !== 0) {
+                                                logger.error('error on second URL', stdout);
+                                                reject({
+                                                    err: err,
+                                                    stdout: stdout,
+                                                    exitCode: exitcode
+                                                });
+                                                return;
+                                            }
+                                            logger.info('Second URL completed', oldCmd);
+                                            resolve({
+                                                err: err,
+                                                stdout: stdout,
+                                                exitCode: exitcode
+                                            });
+                                        });
+                                });
+                            })()
                         });
-                    })()
-                                ]);
+                    });
             }
             else {
                 return (function() {
@@ -168,19 +183,26 @@ Model.prototype.run = function() {
                 patch: true
             });
         });
-        
+
+};
+
+Model.prototype.getExecutionBasePath = function() {
+    var that = this;
+    return [config.rootPath, 'data', 'executions', that.id].join('/');
 };
 
 Model.prototype.getScreenshots = function() {
     var that = this;
+    var executionBasePath = that.getExecutionBasePath();
+    var screenshotsPath = [executionBasePath, 'screenshots'].join('/');
+    var oldScreenshotsPath = [screenshotsPath, 'old'].join('/');
+    var newScreenshotsPath = [screenshotsPath, 'new'].join('/');
 
-    var screenshotsPath = [config.rootPath, 'screenshots', that.id, 'old'].join('/');
-    var screenshotsPathNew = [config.rootPath, 'screenshots', that.id, 'new'].join('/');
 
     return B.all([
         new B(function(resolve, reject) {
                 glob("*.png", {
-                    cwd: screenshotsPath
+                    cwd: oldScreenshotsPath
                 }, function(err, files) {
                     if (err) {
                         reject(err);
@@ -191,7 +213,7 @@ Model.prototype.getScreenshots = function() {
             }),
         new B(function(resolve, reject) {
                 glob("*.png", {
-                    cwd: screenshotsPathNew
+                    cwd: newScreenshotsPath
                 }, function(err, files) {
                     if (err) {
                         reject(err);

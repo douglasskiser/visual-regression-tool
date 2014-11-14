@@ -20,22 +20,22 @@ var path = require('path'),
     logger = require('./logger');
 
 
-//when the server restart, all child processes have been killed. Therefore, update their status again
-// db.knex('Execution').where({
-//         statusId: ExecutionStatus.ID_RUNNING
-//     })
-//     .update({
-//         statusId: ExecutionStatus.ID_STOPPED
-//     })
-//     .then(function(updated) {
-//         logger.info("There are " + updated + " rows affected in Execution table.")
-//     });
+//when the server restart, all child processes have been killed. Therefore, update their status to terminated
+db.knex('Execution').where({
+        statusId: ExecutionStatus.ID_RUNNING
+    })
+    .update({
+        statusId: ExecutionStatus.ID_TERMINATED
+    })
+    .then(function(updated) {
+        logger.info("There are " + updated + " rows affected in Execution table.")
+    });
 
 app.use(express.compress());
 app.use('/resources', express.static(path.join(__dirname, '/app/dist'), {
     maxAge: 86400000
 }));
-app.use('/screenshots', express.static(path.join(__dirname, '/screenshots'), {
+app.use('/screenshots', express.static(path.join(__dirname, '/data/executions'), {
     maxAge: 86400000
 }));
 
