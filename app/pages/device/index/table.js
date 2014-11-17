@@ -19,8 +19,8 @@ define(function(require) {
         return new View.Columns([{
             id: 'id',
             name: '#',
-            type: 'number',
-            sortable: true
+            sortable: true,
+            type: 'number'
         }, {
             id: 'name',
             name: 'Name',
@@ -29,10 +29,18 @@ define(function(require) {
                 return model.get('name');
             }
         }, {
-            id: 'resolution',
-            name: 'Resolution',
+            id: 'width',
+            name: 'Width',
+            sortable: true,
             renderer: function(model, column, rowIndex, columnIndex) {
-                return model.get('width') + 'x' + model.get('height');
+                return parseInt(model.get('width'), 10);
+            }
+        }, {
+            id: 'height',
+            name: 'Height',
+            sortable: true,
+            renderer: function(model, column, rowIndex, columnIndex) {
+                return parseInt(model.get('height'), 10);
             }
         }, {
             id: 'action',

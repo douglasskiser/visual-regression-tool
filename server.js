@@ -31,7 +31,6 @@ db.knex('Execution').where({
         logger.info("There are " + updated + " rows affected in Execution table.")
     });
 
-app.use(express.compress());
 app.use('/resources', express.static(path.join(__dirname, '/app/dist'), {
     maxAge: 86400000
 }));
@@ -40,8 +39,9 @@ app.use('/screenshots', express.static(path.join(__dirname, '/data/executions'),
 }));
 
 //app.use(express.favicon());
-app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.compress());  
+app.use(express.json());  
+app.use(express.urlencoded());  
 app.use(express.methodOverride());
 app.use(express.cookieParser());
 
@@ -52,9 +52,16 @@ app.engine('hbs', exphbs({
 app.set('view engine', 'hbs');
 app.use(app.router);
 
+app.all('/', function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  next();
+ });
+ 
 app.get('/', function(req, res) {
     res.render('home', {
         path: ['resources', pkg.version].join('/'),
+        // path: ['//development.vrt.divshot.io', pkg.version].join('/'),
         pkg: pkg,
         config: config
     });

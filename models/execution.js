@@ -75,8 +75,8 @@ Model.prototype.run = function() {
 
                 var newUrl = newBox.get('url');
 
-                var oldCmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + oldScreenshotsPath, '--url=' + url, '--width=' + device.get('width'), '--height=' + device.get('height'), ' > ', logPath].join(' ');
-                var newCmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + newScreenshotsPath, '--url=' + newUrl, '--width=' + device.get('width'), '--height=' + device.get('height'), ' > ', logPath].join(' ');
+                var oldCmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + oldScreenshotsPath, '--url=' + url, '--width=' + device.get('width'), '--height=' + device.get('height'), ' > ', logPath, '2>&1'].join(' ');
+                var newCmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + newScreenshotsPath, '--url=' + newUrl, '--width=' + device.get('width'), '--height=' + device.get('height'), ' >> ', logPath, '2>&1'].join(' ');
 
                 return B.resolve(new B(function(resolve, reject) {
                         nexpect.spawn('rm -rf ' + screenshotsPath)
@@ -145,7 +145,7 @@ Model.prototype.run = function() {
             }
             else {
                 return (function() {
-                    var cmd = [config.casper.absolutePath, scriptAbsPath, '--url=' + url, ' > ', logPath].join(' ');
+                    var cmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + screenshotsPath, '--url=' + url, '--width=' + device.get('width'), '--height=' + device.get('height'), ' > ', logPath, '2>&1'].join(' ');
                     logger.info(cmd);
 
                     return new B(function(resolve, reject) {
@@ -177,6 +177,7 @@ Model.prototype.run = function() {
             });
         })
         .catch(function(e) {
+            logger.error('Error while runnning visual regression', e);
             return that.save({
                 statusId: ExecutionStatus.ID_ERROR
             }, {

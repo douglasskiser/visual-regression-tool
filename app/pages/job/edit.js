@@ -65,6 +65,7 @@ define(function(require) {
         that.boxes.toDropdown(that.controls.newBoxId);
         
         that.devices.toDropdown(that.controls.deviceId);
+        that.scripts.toDropdown(that.controls.scriptId);
         that.updateUIAccordingToType();
     };
 
@@ -91,11 +92,11 @@ define(function(require) {
             that.controls.deviceGroup.removeClass('hidden');
         }
 
-        var scripts = new ScriptCollection(that.scripts.filter(function(model) {
-            return model.get('typeId') == that.controls.typeId.val();
-        }));
+        // var scripts = new ScriptCollection(that.scripts.filter(function(model) {
+        //     return model.get('typeId') == that.controls.typeId.val();
+        // }));
         
-        scripts.toDropdown(that.controls.scriptId);
+        // scripts.toDropdown(that.controls.scriptId);
     }
 
 

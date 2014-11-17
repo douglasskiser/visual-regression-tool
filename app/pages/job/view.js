@@ -135,7 +135,7 @@ define(function(require) {
             oldBox: that.oldBox.toJSON(),
             newBox: that.model.get('typeId') == Type.ID_VISUAL_REGRESSION ? that.newBox.toJSON() : undefined,
             script: that.script.toJSON(),
-            device: that.device.toJSON()
+            device: that.device ? that.device.toJSON() : {}
         });
     };
 

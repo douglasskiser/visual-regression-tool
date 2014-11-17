@@ -13,12 +13,12 @@ define(function(require) {
         var that = this;
         //super(options)
         Super.prototype.initialize.call(that, options);
-
-        if (!that.collection) {
-            that.collection = new Collection();
-        }
-
     };
+    Page.prototype.getCollection = function(){
+        
+        return new Collection();
+    };
+    
     Page.prototype.getRenderOptions = function() {
         return {
             pageName: 'Boxes'
