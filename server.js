@@ -32,14 +32,14 @@ db.knex('Execution').where({
     });
 
 app.use('/resources', express.static(path.join(__dirname, '/app/dist'), {
-    maxAge: 86400000
+    // maxAge: 86400000
 }));
 app.use('/screenshots', express.static(path.join(__dirname, '/data/executions'), {
-    maxAge: 86400000
+    // maxAge: 86400000
 }));
 
 //app.use(express.favicon());
-app.use(express.compress());  
+// app.use(express.compress());  
 app.use(express.json());  
 app.use(express.urlencoded());  
 app.use(express.methodOverride());

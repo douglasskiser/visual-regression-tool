@@ -36,22 +36,20 @@ Model.prototype.run = function() {
             script = new Script({
                 id: job.get('scriptId')
             });
+            device = new Device({
+                id: job.get('deviceId')
+            });
 
             if (job.get('typeId') == JobType.ID_VISUAL_REGRESSION) {
                 newBox = new Box({
                     id: job.get('newBoxId')
                 });
 
-                device = new Device({
-                    id: job.get('deviceId')
-                });
-
                 return B.all([oldBox.fetch(), newBox.fetch(), script.fetch(), device.fetch()]);
             }
-            else {
-                return B.all([oldBox.fetch(), script.fetch()]);
+            else if (job.get('typeId') == JobType.ID_CHANGES_MODERATOR) {
+                return B.all([oldBox.fetch(), script.fetch(), device.fetch()]);
             }
-
         })
 
     .then(function() {
@@ -62,13 +60,16 @@ Model.prototype.run = function() {
             });
         })
         .then(function() {
+            logger.info('done fetching required models');
+
             var scriptAbsPath = script.getAbsolutePath();
             var executionBasePath = that.getExecutionBasePath();
+            var screenshotsPath = [executionBasePath, 'screenshots'].join('/');
             var logPath = [executionBasePath, 'log.txt'].join('/');
             var url = oldBox.get('url');
 
             if (job.get('typeId') == JobType.ID_VISUAL_REGRESSION) {
-                var screenshotsPath = [executionBasePath, 'screenshots'].join('/');
+
                 var oldScreenshotsPath = [screenshotsPath, 'old'].join('/');
                 var newScreenshotsPath = [screenshotsPath, 'new'].join('/');
 
@@ -143,30 +144,31 @@ Model.prototype.run = function() {
                         });
                     });
             }
-            else {
-                return (function() {
-                    var cmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + screenshotsPath, '--url=' + url, '--width=' + device.get('width'), '--height=' + device.get('height'), ' > ', logPath, '2>&1'].join(' ');
-                    logger.info(cmd);
+            else if (job.get('typeId') == JobType.ID_CHANGES_MODERATOR) {
+                logger.info('Running Changes Moderator job');
 
-                    return new B(function(resolve, reject) {
-                        nexpect.spawn(cmd)
-                            .run(function(err, stdout, exitcode) {
-                                if (exitcode !== 0) {
-                                    reject({
-                                        err: err,
-                                        stdout: stdout,
-                                        exitCode: exitcode
-                                    });
-                                    return;
-                                }
-                                resolve({
+                var cmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + screenshotsPath, '--url=' + url, '--width=' + device.get('width'), '--height=' + device.get('height'), ' > ', logPath, '2>&1'].join(' ');
+                logger.info(cmd);
+
+                return new B(function(resolve, reject) {
+                    nexpect.spawn(cmd)
+                        .run(function(err, stdout, exitcode) {
+                            if (exitcode !== 0) {
+                                reject({
                                     err: err,
                                     stdout: stdout,
                                     exitCode: exitcode
                                 });
+                                return;
+                            }
+                            resolve({
+                                err: err,
+                                stdout: stdout,
+                                exitCode: exitcode
                             });
-                    });
+                        });
                 });
+
             }
         })
         .then(function() {
@@ -196,40 +198,89 @@ Model.prototype.getScreenshots = function() {
     var that = this;
     var executionBasePath = that.getExecutionBasePath();
     var screenshotsPath = [executionBasePath, 'screenshots'].join('/');
-    var oldScreenshotsPath = [screenshotsPath, 'old'].join('/');
-    var newScreenshotsPath = [screenshotsPath, 'new'].join('/');
+    return Job.forge({
+            id: that.get('jobId')
+        })
+        .fetch()
+        .then(function(job) {
+
+            if (job.get('typeId') === JobType.ID_VISUAL_REGRESSION) {
+                var oldScreenshotsPath = [screenshotsPath, 'old'].join('/');
+                var newScreenshotsPath = [screenshotsPath, 'new'].join('/');
 
 
-    return B.all([
-        new B(function(resolve, reject) {
-                glob("*.png", {
-                    cwd: oldScreenshotsPath
-                }, function(err, files) {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-                    resolve(files);
-                })
-            }),
-        new B(function(resolve, reject) {
-                glob("*.png", {
-                    cwd: newScreenshotsPath
-                }, function(err, files) {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-                    resolve(files);
-                })
-            })
-    ])
-        .spread(function(oldScreenshots, newScreenshots) {
-            return {
-                oldScreenshots: oldScreenshots,
-                newScreenshots: newScreenshots
-            };
+                return B.all([
+                        new B(function(resolve, reject) {
+                            glob("*.png", {
+                                cwd: oldScreenshotsPath
+                            }, function(err, files) {
+                                if (err) {
+                                    reject(err);
+                                    return;
+                                }
+                                resolve(files);
+                            })
+                        }),
+                        new B(function(resolve, reject) {
+                            glob("*.png", {
+                                cwd: newScreenshotsPath
+                            }, function(err, files) {
+                                if (err) {
+                                    reject(err);
+                                    return;
+                                }
+                                resolve(files);
+                            })
+                        })
+                    ])
+                    .spread(function(oldScreenshots, newScreenshots) {
+                        return {
+                            oldScreenshots: oldScreenshots,
+                            newScreenshots: newScreenshots
+                        };
+                    });
+            }
+            else if (job.get('typeId') === JobType.ID_CHANGES_MODERATOR) {
+                var baselineScreenshotsPath = [config.rootPath, 'data', 'job', job.id, 'baseline'].join('/');
+
+
+                return B.all([
+                        new B(function(resolve, reject) {
+                            glob("*.png", {
+                                cwd: baselineScreenshotsPath
+                            }, function(err, files) {
+                                if (err) {
+                                    reject(err);
+                                    return;
+                                }
+                                resolve(files);
+                            })
+                        }),
+                        new B(function(resolve, reject) {
+                            glob("*.png", {
+                                cwd: screenshotsPath
+                            }, function(err, files) {
+                                if (err) {
+                                    reject(err);
+                                    return;
+                                }
+                                resolve(files);
+                            })
+                        })
+                    ])
+                    .spread(function(oldScreenshots, newScreenshots) {
+                        return {
+                            oldScreenshots: oldScreenshots,
+                            newScreenshots: newScreenshots
+                        };
+                    });
+            }
+            return B.resolve();
         });
+
+    
+
+
 };
 
 

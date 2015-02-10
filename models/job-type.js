@@ -11,6 +11,6 @@ var Super = require('./base'),
     });
 
     Model.ID_VISUAL_REGRESSION = 1;
-    Model.ID_HEALTH_CHECK = 2;
+    Model.ID_CHANGES_MODERATOR = 2;
     
 module.exports = Model;

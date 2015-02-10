@@ -1,14 +1,15 @@
 /* global app*/
 define(function(require) {
     var Super = require('./base'),
+        JobType = require('./job-type'),
         _ = require("underscore"),
         B = require('bluebird');
 
     var Model = Super.extend({
         name: 'execution'
     });
-    
-    Model.prototype.getScreenshots = function() {
+
+    Model.prototype.getScreenshots = function(job) {
         var that = this;
 
         return B.resolve(app.socket.request({
@@ -22,29 +23,44 @@ define(function(require) {
                 var newScreenshots = _.sortBy(resp.newScreenshots, function(screenshot) {
                     return parseInt(/^(\d+)-/.exec(screenshot)[1], 10);
                 });
-                
+
                 var baseUrl = that.getScreenshotBaseUrl();
 
                 //for now let's render all of them at once
                 return (function() {
                     if (oldScreenshots.length > newScreenshots.length) {
                         return _.map(oldScreenshots, function(s) {
+                            if (job.get('typeId') === JobType.ID_VISUAL_REGRESSION) {
+                                path = baseUrl + '/old/' + s;
+                            }
+                            else if (job.get('typeId') === JobType.ID_CHANGES_MODERATOR) {
+                                path = ['screenshots', 'job', job.id, 'baseline', ] + '/' + s;
+                            }
+
                             return {
                                 caption: s.replace(/^\d+-(.+)\.png$/, '$1'),
-                                oldScreenshot: baseUrl + '/old/' + s,
-                                newScreenshot: _.contains(newScreenshots, s) ?  (baseUrl + '/new/' + s) : undefined
+                                oldScreenshot: path,
+                                newScreenshot: _.contains(newScreenshots, s) ? (baseUrl + '/new/' + s) : undefined
                             };
                         });
                     }
                     return _.map(newScreenshots, function(s) {
+                        var path;
+
+                        if (job.get('typeId') === JobType.ID_VISUAL_REGRESSION) {
+                            path = baseUrl + '/new/' + s;
+                        }
+                        else if (job.get('typeId') === JobType.ID_CHANGES_MODERATOR) {
+                            path = baseUrl + '/' + s;
+                        }
                         return {
                             caption: s.replace(/^\d+-(.+)\.png$/, '$1'),
-                            newScreenshot: baseUrl + '/new/' +s,
+                            newScreenshot: path,
                             oldScreenshot: _.contains(oldScreenshots, s) ? (baseUrl + '/old/' + s) : undefined
                         };
                     });
                 })();
-                
+
             });
 
 
@@ -54,6 +70,6 @@ define(function(require) {
         var that = this;
         return ['screenshots', that.id, 'screenshots'].join('/');
     };
-    
+
     return Model;
 });

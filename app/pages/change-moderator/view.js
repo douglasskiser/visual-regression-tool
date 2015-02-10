@@ -12,7 +12,7 @@ define(function(require) {
         Device = require('models/device'),
         ExecutionStatus = require('models/execution-status'),
         VisualRegression = require('./view/visual-regression'),
-        ChangesModerator = require('./view/changes-moderator'),
+        HealthCheck = require('./view/health-check'),
         FIELDS = require('hbs!./view/fields.tpl'),
         BUTTONS = require('hbs!./view/buttons.tpl'),
         TEMPLATE = require('hbs!./view.tpl');
@@ -53,25 +53,23 @@ define(function(require) {
                     id: that.job.get('oldBoxId')
                 });
 
-                that.device = new Device({
-                    id: that.job.get('deviceId')
-                });
-
                 if (that.job.get('typeId') == Type.ID_VISUAL_REGRESSION) {
                     that.newBox = new Box({
                         id: that.job.get('newBoxId')
                     });
 
-
+                    that.device = new Device({
+                        id: that.job.get('deviceId')
+                    });
                 }
 
                 that.script = new Script({
                     id: that.job.get('scriptId')
                 });
 
-                return B.all([that.script.fetch(), that.type.fetch(), that.oldBox.fetch(), that.device.fetch(), (function() {
+                return B.all([that.script.fetch(), that.type.fetch(), that.oldBox.fetch(), (function() {
                     if (that.job.get('typeId') == Type.ID_VISUAL_REGRESSION) {
-                        return B.all([that.newBox.fetch()]);
+                        return B.all([that.newBox.fetch(), that.device.fetch()]);
                     }
                     return B.resolve();
                 })()]);
@@ -177,17 +175,17 @@ define(function(require) {
             Result = VisualRegression;
         }
         else {
-            Result = ChangesModerator;
+            Result = HealthCheck;
         }
 
         that.children.result = new Result({
             el: that.controls.result,
             model: that.model,
-            device: that.device,
-            job: that.job
+            device: that.device
         });
 
         that.children.result.render();
+
 
     };
 

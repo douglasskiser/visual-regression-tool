@@ -113,6 +113,7 @@ requirejs.config({
                 'select2'
             ]
         }
+        
     }
 });
 

@@ -83,13 +83,13 @@ define(function(require) {
 
     Page.prototype.updateUIAccordingToType = function() {
         var that = this;
-        if (that.controls.typeId.val() == Type.ID_HEALTH_CHECK) {
+        if (that.controls.typeId.val() == Type.ID_CHANGES_MODERATOR) {
             that.controls.newBoxGroup.addClass('hidden');
-            that.controls.deviceGroup.addClass('hidden');
+            that.controls.oldBoxLabel.text('Box URL');
         }
         else {
             that.controls.newBoxGroup.removeClass('hidden');
-            that.controls.deviceGroup.removeClass('hidden');
+            that.controls.oldBoxLabel.text('Old Box');
         }
 
         // var scripts = new ScriptCollection(that.scripts.filter(function(model) {

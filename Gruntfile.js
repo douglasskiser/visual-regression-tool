@@ -644,9 +644,9 @@ module.exports = function (grunt) {
                         "pages/script/edit",
                         "pages/script/view",
                         "pages/device/index",
-                        // "pages/health-check/index",
-                        // "pages/health-check/edit",
-                        // "pages/health-check/view",
+                        "pages/change-moderator/index",
+                        "pages/change-moderator/edit",
+                        "pages/change-moderator/view",
                         
                     ],
                     excludeShallow: [

@@ -7,11 +7,11 @@ define(function(require) {
         ExecutionStatus = require('models/execution-status'),
         accounting = require('accounting'),
         resemble = require('resemble'),
-        ROW = require('hbs!./visual-regression/row.tpl'),
+        ROW = require('hbs!./changes-moderator/row.tpl'),
         JSZip = require('jszip'),
         S = require('underscore.string'),
         FileSaver = require('FileSaver'),
-        TEMPLATE = require('hbs!./visual-regression.tpl');
+        TEMPLATE = require('hbs!./changes-moderator.tpl');
 
     var View = Super.extend({
 
@@ -110,6 +110,7 @@ define(function(require) {
                                 // //console.log('old ' + index + ' is loaded');
                                 _.defer(function() {
                                     that.compare(index);
+                                    that.showActionButtons(index);
                                 });
 
                             });
@@ -125,6 +126,7 @@ define(function(require) {
                                 // //console.log('new ' + index + ' is loaded');
                                 _.defer(function() {
                                     that.compare(index);
+                                    that.showActionButtons(index);
                                 });
                             });
                             newImg.attr('src', u.get('newScreenshot'));
@@ -133,6 +135,10 @@ define(function(require) {
                 });
             });
 
+    };
+    
+    View.prototype.showActionButtons = function(index){
+        this.find(this.getId('toolbox-' + index)).removeClass('hidden');
     };
 
     View.prototype.onScreenshotClickHandler = function(event) {

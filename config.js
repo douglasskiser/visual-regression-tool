@@ -15,15 +15,15 @@ module.exports = {
         db: {
             client: 'mysql',
             connection: {
-                host: '127.0.0.1',
-                user: 'vrt',
-                password: 'vrtsabre',
+                host: process.env.IP,
+                user: process.env.C9_USER,
+                password: '',
                 database: 'vrt'
             },
-            debug: true
+            debug: false
         },
         casper: {
-            absolutePath: '/usr/bin/casperjs'
+            absolutePath: '/home/ubuntu/.nvm/v0.10.35/lib/node_modules/casperjs/bin/casperjs'
         }
     }
 };

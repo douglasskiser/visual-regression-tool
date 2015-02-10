@@ -24,7 +24,6 @@ define(function(require) {
         this.screenshots = new BaseCollection();
 
         this.device = this.options.device;
-        this.job = this.options.job;
     };
 
     View.prototype.render = function() {
@@ -72,7 +71,7 @@ define(function(require) {
     View.prototype.renderScreenshots = function() {
         var that = this;
 
-        return B.resolve(that.model.getScreenshots(that.job))
+        return B.resolve(that.model.getScreenshots())
             .then(function(screenshots) {
                 that.screenshots.reset(screenshots);
 
