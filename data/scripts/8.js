@@ -1,13 +1,13 @@
 var casper = require('casper').create({
         logLevel: 'debug',
-        waitTimeout: 50000,
+        waitTimeout: 90000,
         pageSettings: {
             webSecurityEnabled: false,
             loadImages: true,
             loadPlugins: false
         }
     }),
-    Camera = new require('../../camera'),
+    Camera = require('../../camera'),
     camera = new Camera(casper, casper.cli.options.target),
     x = require('casper').selectXPath,
     startUrl = casper.cli.options.url;
@@ -51,26 +51,50 @@ casper.on("mouse.click", function(args) {
 
 casper.waitFor(function() {
     return casper.evaluate(function() {
-        return $ && !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#departure-airport>option').size() > 0;
+        return window.$ !== undefined && !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#departure-airport>option').size() > 0;
     });
 });
 
+casper.wait(30000);
 
+// remove all animations from the page
 casper.evaluate(function() {
     var style = document.createElement('style');
     style.innerHTML = '* { -webkit-animation-delay: 0.01s !important; -webkit-animation-duration: 0.01s !important; }';
-    $('head').append(style);
+    document.body.appendChild(style);
 });
-
-
-casper.wait(5000);
 
 casper.then(function() {
     casper.echo("Make it a one way flight'");
     casper.evaluate(function(a) {
         // set the static values
-        window.departureAirport = "DFW";
-        window.arrivalAirport = "DEL";
+
+        // check for URL and change destination accordingly
+        if (document.URL.indexOf("EYM0") > -1) {
+            window.departureAirport = "DFW";
+            window.arrivalAirport = "DEL";
+        }
+        else if (document.URL.indexOf("PGM0") > -1) {
+            window.departureAirport = "BKK";
+            window.arrivalAirport = "HKG";
+        }
+        else if (document.URL.indexOf("KXM0") > -1) {
+            window.departureAirport = "LAX";
+            window.arrivalAirport = "CYB";
+        }
+        else if (document.URL.indexOf("WYM0") > -1) {
+            window.departureAirport = "MCT";
+            window.arrivalAirport = "BAH";
+        }
+        else if (document.URL.indexOf("VNM0") > -1) {
+            window.departureAirport = "DFW";
+            window.arrivalAirport = "SGN";
+        }
+        else {
+            window.departureAirport = "DFW";
+            window.arrivalAirport = "DEL";
+        }
+
         $('#flight-type-one-way-trip').click();
     })
 })
@@ -137,7 +161,7 @@ casper.then(function() {
         //setting the dates
         var $today = new Date();
         var $yesterday = new Date($today);
-        $yesterday.setDate($today.getDate() - 1);
+        $yesterday.setDate($today.getDate() - 2);
         $('#departure-date').val($yesterday.getFullYear() + '/' + ($yesterday.getMonth() + 1) + "/" + $yesterday.getDate());
         $('#continue').click();
     });
@@ -152,7 +176,7 @@ casper.waitFor(function() {
 casper.wait(2000);
 
 casper.then(function() {
-    camera.capture('#app-container', 'Air Search Page - Noflights Found Screen shot');
+    camera.capture('#app-container', 'Air Search Page - Invalid Date Screen shot');
 });
 
 // close the over lay
@@ -162,6 +186,13 @@ casper.then(function() {
         $('#modal .modal-close').click();
     });
 });
+
+casper.wait(2000);
+
+casper.then(function() {
+    camera.capture('#app-container', 'Air Search Page - Invalid Date Screen shot modal closed');
+});
+
 
 casper.waitFor(function() {
     return casper.evaluate(function() {
@@ -174,26 +205,62 @@ casper.wait(2000);
 casper.then(function() {
     casper.echo("Set departure and arrival date click 'Search for Flights'");
     casper.evaluate(function() {
-        var $today = new Date();
-        var $futureDate = new Date($today);
-        $futureDate.setDate($today.getDate() + 30);
-        $('#departure-date').val($futureDate.getFullYear() + '/' + ($futureDate.getMonth() + 1) + "/" + $futureDate.getDate());
+        // var $today = new Date();
+        // var $futureDate = new Date($today);
+        // $futureDate.setDate($today.getDate() + 30);
+        // $('#departure-date').val($futureDate.getFullYear() + '/' + ($futureDate.getMonth() + 1) + "/" + $futureDate.getDate());
+        $('#departure-date').val('2015/06/30')
         $('#continue').click();
     });
 });
 
+casper.wait(8000);
+
+
 casper.waitFor(function() {
     return casper.evaluate(function() {
-        return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && document.title === 'Air Select Page';
+        return (!$('#loading').is(':visible') && !$('#overlay').is(':visible') && (document.title === 'Air Select Page' || document.title === "Flights Page")) || (!$('#loading').is(':visible') && $('#overlay').is(':visible') && $('#modal').is(':visible'))
     })
 });
 
+casper.wait(8000);
 
+
+// check if we have moved on to the next page or are we still stuck on the first page with an error
+casper.then(function() {
+
+    var value = casper.evaluate(function() {
+        if (!$('#loading').is(':visible') && $('#overlay').is(':visible') && $('#modal').is(':visible') && (document.title === "Air Search Page" || document.title === "Search Page")) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    });
+
+    if (value > 0) {
+        // something went wrong. Take a screen shot and kill the process
+        casper.echo("Unable to move further");
+        camera.capture('#app-container', 'Something Went Wrong');
+        casper.die("Exiting Casper js now....");
+    }
+});
+
+
+casper.wait(2000);
 
 
 casper.then(function() {
     casper.echo('Select the first OUTBOUND flight');
+
+    casper.evaluate(function() {
+        // make values on page to standard pre difined values to minimize differences
+        $('.date span').text('Mon Jan')
+        $('.day').text('22');
+    });
+
     camera.capture('#app-container', 'Air Select Page - Outbound flight List');
+
     casper.evaluate(function() {
         $('.direction-box.d-outbound ul.flights li').first().find('.choose-flight').click();
     });
@@ -201,7 +268,7 @@ casper.then(function() {
 
 casper.waitFor(function() {
     return casper.evaluate(function() {
-        return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('.page').offset().top === 0;
+        return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#app-container').position().top === 0;
     })
 });
 
@@ -214,6 +281,11 @@ casper.wait(15000);
 
 // select flight service class
 casper.then(function() {
+    casper.evaluate(function() {
+        // make values on page to standard pre difined values to minimize differences
+        $('.date span').text('Mon Jan')
+        $('.day').text('22');
+    });
     camera.capture('#app-container', 'Air Select Page - Outbound flight selected');
     casper.echo('Select the first class of service for OUTBOUND flight');
     casper.evaluate(function() {
@@ -224,6 +296,11 @@ casper.then(function() {
 casper.wait(10000);
 
 casper.then(function() {
+    casper.evaluate(function() {
+        // make values on page to standard pre difined values to minimize differences
+        $('.date span').text('Mon Jan')
+        $('.day').text('22');
+    });
     camera.capture('#app-container', 'Air Select Page - Selected Outbound Class of Service');
 });
 
@@ -263,6 +340,11 @@ casper.wait(2000);
 
 // take a picture of the expanded price break down
 casper.then(function() {
+    casper.evaluate(function() {
+        // make values on page to standard pre difined values to minimize differences
+        $('.date span').text('Mon Jan')
+        $('.day').text('22');
+    });
     camera.capture('#app-container', 'Air Select Page - Price Break Down Expanded View');
 });
 
@@ -382,6 +464,12 @@ casper.waitFor(function() {
 });
 
 
+// remove all animations from the page
+casper.evaluate(function() {
+    var style = document.createElement('style');
+    style.innerHTML = '* { -webkit-animation-delay: 0.01s !important; -webkit-animation-duration: 0.01s !important; }';
+    document.body.appendChild(style);
+});
 
 
 // Expand the passenger Add Details section
@@ -447,11 +535,31 @@ casper.then(function() {
         var now = new Date();
         var day = ("0" + now.getDate()).slice(-2);
         var month = ("0" + (now.getMonth() + 1)).slice(-2);
-        var today = now.getFullYear() - 30 + "-" + (month) + "-" + (day);
+        var today = now.getFullYear() - 29 + "-" + (month) + "-" + (day);
         $('input[type="date"]').val(today);
 
+        // special fields for Oman birthday
+        if ($("select[name='passengers[0].info.dob.day']").length > 0) {
+            $("select[name='passengers[0].info.dob.day']").val(1);
+            $("select[name='passengers[0].info.dob.month']").val('01');
+            $("select[name='passengers[0].info.dob.year']").val(now.getFullYear() - 29);
+        }
+
+
         // st the phone number
-        $('#passenger-1 input[name="passengers[0].info.phone.number"]').val('817' + (Math.floor(Math.random() * 9000000) + 10000));
+        var phoneNumber = '817' + (Math.floor(Math.random() * 9000000) + 10000);
+        if (document.URL.indexOf("EYM0") > -1) {
+            $('#passenger-1 input[name="passengers[0].info.phone.number"]').val('817' + (Math.floor(Math.random() * 9000000) + 10000));
+        }
+        else if (document.URL.indexOf("PGM0") > -1 || document.URL.indexOf("VNM0") > -1) {
+            $('#passenger-1 input[name="passengers[0].info.phone.countryCode"]').val('1');
+            $('#passenger-1 input[name="passengers[0].info.phone.areaCode"]').val('817');
+            $('#passenger-1 input[name="passengers[0].info.phone.number"]').val(phoneNumber.slice(3));
+        }
+        else {
+            $('#passenger-1 input[name="passengers[0].info.phone.number"]').val('817' + (Math.floor(Math.random() * 9000000) + 10000));
+        }
+
 
         // set email addresses
         text = "";
@@ -464,7 +572,7 @@ casper.then(function() {
 });
 
 casper.then(function() {
-    camera.capture('#app-container', 'Log In Page - passenger details filled out');
+    camera.capture('#app-container', 'Passenger Page - passenger details filled out');
 });
 
 // Save user details
@@ -482,213 +590,22 @@ casper.waitFor(function() {
     })
 });
 
-
-casper.wait(5000);
-
-
+//click the continue button and move to next screen
 casper.then(function() {
-    camera.capture('#app-container', 'Log In Page - passenger details saved');
-});
-
-// click login button without username or password
-casper.then(function() {
-    casper.echo("Click Login button without information");
-    casper.evaluate(function() {
-        $('#login_1 button[type="submit"]').click();
-    });
-});
-
-// wait until the required field validation error occurs
-casper.waitFor(function() {
-    return casper.evaluate(function() {
-        return $('#login_1 .validation-error').length > 0;
-    })
-});
-
-casper.wait(2000);
-
-casper.then(function() {
-    camera.capture('#app-container', 'Log In Page - Empty Login Information provided');
-});
-
-// fill in incorrect user name and password
-// casper.then(function() {
-//     casper.echo("Enter Incorrect passenger login information");
-//     casper.evaluate(function() {
-//         $('input[name="username"]').not('#login-form input[name="username"]').val('InvalidCredentials');
-//         $('input[name="password"]').not('#login-form input[name="password"]').val('Invalid');
-//         $('#login_1 button[type="submit"]').click();
-//     });
-// });
-
-// // wait until the error overlay appears with incorrect login cred details
-// casper.waitFor(function() {
-//     return casper.evaluate(function() {
-//         return !$('#loading').is(':visible') && $('#overlay').is(':visible');
-//     })
-// });
-
-// casper.wait(2000);
-
-// casper.then(function() {
-//     camera.capture('#app-container', 'Log In Page - Incorrect Login Information provided');
-// });
-
-// // close the over lay
-// casper.then(function() {
-//     casper.echo("Close incorrect login information provided overlay");
-//     casper.evaluate(function() {
-//         $('#modal button').click();
-//     });
-// });
-
-// // wait until the error overlay disappears with incorrect login cred details
-// casper.waitFor(function() {
-//     return casper.evaluate(function() {
-//         return !$('#loading').is(':visible') && !$('#overlay').is(':visible');
-//     })
-// });
-
-// casper.wait(2000);
-
-// // fill in user name and password
-// casper.then(function() {
-//     casper.echo("Enter passenger login information");
-//     casper.evaluate(function() {
-//         $('input[name="username"]').not('#login-form input[name="username"]').val('100104793084');
-//         $('input[name="password"]').not('#login-form input[name="password"]').val('awPTCesx');
-//         $('#login_1 button[type="submit"]').click();
-//         $('#login_1 button[type="submit"]').click();
-//         $('#login_1 button[type="submit"]').submit();
-//     });
-// });
-
-// // wait for the login process to compelte
-// casper.waitFor(function() {
-//     return casper.evaluate(function() {
-//         return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#sign-in span:nth-child(-n + 2)').text() === "My Etihad Guest,Sumera";
-//     })
-// });
-
-// casper.wait('4000');
-
-// // capture image
-// casper.then(function() {
-//     camera.capture('#app-container', 'Log In Page - Passenger Logged In');
-// });
-
-// click the continue button and move to next screen
-// casper.then(function() {
-//     casper.echo("Proceed to Personalize Flight Section");
-//     casper.evaluate(function() {
-//         $('#continue').click();
-//     });
-// });
-
-// // this user has incorrect phone number details, so this needs to be captured and handled
-// casper.waitFor(function() {
-//     return casper.evaluate(function() {
-//     	var errorText = "There was an error with your submission, please review your entries.";
-//         return !$('#loading').is(':visible') && $('#overlay').is(':visible') && $('#modal p').text() === errorText;
-//     })
-// });
-
-// // Take a screen shot of the error screen
-// casper.then(function() {
-//     camera.capture('#app-container', 'Log In Page - Submission Error');
-// });
-
-// // click on the close button on the overlay
-// casper.then(function() {
-//     casper.echo("Close the error submission overlay");
-//     casper.evaluate(function() {
-//         $('#modal button').click();
-//     });
-// });
-
-// casper.waitFor(function() {
-//     return casper.evaluate(function() {    	
-//         return !$('#loading').is(':visible') && !$('#overlay').is(':visible');
-//     })
-// });
-
-// casper.wait('2000');
-
-// // click on edit details and correct the passenger phone number info
-// casper.then(function() {
-//     casper.echo("Edit passenger information");
-//     casper.evaluate(function() {
-//         $('#psng-1 .edit-details').click();
-//     });
-// });
-
-// casper.wait(8000);
-
-
-// casper.waitUntilVisible('#passenger-1',
-//     function() {
-//         //camera.capture('#app-container', 'Passengers Page - Add Details Section Extended');
-//     },
-//     function(){
-//         casper.echo('Edit Passenger Details operation has expired');
-//     },
-//     10000
-// );
-
-// casper.wait(2000);
-
-
-// // fill out the phone number details
-// casper.then(function() {
-//     casper.echo("Correct Passnger Phone Number");
-//     camera.capture('#app-container', 'Log In Page - Phone Number too short error');
-//     casper.evaluate(function() {        
-//         // st the phone number
-//         $('#passenger-1 input[name="passengers[0].info.phone.number"]').val(8179869123);         
-//         $('#passenger-1 input[name="passengers[0].info.email"]').val('john.doe@gmail.com')
-//         //setting the birth Date
-//         var now = new Date();
-//         var day = ("0" + now.getDate()).slice(-2);
-//         var month = ("0" + (now.getMonth() + 1)).slice(-2);
-//         var today = now.getFullYear() - 30 +"-"+(month)+"-"+(day) ;
-//         $('input[type="date"]').val(today);
-//     });
-// });
-
-// // Save user details
-// casper.then(function() {
-//     casper.echo("Save Passenger Information");
-//     casper.evaluate(function() {
-//         $('#passenger-1 button[type="submit"]').click();
-//     });
-// });
-
-// // wait for the save function to finish
-// casper.waitFor(function() {
-//     return casper.evaluate(function() {
-//         return !$('#passenger-1').find('.save-psng').is(':visible') && $('#psng-1 a.edit-details').is(':visible')
-//     })
-// });
-
-
-// casper.wait(5000);
-
-// Re-click the continue button and move to next screen
-casper.then(function() {
-    casper.echo("Proceed to Personalize Flight Section Second Time");
+    casper.echo("Proceed to Personalize Flight Section");
     casper.evaluate(function() {
         $('#continue').click();
     });
 });
 
-// wait for the next page to laod
+// wait for the next page to load
 casper.waitFor(function() {
     return casper.evaluate(function() {
-        return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#ancillary_1').length === 1;
-    })
+        return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#seats_1 ul li').first().find('header').size() > 0;
+    });
 });
 
-casper.wait('8000');
+casper.wait(8000);
 
 
 casper.waitFor(function() {
@@ -743,7 +660,7 @@ casper.wait(2000);
 // make sure the seat loading page opens up
 casper.waitFor(function() {
     return casper.evaluate(function() {
-        return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('.seat-map-legend').is(':visible');
+        return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('.seat-map-legend').is(':visible') || $('.unavailable').length > 0;
     })
 });
 
@@ -759,13 +676,15 @@ casper.then(function() {
 casper.then(function() {
     casper.echo("Pick a seat that is avaible");
     casper.evaluate(function() {
-        var rows = $('#seatmap-container .seats>ul>li').first().find('.seat-map table>tbody>tr');
-        rowLoop: for (i = 0; i < rows.length; i++) {
-            var cells = $(rows[i]).find('td');
-            cellLoop: for (j = 0; j < cells.length; j++) {
-                if ($(cells[j]).hasClass('status-seat')) {
-                    $(cells[j]).click();
-                    break rowLoop;
+        if ($('.unavailable').length === 0) {
+            var rows = $('#seatmap-container .seats>ul>li').first().find('.seat-map table>tbody>tr');
+            rowLoop: for (var i = 0; i < rows.length; i++) {
+                var cells = $(rows[i]).find('td');
+                cellLoop: for (var j = 0; j < cells.length; j++) {
+                    if ($(cells[j]).hasClass('status-seat')) {
+                        $(cells[j]).click();
+                        break rowLoop;
+                    }
                 }
             }
         }
@@ -777,7 +696,7 @@ casper.wait(2000);
 // make sure the Overlay opens up with the seat info
 casper.waitFor(function() {
     return casper.evaluate(function() {
-        return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#seat-popup').is(':visible');
+        return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#seat-popup').is(':visible') || $('.unavailable').length > 0;
     })
 });
 
@@ -790,7 +709,9 @@ casper.then(function() {
 casper.then(function() {
     casper.echo("Select the picked seat");
     casper.evaluate(function() {
-        $('#seat-popup #popup-select').click();
+        if ($('.unavailable').length === 0) {
+            $('#seat-popup #popup-select').click();
+        }
     });
 });
 
@@ -798,10 +719,10 @@ casper.then(function() {
 casper.waitFor(function() {
     return casper.evaluate(function() {
         if ($('#seatmap-container .seats>ul>li').length > 1) {
-            return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#popup-next-flight').is(':visible');
+            return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#popup-next-flight').is(':visible') || $('.unavailable').length > 0;
         }
         else {
-            return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && !$('#seat-popup').is(':visible');
+            return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && !$('#seat-popup').is(':visible') || $('.unavailable').length > 0;
         }
 
     })
@@ -850,7 +771,7 @@ casper.then(function() {
 // wait until the  page appears
 casper.waitFor(function() {
     return casper.evaluate(function() {
-        return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && document.title === 'Purchase Page';
+        return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && (document.title === 'Purchase Page' || document.title === 'Payment Page');
     })
 });
 
@@ -869,22 +790,25 @@ casper.evaluate(function() {
 });
 
 // exoand the fare rules section
-casper.then(function() {
-    casper.echo("Expand the fare rules section");
-    casper.evaluate(function() {
-        $('#fare-rules a').click();
-    });
-});
+// casper.then(function() {
+//     casper.echo("Expand the fare rules section");
+//     camera.capture('#app-container', '1');
+//     casper.evaluate(function() {
+//         $('#fare-rules a').click();
+//     });
+//     camera.capture('#app-container', '2');
+// });
 
 
-// wait for the fare rules to show up
-casper.waitFor(function() {
-    return casper.evaluate(function() {
-        return $('.fare-rule').is(':visible');
-    })
-});
+// // wait for the fare rules to show up
+// casper.waitFor(function() {
+//     camera.capture('#app-container', '3');
+//     return casper.evaluate(function() {
+//         return $('.fare-rule').is(':visible');
+//     })
+// });
 
-casper.wait('2000');
+casper.wait(2000);
 
 // snap a pic
 casper.then(function() {
@@ -915,15 +839,25 @@ casper.then(function() {
 casper.then(function() {
     casper.echo("Purchase without entering Card Details");
     casper.evaluate(function() {
-        $('#continue').click();
+        if (document.URL.indexOf("WYM0") > -1 || document.URL.indexOf("VNM0") > -1) {
+            $('#agree-chechbox').prop('checked', true);
+            $('#continue').prop('disabled', false)
+            setTimeout(function() {
+                $('#continue').click();
+            }, 2000);
+        }
+        else {
+            $('#continue').click();
+        }
+
     });
 });
 
 // wait for overlay
 casper.waitFor(function() {
     return casper.evaluate(function() {
-        return $('#modal').is(':visible')
-    })
+        return $('#modal').is(':visible');
+    });
 });
 
 casper.then(function() {
@@ -969,28 +903,91 @@ casper.then(function() {
     camera.capture('#app-container', 'Purchase Page - Payment Details Filled out');
 });
 
-// click on purchase button to complete the payment 
-casper.then(function() {
-    casper.echo("click on purchase button to complete the payment ");
-    casper.evaluate(function() {
-        $('#continue').click();
-    });
-});
+// // click on purchase button to complete the payment 
+// casper.then(function() {
+//     casper.echo("click on purchase button to complete the payment ");
+//     casper.evaluate(function() {
+//         $('#continue').click();
+//     });
+// });
 
-// wait for the confirmation page to load
-casper.waitFor(function() {
-    return casper.evaluate(function() {
-        return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && document.title === 'Confirmation Page';
-    })
-});
+// // wait for the confirmation page to load
+// casper.waitFor(function() {
+//     return casper.evaluate(function() {
+//             // if this is Oman airlines then the passsword verification page appears before confirmation page
+//             if(document.URL.indexOf("WYM0") > -1){
+//                 return document.title === "Default";
+//             }else{
+//                 return !$('#loading').is(':visible') && (!$('#overlay').is(':visible') || $('#overlay').is(':visible'))  && (document.title === 'Confirmation Page' || document.title === 'Purchase Page');    
+//             }
 
-casper.wait(5000);
+//     })
+// });
 
-casper.then(function() {
-    camera.capture('#app-container', 'Confirmation Page Landing page');
-});
+// casper.wait(5000);
 
 
+// casper.then(function() {
+//     casper.echo("If Oman, then entere 3DS password for Visa ");
+//     var result = casper.evaluate(function() {
+//         if(document.URL.indexOf("WYM0") > -1){
+//             document.getElementById('PasswordTextBox').value = "0001"
+//             document.getElementById('SubmitButton').click();
+//             return 0;
+//         }
+//         if(!$('#loading').is(':visible') && $('#overlay').is(':visible')  && document.title === 'Confirmation Page'){
+//             return 1;
+//         }
+//         if(!$('#loading').is(':visible') && $('#overlay').is(':visible')  && document.title === 'Purchase Page'){
+//             return 2;
+//         }
+//         return 0;
+//     });
+
+//     if(result === 1){
+//         // this means some error message has  popped up on the confirmation page 
+//         casper.echo("An error on the confirmation page!!");
+//         camera.capture('#app-container', 'Error Confirmation Page');
+//         casper.die("Exiting Casper js now....");
+//     }
+//     if(result === 2){
+//         // this means some error message has  popped up on the Purchase page 
+//         casper.echo("An error on the Purchase page!!");
+//         camera.capture('#app-container', 'Error Purchase Page');
+//         casper.die("Exiting Casper js now....");
+//     }
+// });
+
+// casper.waitFor(function() {
+//     return casper.evaluate(function() {
+//         if(document.URL.indexOf("WYM0") > -1){
+//             return null !== document.getElementById('ResultTable');
+//         }else{
+//             return true;
+//         }
+//     });
+// });
+
+// casper.then(function() {
+//     casper.echo("If Oman, then head back to application confirmation page ");
+//     casper.evaluate(function() {
+//         if(document.URL.indexOf("WYM0") > -1){
+//             document.getElementById('ContinueButton').click();
+//         }
+//     });
+// });
+
+
+// casper.waitFor(function() {
+//     return casper.evaluate(function() {
+//         return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && document.title === 'Confirmation Page';    
+//     })
+// });
+
+
+// casper.then(function() {
+//     camera.capture('#app-container', 'Confirmation Page');
+// });
 
 casper.run(function() {
     casper.echo("CASPER COMPLETED.");

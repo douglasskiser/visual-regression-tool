@@ -28,35 +28,42 @@ define(function(require) {
 
                 //for now let's render all of them at once
                 return (function() {
+                    var path;
                     if (oldScreenshots.length > newScreenshots.length) {
                         return _.map(oldScreenshots, function(s) {
+                            var newScreenshot, oldScreenshot;
+
                             if (job.get('typeId') === JobType.ID_VISUAL_REGRESSION) {
-                                path = baseUrl + '/old/' + s;
+                                newScreenshot = baseUrl + '/new/' + s;
+                                oldScreenshot = baseUrl + '/old/' + s;
                             }
                             else if (job.get('typeId') === JobType.ID_CHANGES_MODERATOR) {
-                                path = ['screenshots', 'job', job.id, 'baseline', ] + '/' + s;
+                                newScreenshot = baseUrl + '/' + s;
+                                oldScreenshot = ['data', 'jobs', that.get('jobId'), 'baseline', s].join('/');
                             }
 
                             return {
                                 caption: s.replace(/^\d+-(.+)\.png$/, '$1'),
-                                oldScreenshot: path,
-                                newScreenshot: _.contains(newScreenshots, s) ? (baseUrl + '/new/' + s) : undefined
+                                oldScreenshot: oldScreenshot,
+                                newScreenshot: _.contains(newScreenshots, s) ? newScreenshot : undefined
                             };
                         });
                     }
                     return _.map(newScreenshots, function(s) {
-                        var path;
+                        var newScreenshot, oldScreenshot;
 
                         if (job.get('typeId') === JobType.ID_VISUAL_REGRESSION) {
-                            path = baseUrl + '/new/' + s;
+                            newScreenshot = baseUrl + '/new/' + s;
+                            oldScreenshot = baseUrl + '/old/' + s;
                         }
                         else if (job.get('typeId') === JobType.ID_CHANGES_MODERATOR) {
-                            path = baseUrl + '/' + s;
+                            newScreenshot = baseUrl + '/' + s;
+                            oldScreenshot = ['data', 'jobs', that.get('jobId'), 'baseline', s].join('/');
                         }
                         return {
                             caption: s.replace(/^\d+-(.+)\.png$/, '$1'),
-                            newScreenshot: path,
-                            oldScreenshot: _.contains(oldScreenshots, s) ? (baseUrl + '/old/' + s) : undefined
+                            newScreenshot: newScreenshot,
+                            oldScreenshot: _.contains(oldScreenshots, s) ? oldScreenshot : undefined
                         };
                     });
                 })();

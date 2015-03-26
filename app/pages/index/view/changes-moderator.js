@@ -42,10 +42,59 @@ define(function(require) {
         events['click ' + that.toClass('download')] = 'downloadButtonClickHandler';
         events['click ' + that.toId('different-only')] = 'differentOnlyClickHandler';
         events['click ' + that.toClass('screenshot')] = 'onScreenshotClickHandler';
+        events['click ' + that.toClass('approve')] = 'onApproveClickHandler';
+        events['click ' + that.toClass('reject')] = 'onRejectClickHandler';
         this.delegateEvents(events);
 
         that.draw();
 
+    };
+
+    View.prototype.onApproveClickHandler = function(event) {
+        var that = this;
+        var e = $(event.currentTarget),
+            index = e.data("index"),
+            oldImg = that.find(that.toId('old-img-' + index)),
+            newImg = that.find(that.toId('new-img-' + index)),
+            diffImg = that.find(that.toId('diff-img-' + index));
+
+        window.app.socket.request({
+            url: '/execution/' + that.model.id + '/approve',
+            type: 'POST',
+            data: {
+                img: newImg.attr('src')
+            }
+        }).then(function() {
+            oldImg.bind('load', function() {
+                oldImg.data('loaded', true);
+                oldImg.unbind('load');
+                _.defer(function() {
+                    that.compare(index);
+                });
+
+            });
+            oldImg.attr('src', newImg.attr('src'));
+        })
+    };
+
+    View.prototype.onRejectClickHandler = function(event) {
+        var that = this;
+        var e = $(event.currentTarget),
+            index = e.data("index"),
+            oldImg = that.find(that.toId('old-img-' + index)),
+            newImg = that.find(that.toId('new-img-' + index)),
+            diffImg = that.find(that.toId('diff-img-' + index));
+
+        window.app.socket.request({
+            url: '/execution/' + that.model.id + '/reject',
+            type: 'POST',
+            data: {
+                img: newImg.attr('src')
+            }
+        }).then(function() {
+            //do something after rejecting an image
+            
+        })
     };
 
     View.prototype.draw = function() {
@@ -78,7 +127,7 @@ define(function(require) {
 
                 if (that.screenshots.length > 0) {
                     that.controls.result.removeClass('hidden');
-                    that.controls.subtitle.text(accounting.formatNumber(that.screenshots.reduce(function(memo, s){
+                    that.controls.subtitle.text(accounting.formatNumber(that.screenshots.reduce(function(memo, s) {
                         return memo + (s.get('oldScreenshot') ? 1 : 0) + (s.get('newScreenshot') ? 1 : 0);
                     }, 0)) + ' screenshots have been taken.');
                 }
@@ -110,7 +159,6 @@ define(function(require) {
                                 // //console.log('old ' + index + ' is loaded');
                                 _.defer(function() {
                                     that.compare(index);
-                                    that.showActionButtons(index);
                                 });
 
                             });
@@ -126,7 +174,6 @@ define(function(require) {
                                 // //console.log('new ' + index + ' is loaded');
                                 _.defer(function() {
                                     that.compare(index);
-                                    that.showActionButtons(index);
                                 });
                             });
                             newImg.attr('src', u.get('newScreenshot'));
@@ -136,10 +183,7 @@ define(function(require) {
             });
 
     };
-    
-    View.prototype.showActionButtons = function(index){
-        this.find(this.getId('toolbox-' + index)).removeClass('hidden');
-    };
+
 
     View.prototype.onScreenshotClickHandler = function(event) {
         var e = $(event.currentTarget);

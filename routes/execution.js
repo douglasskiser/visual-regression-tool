@@ -14,4 +14,6 @@ module.exports = function (app) {
     
     app.post('/execution/:id/run', controller.run);
     app.get('/execution/:id/screenshots', controller.screenshots);
+    app.post('/execution/:id/approve', controller.approve);
+    app.post('/execution/:id/reject', controller.reject);
 };

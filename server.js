@@ -38,6 +38,10 @@ app.use('/screenshots', express.static(path.join(__dirname, '/data/executions'),
     // maxAge: 86400000
 }));
 
+app.use('/data', express.static(path.join(__dirname, '/data'), {
+}));
+
+
 //app.use(express.favicon());
 // app.use(express.compress());  
 app.use(express.json());  

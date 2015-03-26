@@ -23,6 +23,7 @@
     "handlebars": "~2.0.0-alpha.2",
     "knex": "^0.7.3",
     "minimist": "^1.1.0",
+    "mkdirp": "^0.5.0",
     "moment": "^2.5.1",
     "mysql": "^2.5.1",
     "nexpect": "^0.4.2",

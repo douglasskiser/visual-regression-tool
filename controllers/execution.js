@@ -126,3 +126,42 @@ exports.delete = function(req, res, next) {
             utils.sendError(e, req, res, next);
         });
 };
+
+
+exports.approve = function(req, res, next) {
+    
+
+    Model.forge({
+            id: req.params.id
+        })
+        .fetch()
+        .then(function(model) {
+            return model.approveScreenshot(req.body.img);
+        })
+        .then(function() {
+            res.send({
+                count: 1
+            });
+        })
+        .catch(function(e) {
+            utils.sendError(e, req, res, next);
+        });
+};
+
+exports.reject = function(req, res, next) {
+    Model.forge({
+            id: req.params.id
+        })
+        .fetch()
+        .then(function(model) {
+            return model.rejectScreenshot(req.body.img);
+        })
+        .then(function() {
+            res.send({
+                count: 1
+            });
+        })
+        .catch(function(e) {
+            utils.sendError(e, req, res, next);
+        });
+};

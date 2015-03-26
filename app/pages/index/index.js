@@ -23,6 +23,7 @@ define(function(require) {
         Super.prototype.initialize.call(that, options);
 
         that.statusCollection = new StatusCollection();
+        that.typeCollection = new TypeCollection();
     };
 
     Page.prototype.getCollection = function() {
@@ -107,6 +108,7 @@ define(function(require) {
         return that.collection.fetch({
             data: {
                 selection: selection,
+                columns:['id', 'jobId','jobTypeId' ,'createdAt', 'updatedAt', 'statusId'],
                 orderBy: orderBy,
                 limit: perPage,
                 offset: (page - 1) * perPage
