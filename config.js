@@ -12,6 +12,15 @@ module.exports = {
             fullName: 'Visual Regression Tool',
             version: pkg.version
         },
+        mongo: {
+            uri: 'mongodb://dkiser:1234567890@ds031893.mongolab.com:31893/heroku_p11z4r5g',
+            options: {
+                db: {
+                    safe: true
+                }
+            }
+        },
+        seedDB: true,
         db: {
             client: 'mysql',
             connection: {

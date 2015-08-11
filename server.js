@@ -2,7 +2,7 @@
  * Module dependencies.
  */
 var path = require('path'),
-    express = require('express'),
+    express = require('express.io'),
     exphbs = require('express-handlebars'),
     RedisStore = require('connect-redis')(express),
     env = process.env.NODE_ENV || 'development',
@@ -17,10 +17,15 @@ var path = require('path'),
     pkg = require('./package.json'),
     load = require('express-load'),
     colors = require('colors'),
-    logger = require('./logger');
+    logger = require('./logger'),
+    mongoose = require('mongoose');
+    
+mongoose.connect(config.mongo.uri, config.mongo.options);
 
+if (config.seedDB) {
+    require('./seed');
+}
 
-//when the server restart, all child processes have been killed. Therefore, update their status to terminated
 db.knex('Execution').where({
         statusId: ExecutionStatus.ID_RUNNING
     })
@@ -52,21 +57,7 @@ app.engine('hbs', exphbs({
 app.set('view engine', 'hbs');
 app.use(app.router);
 
-app.all('/', function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With");
-  next();
- });
- 
-app.get('/', function(req, res) {
-    res.render('home', {
-        path: ['resources', pkg.version].join('/'),
-        // path: ['//development.vrt.divshot.io', pkg.version].join('/'),
-        pkg: pkg,
-        config: config
-    });
-});
-
+require('./routes')(app);
 
 load('controllers').then('routes').into(app);
 
