@@ -9,9 +9,11 @@ var path = require('path'),
     app = expressIO.http().io(),
     B = require('bluebird'),
     colors = require('colors'),
+    Worker = require('webworker-threads').Worker,
     logger = require('./components/logger/logger'),
     odm = require('./components/odm/odm'),
-    executionCtrl = require('./api/execution/execution.controller');
+    executionCtrl = require('./api/execution/execution.controller'),
+    agenda = require('./components/agenda/agenda');
     
 B.all([odm.initialize()])
     .then(function() {
@@ -31,11 +33,12 @@ B.all([odm.initialize()])
         app.use(express.methodOverride());
         app.use(express.cookieParser());
         
-         app.engine('hbs', exphbs({
-             defaultLayout: false,
-             extname: '.hbs'
-         }));
-         app.set('view engine', 'hbs');
+        app.set('views', path.normalize(__dirname + '/views'));
+        app.engine('hbs', exphbs({
+            defaultLayout: false,
+            extname: '.hbs'
+        }));
+        app.set('view engine', 'hbs');
         
         app.use(app.router);
 
@@ -46,4 +49,14 @@ B.all([odm.initialize()])
             logger.info(_s.repeat('=', 80).red);
             logger.info('Server is listening at %s, port: %d', server.address().address, server.address().port);
         });
+        
+        var worker = new Worker(function() {
+            postMessage('background process started.');
+            agenda.start();
+            postMessage('agenda started.');
+        });
+        
+        worker.onMessage = function(evt) {
+            logger.info('Worker said: ' + evt.data);  
+        };
     });

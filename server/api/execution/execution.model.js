@@ -2,7 +2,8 @@ var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
 var ExecutionSchema = new Schema({
-    jobId: Number,
+    jobId: String,
+    oldBoxId: String,
     status: String,
     createdAt: {
         type: Date,
