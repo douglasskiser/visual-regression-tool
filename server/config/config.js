@@ -4,7 +4,7 @@ var path = require('path'),
     
 module.exports = {
     development: {
-        rootPath: __dirname,
+        rootPath: path.normalize(__dirname + '/../../'),
         app: {
             name: pkg.name,
             fullName: 'Visual Regression Tool',
