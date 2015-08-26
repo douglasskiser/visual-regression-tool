@@ -1,9 +1,10 @@
-var Job = require('./job.model');
+var Job = require('./job.model'),
+    errors = require('../../components/errors/errors');
 
 exports.get = function(req, res) {
     Job.find(function(err, jobs) {
         if (err) {
-            return res.send(500, err);
+            return errors.handleResponseError(res, 500, err);
         }
         return res.json(jobs);
     });

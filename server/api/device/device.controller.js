@@ -1,9 +1,10 @@
-var Device = require('./device.model');
+var Device = require('./device.model'),
+    errors = require('../../components/errors/errors');
 
 exports.get = function(req, res) {
     Device.find(function(err, devices) {
         if (err) {
-            return res.send(500, err);
+            return errors.handleResponseError(res, 500, err);
         }
         return res.json(devices);
     });

@@ -10,7 +10,8 @@ var Execution = require('./execution.model'),
     glob = require('glob'),
     logger = require('../../components/logger/logger'),
     env = process.env.NODE_ENV || 'development',
-    config = require('../../config/config')[env];
+    config = require('../../config/config')[env],
+    errors = require('../../components/errors/errors');
 
 // private methods
 var _methods = {
@@ -23,7 +24,7 @@ var _methods = {
                     id: exc.jobId
                 }, function(err, job) {
                     if (err) {
-                        // handle err
+                        return errors.handleResponseError(null, 500, err);
                     }
                     return cb(null, job);
                 });
@@ -34,7 +35,7 @@ var _methods = {
                     id: job.oldBoxId
                 }, function(err, oldBox) {
                     if (err) {
-                        // handle err
+                        return errors.handleResponseError(null, 500, err);
                     }
                     return cb(null, job, oldBox);
                 });
@@ -45,7 +46,7 @@ var _methods = {
                     id: job.scriptId
                 }, function(err, script) {
                     if (err) {
-                        // handle err
+                        return errors.handleResponseError(null, 500, err);
                     }
                     return cb(null, job, oldBox, script);
                 });
@@ -56,7 +57,7 @@ var _methods = {
                     id: job.deviceId
                 }, function(err, device) {
                     if (err) {
-                        // handle err
+                        return errors.handleResponseError(null, 500, err);
                     }
                     return cb(null, job, oldBox, script, device);
                 });
@@ -68,7 +69,7 @@ var _methods = {
                         id: job.newBoxId
                     }, function(err, newBox) {
                         if (err) {
-                            // handle err
+                            return errors.handleResponseError(null, 500, err);
                         }
                         return cb(null, job, oldBox, script, device, newBox);
                     });
@@ -82,7 +83,7 @@ var _methods = {
                 exc.status = 'running';
                 exc.save(function(err) {
                     if (err) {
-                        // handle err
+                        return errors.handleResponseError(null, 500, err);
                     }
                     logger.info('done fetching required models');
                     // finish
@@ -194,7 +195,7 @@ var _methods = {
                     exc.status = 'completed';
                     exc.save(function(err) {
                         if (err) {
-                            // handle error
+                            return errors.handleErrorResponse(null, 500, err);
                         }
                     });
                 })
@@ -203,7 +204,7 @@ var _methods = {
                     exc.status = 'error';
                     exc.save(function(err) {
                         if (err) {
-                            // handle error
+                            return errors.handleErrorResponse(null, 500, err);
                         }
                     });
                 });
@@ -223,7 +224,7 @@ var _methods = {
         
         Job.find({id: exc.jobId}, function(err, job) {
             if (err) {
-                //handle error
+                return errors.handleErrorResponse(null, 500, err);
             }
             
             if (job.type === 'visual_regression') {
@@ -304,7 +305,7 @@ var _methods = {
 exports.get = function(req, res) {
     Execution.find(function(err, excs) {
         if (err) {
-            return res.send(500, err);
+            return errors.handleResponseError(res, 500, err);
         }
         return res.json(excs);
     });
@@ -313,7 +314,7 @@ exports.get = function(req, res) {
 exports.getOne = function(req, res) {
     Execution.findById(req.params.id, function(err, exc) {
         if (err) {
-            return res.send(500, err);
+            return errors.handleResponseError(res, 500, err);
         }
         return res.json(exc);
     });
@@ -324,14 +325,14 @@ exports.terminateRunningExecutions = function(req, res) {
     
     Execution.find({status: 'running'}, function(err, excsRunning) {
         if (err) {
-            // handle err
+            return errors.handleResponseError(res || null, 500, err);
         }
         if (excsRunning.length) {
             excsRunning.forEach(function(exc) {
                 exc.status = 'terminated';
                 exc.save(function(err) {
                     if (err) {
-                        // handle err
+                        return errors.handleResponseError(res || null, 500, err);
                     }
                     numOfTerminations++;
                 });
@@ -349,7 +350,7 @@ exports.terminateRunningExecutions = function(req, res) {
 exports.checkExecutionQueue = function(req, res) {
     Execution.find({status: 'scheduled'}, function(err, excs) {
         if (err) {
-            // handle err
+            return errors.handleResponseError(res || null, 500, err);
         }
         logger.info('Found ' + excs.length + 'ready for execution. Will schedule to run now...');
         
@@ -366,7 +367,7 @@ exports.checkExecutionQueue = function(req, res) {
 exports.create = function(req, res) {
     Execution.create(req.body, function(err, exc) {
         if (err) {
-            // handle err
+            return errors.handleResponseError(res || null, 500, err);
         }
         return res.status(200).send(exc);
     });
@@ -375,7 +376,7 @@ exports.create = function(req, res) {
 exports.delete = function(req, res) {
     Execution.findByIdAndRemove(req.params.id, function(err) {
         if (err) {
-            // handle err
+            return errors.handleResponseError(res || null, 500, err);
         }
         
         return res.send(200);
@@ -385,7 +386,7 @@ exports.delete = function(req, res) {
 exports.run = function(req, res) {
     Execution.findById(req.params.id, function(err, exc) {
         if (err) {
-            // handle err
+            return errors.handleResponseError(res || null, 500, err);
         }
         _methods.run(exc);
         return res.send(200);
@@ -395,7 +396,7 @@ exports.run = function(req, res) {
 exports.screenshots = function(req, res) {
     Execution.findById(req.params.id, function(err, exc) {
         if (err) {
-            // handle err
+            return errors.handleResponseError(res || null, 500, err);
         }
         
         var ss = _methods.getScreenshots(exc);

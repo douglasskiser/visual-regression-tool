@@ -1,7 +1,8 @@
 var Script = require('./script.model'),
     config = require('../../config/config'),
     path = require('path'),
-    fs = require('fs');
+    fs = require('fs'),
+    errors = require('../../components/errors/errors');
 
 var _methods = {
     getAbsolutePath: function(model) {
@@ -19,7 +20,7 @@ var _methods = {
 exports.get = function(req, res) {
     Script.find(function(err, scripts) {
         if (err) {
-            return res.send(500, err);
+            return errors.handleResponseError(res, 500, err);
         }
         return res.json(scripts);
     });
