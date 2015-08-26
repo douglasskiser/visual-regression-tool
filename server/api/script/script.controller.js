@@ -2,6 +2,7 @@ var Script = require('./script.model'),
     config = require('../../config/config'),
     path = require('path'),
     fs = require('fs'),
+    _ = require('underscore'),
     errors = require('../../components/errors/errors');
 
 var _methods = {
@@ -23,5 +24,48 @@ exports.get = function(req, res) {
             return errors.handleResponseError(res, 500, err);
         }
         return res.json(scripts);
+    });
+};
+
+exports.getOne = function(req, res) {
+    Script.findById(req.params.id, function(err, script) {
+        if (err) {
+            return errors.handleResponseError(res, 500, err);
+        }
+        return res.json(script);
+    });
+};
+
+exports.create = function(req, res) {
+    Script.create(req.body, function(err, script) {
+        if (err) {
+            return errors.handleResponseError(res, 500, err);
+        }
+        return res.json(script);
+    });
+};
+
+exports.update = function(req, res) {
+    Script.findById(req.params.id, function(err, script) {
+        if (err) {
+            return errors.handleResponseError(res, 500, err);
+        }
+        _.extend(script, req.body);
+        
+        script.save(function(err, updatedBox) {
+            if (err) {
+                return errors.handleResponseError(res, 500, err);
+            }
+            return res.json(updatedBox);
+        });
+    });
+};
+
+exports.delete = function(req, res) {
+    Script.findByIdAndRemove(req.params.id, function(err) {
+        if (err) {
+            return errors.handleResponseError(res, 500, err);
+        }
+        return res.send(204);
     });
 };

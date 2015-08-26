@@ -1,5 +1,6 @@
 var Execution = require('./execution.model'),
     executionCtrl = require('./execution.controller'),
+    _ = require('underscore'),
     errors = require('../../components/errors/errors');
 
 module.exports = function(app) {
@@ -18,6 +19,21 @@ module.exports = function(app) {
                     return errors.handleSocketError(req, err);
                 }
                 return req.io.emit('data:executions:created', exc);
+            });
+        },
+        update: function(req, data) {
+            Execution.findById(data.id, function(err, exc) {
+                if (err) {
+                    return errors.handleSocketError(req, err);
+                }
+                _.extend(exc, data);
+                
+                exc.save(function(err, updatedExecution) {
+                    if (err) {
+                        return errors.handleSocketError(req, err);
+                    }
+                    return req.io.emit('data:scripts:updated', updatedExecution);
+                });
             });
         },
         delete: function(req, data) {

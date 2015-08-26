@@ -17,13 +17,15 @@ module.exports = function(app) {
             config: config
         });
     });
+    
     // HTTP Routes
-    app.use('/rest/model/box', require('./api/box'));
-    app.use('/rest/model/device', require('./api/device'));
-    app.use('/rest/model/job', require('./api/job'));
-    app.use('/rest/model/jobtype', require('./api/job-type'));
-    app.use('/rest/model/script', require('./api/script'));
-    app.use('/', require('./api/execution'));
+    require('./api/box')(app);
+    require('./api/device')(app);
+    require('./api/job')(app);
+    require('./api/job-type')(app);
+    require('./api/script')(app);
+    require('./api/execution')(app);
+    require('./api/health-check')(app);
     
     // Web Socket Routes
     app.io.route('box', require('./api/box/box.socket')(app));

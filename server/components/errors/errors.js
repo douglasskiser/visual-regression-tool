@@ -6,5 +6,6 @@ exports.handleResponseError = function(res, statusCode, err) {
 };
 
 exports.handleSocketError = function(socket, err, type) {
+      logger.error(err);
       return socket.io.emit('error:' + (type || ''), err);
 };

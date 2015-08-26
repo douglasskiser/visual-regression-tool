@@ -1,7 +1,8 @@
 var fs = require('fs'),
     B = require('bluebird'),
     Agenda = require('agenda'),
-    config = require('../../config/config'),
+    env = process.env.NODE_ENV || 'development',
+    config = require('../../config/config')[env],
     logger = require('../logger/logger'),
     odm = require('../odm/odm'),
     executionCtrl = require('../../api/execution/execution.controller');
