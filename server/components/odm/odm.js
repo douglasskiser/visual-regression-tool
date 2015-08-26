@@ -5,7 +5,6 @@ var env = process.env.NODE_ENV || 'development',
     mongoose = B.promisifyAll(require('mongoose'));
     
 mongoose.initialize = function() {
-    console.log('hello')
     if (!this.initialized) {
         
         this.initialized = true;

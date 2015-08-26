@@ -367,7 +367,7 @@ exports.checkExecutionQueue = function(req, res) {
 exports.create = function(req, res) {
     Execution.create(req.body, function(err, exc) {
         if (err) {
-            return errors.handleResponseError(res || null, 500, err);
+            return errors.handleResponseError(res, 500, err);
         }
         return res.status(200).send(exc);
     });
@@ -376,7 +376,7 @@ exports.create = function(req, res) {
 exports.delete = function(req, res) {
     Execution.findByIdAndRemove(req.params.id, function(err) {
         if (err) {
-            return errors.handleResponseError(res || null, 500, err);
+            return errors.handleResponseError(res, 500, err);
         }
         
         return res.send(200);
@@ -386,7 +386,7 @@ exports.delete = function(req, res) {
 exports.run = function(req, res) {
     Execution.findById(req.params.id, function(err, exc) {
         if (err) {
-            return errors.handleResponseError(res || null, 500, err);
+            return errors.handleResponseError(res, 500, err);
         }
         _methods.run(exc);
         return res.send(200);
@@ -396,7 +396,7 @@ exports.run = function(req, res) {
 exports.screenshots = function(req, res) {
     Execution.findById(req.params.id, function(err, exc) {
         if (err) {
-            return errors.handleResponseError(res || null, 500, err);
+            return errors.handleResponseError(res, 500, err);
         }
         
         var ss = _methods.getScreenshots(exc);
@@ -404,3 +404,6 @@ exports.screenshots = function(req, res) {
         return res.send(ss);
     });
 };
+
+// export _methods for socket use
+exports.methods = _methods;
