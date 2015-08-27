@@ -33,4 +33,6 @@ module.exports = function(app) {
     app.io.route('job', require('./api/job/job.socket')(app));
     app.io.route('jobtype', require('./api/job-type/job-type.socket')(app));
     app.io.route('script', require('./api/script/script.socket')(app));
+    app.io.route('execution', require('./api/execution/execution.socket')(app));
+    app.io.route('healthcheck', require('./api/health-check/health-check.socket')(app));
 };

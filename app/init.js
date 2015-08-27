@@ -35,7 +35,8 @@ requirejs.config({
         resemble: 'vendors/resemblejs/resemble',
         jszip: '//cdnjs.cloudflare.com/ajax/libs/jszip/2.4.0/jszip.min',
         FileSaver: '//cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.0.0/FileSaver.min',
-        ace: '//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace'
+        ace: '//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace',
+        socketIO: '//dev-dougkiser.c9.io/socket.io/socket.io'
     },
     hbs: {
         helpers: true,

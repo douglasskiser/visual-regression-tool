@@ -1,19 +1,28 @@
 var path = require('path'),
-    expressIO = require('express.io')(),
+    expressIO = require('express.io'),
     express = require('express'),
     exphbs = require('express-handlebars'),
     env = process.env.NODE_ENV || 'development',
     _ = require('underscore'),
     _s = require('underscore.string'),
     config = require('./config/config')[env],
-    app = expressIO.http().io(),
     B = require('bluebird'),
     colors = require('colors'),
     Worker = require('webworker-threads').Worker,
     logger = require('./components/logger/logger'),
     odm = require('./components/odm/odm'),
     executionCtrl = require('./api/execution/execution.controller'),
-    agenda = require('./components/agenda/agenda');
+    agenda = require('./components/agenda/agenda'),
+    fs = require('fs');
+    
+// var options = {
+//     key: fs.readFileSync(config.rootPath + 'server/server.key'), 
+//     cert: fs.readFileSync(config.rootPath + 'server/server.crt')
+// };    
+
+// var app = expressIO().https(options).io();
+
+var app = expressIO().http().io();
     
 B.all([odm.initialize()])
     .then(function() {
@@ -50,13 +59,13 @@ B.all([odm.initialize()])
             logger.info('Server is listening at %s, port: %d', server.address().address, server.address().port);
         });
         
-        var worker = new Worker(function() {
-            postMessage('background process started.');
-            agenda.start();
-            postMessage('agenda started.');
-        });
+        // var worker = new Worker(function() {
+        //     postMessage('background process started.');
+        //     agenda.start();
+        //     postMessage('agenda started.');
+        // });
         
-        worker.onMessage = function(evt) {
-            logger.info('Worker said: ' + evt.data);  
-        };
+        // worker.onMessage = function(evt) {
+        //     logger.info('Worker said: ' + evt.data);  
+        // };
     });

@@ -9,14 +9,15 @@ define(function(require) {
         Config = require('./config'),
         Socket = require('./socket'),
         Toastr = require('toastr'),
-        B = require('bluebird');
+        B = require('bluebird'),
+        io = require('socketIO');
+        
 
     var App = Super.extend({});
 
     App.prototype.initialize = function(options) {
         Super.prototype.initialize.call(this, options);
     };
-
 
     App.prototype.initConfig = function() {
         this.config = new Config(window.config);
@@ -27,6 +28,18 @@ define(function(require) {
         this.router = new Router({
             app: this
         });
+        return B.resolve();
+    };
+    
+    App.prototype.initWebSocket = function() {
+        this.webSocket = io.connect();
+        
+        this.webSocket.on('data:jobs', function(data) {
+            console.log(data);
+        });
+        
+        this.webSocket.emit('job:get');
+        
         return B.resolve();
     };
     
@@ -65,6 +78,7 @@ define(function(require) {
             this.initConfig(),
             this.initLayout(),
             this.initSocket(),
+            this.initWebSocket(),
             this.initRouter()
         ]).then(function() {
             return that.layout.render();
@@ -72,7 +86,6 @@ define(function(require) {
             return that.router.start();
         });
     };
-
 
     Object.defineProperty(App.prototype, 'router', {
         get: function() {
@@ -92,7 +105,6 @@ define(function(require) {
         }
     });
 
-
     Object.defineProperty(App.prototype, 'config', {
         get: function() {
             return this.get('config');
@@ -110,7 +122,15 @@ define(function(require) {
             this.set('socket', val);
         }
     });
-
+    
+    Object.defineProperty(App.prototype, 'webSocket', {
+        get: function() {
+            return this.get('webSocket');
+        },
+        set: function(val) {
+            this.set('webSocket', val);
+        }
+    });
 
     return App;
 });
