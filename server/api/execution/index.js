@@ -1,6 +1,9 @@
 var controller = require('./execution.controller');
 
 module.exports = function(app) {
+    app.get('/rest/execution-status', controller.get);
+    app.get('/rest/execution', controller.get);
+    
     app.get('/rest/model/execution', controller.get);
     app.get('/rest/model/execution/:id', controller.getOne);
     app.post('/rest/model/execution/', controller.create);

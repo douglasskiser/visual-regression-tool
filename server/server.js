@@ -14,13 +14,6 @@ var path = require('path'),
     executionCtrl = require('./api/execution/execution.controller'),
     agenda = require('./components/agenda/agenda'),
     fs = require('fs');
-    
-// var options = {
-//     key: fs.readFileSync(config.rootPath + 'server/server.key'), 
-//     cert: fs.readFileSync(config.rootPath + 'server/server.crt')
-// };    
-
-// var app = expressIO().https(options).io();
 
 var app = expressIO().http().io();
     
