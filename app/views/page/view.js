@@ -20,7 +20,16 @@ define(function(require) {
     };
 
     Page.prototype.getModel = function() {
+        // var model = this.getModelClass();
+        
+        // this.webSocket.on('data:' + model, + 'es', function(data) {
+        //     console.log(data);
+        //     return data; 
+        // });
+        
+        // this.webSocket.emit(model + ':getOne', {id: this.options.params.id});
         var Model = this.getModelClass();
+        console.log(new Model());
         return new Model({
             id: this.options.params.id
         });

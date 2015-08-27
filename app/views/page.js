@@ -16,6 +16,7 @@ define(function (require) {
         this.router = options.app.router;
         this.session = options.app.session;
         this.socket = options.app.socket;
+        this.webSocket = options.app.webSocket;
         this.toast = Toastr;
         this.config = window.app.config;
         this.params = options.params;
@@ -87,8 +88,6 @@ define(function (require) {
     Page.prototype.backButtonClickHandler = function (event) {
         event.preventDefault();
         this.back();
-
-
     };
 
     Page.prototype.back = function () {

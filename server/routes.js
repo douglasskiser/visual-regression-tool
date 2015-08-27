@@ -26,6 +26,7 @@ module.exports = function(app) {
     require('./api/script')(app);
     require('./api/execution')(app);
     require('./api/health-check')(app);
+    require('./api/execution-status')(app);
     
     // Web Socket Routes
     app.io.route('box', require('./api/box/box.socket')(app));
@@ -34,5 +35,6 @@ module.exports = function(app) {
     app.io.route('jobtype', require('./api/job-type/job-type.socket')(app));
     app.io.route('script', require('./api/script/script.socket')(app));
     app.io.route('execution', require('./api/execution/execution.socket')(app));
-    app.io.route('healthcheck', require('./api/health-check/health-check.socket')(app));
+    app.io.route('healthCheck', require('./api/health-check/health-check.socket')(app));
+    app.io.route('executionStatus', require('./api/execution-status/execution-status.socket')(app));
 };

@@ -16,6 +16,8 @@ var path = require('path'),
     fs = require('fs');
 
 var app = expressIO().http().io();
+
+var ExecutionStatus = require('./api/execution-status/execution-status.model');
     
 B.all([odm.initialize()])
     .then(function() {
