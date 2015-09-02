@@ -130,6 +130,7 @@ define(function(require) {
 
     Page.prototype.prepareForOutput = function() {
         var that = this;
+        console.log(this);
         return _.extend(that.model.toJSON(), {
             type: that.type.toJSON(),
             oldBox: that.oldBox.toJSON(),

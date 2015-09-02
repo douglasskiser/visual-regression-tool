@@ -13,7 +13,7 @@ define(function(require) {
         var that = this;
 
         return B.resolve(app.socket.request({
-                url: '/execution/' + that.id + '/screenshots'
+                url: '/execution/' + that.id + '/screenshots' // '/execution/' + that._id + '/screenshots'
             }))
             .then(function(resp) {
                 var oldScreenshots = _.sortBy(resp.oldScreenshots, function(screenshot) {
@@ -34,7 +34,7 @@ define(function(require) {
                                 path = baseUrl + '/old/' + s;
                             }
                             else if (job.get('typeId') === JobType.ID_CHANGES_MODERATOR) {
-                                path = ['screenshots', 'job', job.id, 'baseline', ] + '/' + s;
+                                path = ['screenshots', 'job', job.id, 'baseline', ] + '/' + s; // ['screenshots', 'job', job._id, 'baseline', ] + '/' + s;
                             }
 
                             return {
@@ -68,7 +68,7 @@ define(function(require) {
 
     Model.prototype.getScreenshotBaseUrl = function() {
         var that = this;
-        return ['screenshots', that.id, 'screenshots'].join('/');
+        return ['screenshots', that.id, 'screenshots'].join('/'); // ['screenshots', that._id, 'screenshots'].join('/');
     };
 
     return Model;

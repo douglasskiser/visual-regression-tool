@@ -317,7 +317,7 @@ exports.get = function(req, res) {
 };
 
 exports.getOne = function(req, res) {
-    Execution.findById(req.params.id, function(err, exc) {
+    Execution.findOne({id: req.params.id}, function(err, exc) { //Execution.findById(req.params.id, function(err, device) {
         if (err) {
             return errors.handleResponseError(res, 500, err);
         }
@@ -337,6 +337,7 @@ exports.terminateRunningExecutions = function(req, res) {
         if (excsRunning.length) {
             excsRunning.forEach(function(exc) {
                 exc.status = 'terminated';
+                //exc.statusId = 5;
                 exc.save(function(err) {
                     if (err) {
                         return errors.handleResponseError(res || null, 500, err);
@@ -409,7 +410,7 @@ exports.delete = function(req, res) {
 };
 
 exports.run = function(req, res) {
-    Execution.findById(req.params.id, function(err, exc) {
+    Execution.findOne({id: req.params.id}, function(err, exc) {
         if (err) {
             return errors.handleResponseError(res, 500, err);
         }
@@ -419,7 +420,7 @@ exports.run = function(req, res) {
 };
 
 exports.screenshots = function(req, res) {
-    Execution.findById(req.params.id, function(err, exc) {
+    Execution.findOne({id: req.params.id}, function(err, exc) {
         if (err) {
             return errors.handleResponseError(res, 500, err);
         }

@@ -2,6 +2,7 @@ var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
 var ExecutionSchema = new Schema({
+    id: Number,
     jobId: String,
     oldBoxId: String,
     status: String,

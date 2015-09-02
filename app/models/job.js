@@ -19,7 +19,7 @@ define(function(require) {
         var that = this;
 
         return app.socket.request({
-            url: '/execution/' + that.id + '/run',
+            url: '/execution/' + that.id + '/run', // '/execution/' + that_id + '/run',
             type: 'POST',
             data: params
         });
@@ -29,7 +29,7 @@ define(function(require) {
         var that = this;
 
         return B.resolve(app.socket.request({
-                url: '/execution/' + that.id + '/screenshots'
+                url: '/execution/' + that.id + '/screenshots' // '/execution/' + that._id + '/screenshots'
             }))
             .then(function(resp) {
                 var oldScreenshots = _.sortBy(resp.oldScreenshots, function(screenshot) {
@@ -69,7 +69,7 @@ define(function(require) {
 
     Model.prototype.getScreenshotBaseUrl = function() {
         var that = this;
-        return ['screenshots', that.id].join('/');
+        return ['screenshots', that.id].join('/'); // ['screenshots', that._id].join('/');
     };
     
     return Model;

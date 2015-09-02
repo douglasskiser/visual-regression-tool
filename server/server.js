@@ -21,6 +21,11 @@ var ExecutionStatus = require('./api/execution-status/execution-status.model');
     
 B.all([odm.initialize()])
     .then(function() {
+        var seed = true;
+
+        if (seed) {
+            require('./seed');
+        }
         executionCtrl.terminateRunningExecutions();
         
         app.use('/resources', express.static(path.join(__dirname, '../app/dist'), {

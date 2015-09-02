@@ -29,7 +29,6 @@ define(function(require) {
         
         // this.webSocket.emit(model + ':getOne', {id: this.options.params.id});
         var Model = this.getModelClass();
-        console.log(new Model());
         return new Model({
             id: this.options.params.id
         });

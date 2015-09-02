@@ -12,7 +12,7 @@ exports.get = function(req, res) {
 };
 
 exports.getOne = function(req, res) {
-    Device.findById(req.params.id, function(err, device) {
+    Device.findOne({id: req.params.id}, function(err, device) { //Device.findById(req.params.id, function(err, device) {
         if (err) {
             return errors.handleResponseError(res, 500, err);
         }

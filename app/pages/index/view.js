@@ -169,10 +169,7 @@ define(function(require) {
     Page.prototype.renderResults = function() {
         var that = this,
             Result;
-        console.log(that.model.toJSON());
-
-
-
+    
         if (that.job.get('typeId') == Type.ID_VISUAL_REGRESSION) {
             Result = VisualRegression;
         }
@@ -194,6 +191,8 @@ define(function(require) {
     Page.prototype.renderStatus = function() {
         var that = this;
         var status = that.statuses.get(that.model.get('statusId'));
+        // var status = that.statuses.get(that.model.attributes[0].statusId);
+
         that.controls.statusId.html(status.toHTML());
 
     };

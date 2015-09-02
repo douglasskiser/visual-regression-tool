@@ -33,10 +33,6 @@ define(function(require) {
     
     App.prototype.initWebSocket = function() {
         this.webSocket = io.connect();
-        this.webSocket.on('data:executionStatuses', function(data) {
-            console.log(data);
-        })
-        this.webSocket.emit('executionStatus:get');
         return B.resolve();
     };
     

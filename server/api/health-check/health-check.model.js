@@ -2,6 +2,7 @@ var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
     
 var HealthCheckSchema = new Schema({
+    id: Number,
     boxId: Number,
     status: Number,
     createdAt: {
