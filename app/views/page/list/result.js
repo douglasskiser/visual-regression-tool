@@ -20,7 +20,7 @@ define(function(require) {
         return B.resolve()
             .then(function() {
                 that.$el.html(that.getTemplate()({
-                    id: that.id,
+                    id: that.id, //id: that._id,
                     data: that.options.params
                 }));
                  that.mapControls();

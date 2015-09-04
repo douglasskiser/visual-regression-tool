@@ -42,7 +42,7 @@ define(function(require) {
     };
 
     Page.prototype.getFetchColumns = function(){
-        return ['id', 'name'];  
+        return ['id', 'name'];
     };
     return Page;
 

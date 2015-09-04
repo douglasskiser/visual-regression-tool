@@ -34,17 +34,17 @@ define(function(require) {
         return B.all([
             that.devices.fetch({
                 data: {
-                    columns: ['id', 'name', 'width', 'height']
+                    columns: ['id', 'name', 'width', 'height'] // columns: ['_id', 'name', 'width', 'height']
                 }
             }),
             that.scripts.fetch({
                 data: {
-                    columns: ['id', 'name', 'typeId']
+                    columns: ['id', 'name', 'typeId'] // columns: ['_id', 'name', 'typeId']
                 }
             }),
             that.boxes.fetch({
                 data: {
-                    columns: ['id', 'name', 'url']
+                    columns: ['id', 'name', 'url'] // columns: ['_id', 'name', 'url']
                 }
             })
         ]);

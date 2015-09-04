@@ -16,7 +16,6 @@ define(function(require) {
 
     Model.prototype.toHTML = function() {
         var that = this;
-        // switch (that._id) {
         switch (that.id) {
             case Model.ID_SCHEDULED:
                 return HTML({

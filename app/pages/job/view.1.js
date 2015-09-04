@@ -110,7 +110,7 @@ define(function(require) {
     Page.prototype.downloadAllButtonClickHandler = function(event) {
         var that = this,
             e = $(event.currentTarget),
-            fileName = S.slugify(_.now() + '-' + S.prune('job-' + that.model.id, 200, '')),
+            fileName = S.slugify(_.now() + '-' + S.prune('job-' + that.model.id, 200, '')), //fileName = S.slugify(_.now() + '-' + S.prune('job-' + that.model._id, 200, '')),
             zip = new JSZip(),
             root = zip.folder(fileName),
             differentOnly = that.find(that.toId('different-only')).is(':checked');
@@ -321,7 +321,7 @@ define(function(require) {
                     var row = that.find(that.toId('head-row-' + index));
                     if (row.size() === 0) {
                         row = $(ResultRowTemplate({
-                            id: that.id,
+                            id: that.id, //_id: that._id,
                             index: index,
                             device: that.device.toJSON(),
                             data: u.toJSON()

@@ -32,7 +32,7 @@ define(function(require) {
             .then(function() {
 
                 var data = {
-                    id: that.id,
+                    id: that.id, //_id: that._id,
                     headToolbar: that.getHeadToolbarHtml()
                 };
                 return B.resolve(that.getRenderOptions())
@@ -70,7 +70,7 @@ define(function(require) {
         var that = this;
 
         return HEAD_TOOLBAR({
-            id: that.id,
+            id: that.id,  //_id: that._id,
             controller: that.options.controller
         });
     };
@@ -186,7 +186,7 @@ define(function(require) {
         var column = that.children.result.getTable().getSortedColumn();
         var orderBy = {};
         if (column) {
-            orderBy[column.id] = column.get('direction');
+            orderBy[column.id] = column.get('direction'); //orderBy[column._id] = column.get('direction');
         }
 
         var page = data.page || 1;

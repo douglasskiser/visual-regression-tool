@@ -12,7 +12,7 @@ var path = require('path'),
     logger = require('./components/logger/logger'),
     odm = require('./components/odm/odm'),
     executionCtrl = require('./api/execution/execution.controller'),
-    agenda = require('./components/agenda/agenda'),
+    agenda = require('./components/agenda/agenda')(),
     fs = require('fs');
 
 var app = expressIO().http().io();
@@ -21,7 +21,7 @@ var ExecutionStatus = require('./api/execution-status/execution-status.model');
     
 B.all([odm.initialize()])
     .then(function() {
-        var seed = true;
+        var seed = false;
 
         if (seed) {
             require('./seed');
@@ -41,6 +41,7 @@ B.all([odm.initialize()])
         app.use(express.urlencoded());  
         app.use(express.methodOverride());
         app.use(express.cookieParser());
+        app.use(express.session({secret: 'something-secret-shhhhhhh'}));
         
         app.set('views', path.normalize(__dirname + '/views'));
         app.engine('hbs', exphbs({
@@ -57,15 +58,9 @@ B.all([odm.initialize()])
         var server = app.listen(port, process.env.IP, function() {
             logger.info(_s.repeat('=', 80).red);
             logger.info('Server is listening at %s, port: %d', server.address().address, server.address().port);
+            
         });
         
-        // var worker = new Worker(function() {
-        //     postMessage('background process started.');
-        //     agenda.start();
-        //     postMessage('agenda started.');
-        // });
-        
-        // worker.onMessage = function(evt) {
-        //     logger.info('Worker said: ' + evt.data);  
-        // };
+        agenda.start();
+        logger.info('Agenda started');
     });

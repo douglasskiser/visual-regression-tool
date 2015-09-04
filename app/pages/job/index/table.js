@@ -22,7 +22,7 @@ define(function(require) {
     View.prototype.getColumns = function() {
         var that = this;
         return new View.Columns([{
-            id: 'id',
+            id: '_id',
             name: '#',
             type: 'number',
             sortable: true

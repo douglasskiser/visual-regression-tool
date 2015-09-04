@@ -39,32 +39,32 @@ define(function(require) {
         return B.resolve(that.model.fetch())
             .then(function() {
                 that.job = new Job({
-                    id: that.model.get('jobId')
+                    id: that.model.get('jobId') // _id: that.model.get('jobId')
                 });
                 that.statuses = new StatusCollection({})
                 return B.all([that.job.fetch(), that.statuses.fetch()]);
             })
             .then(function() {
                 that.type = new Type({
-                    id: that.job.get('typeId')
+                    id: that.job.get('typeId') // _id: that.model.get('typeId')
                 });
 
                 that.oldBox = new Box({
-                    id: that.job.get('oldBoxId')
+                    id: that.job.get('oldBoxId') // _id: that.model.get('oldBoxId')
                 });
 
                 if (that.job.get('typeId') == Type.ID_VISUAL_REGRESSION) {
                     that.newBox = new Box({
-                        id: that.job.get('newBoxId')
+                        id: that.job.get('newBoxId') // _id: that.model.get('newBoxId')
                     });
 
                     that.device = new Device({
-                        id: that.job.get('deviceId')
+                        id: that.job.get('deviceId') // _id: that.model.get('deviceId')
                     });
                 }
 
                 that.script = new Script({
-                    id: that.job.get('scriptId')
+                    id: that.job.get('scriptId') // _id: that.model.get('scriptId')
                 });
 
                 return B.all([that.script.fetch(), that.type.fetch(), that.oldBox.fetch(), (function() {
@@ -77,7 +77,7 @@ define(function(require) {
     };
 
     Page.prototype.getPageName = function() {
-        return 'Execution #' + this.model.id;
+        return 'Execution #' + this.model.id; // return 'Execution #' + this.model._id
     };
 
     // Page.prototype.getFieldsTemplate = function() {

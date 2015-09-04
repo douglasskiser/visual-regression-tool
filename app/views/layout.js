@@ -25,7 +25,7 @@ define(function(require) {
         var loggedIn = window.app.session && window.app.session.get('user');
 
         that.$el.html(Template({
-            id: that.id,
+            id: that.id, // id: that._id,
             name: window.config.fullName,
             version: window.config.version,
             loggedIn: loggedIn

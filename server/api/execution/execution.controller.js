@@ -9,6 +9,7 @@ var Execution = require('./execution.model'),
     B = require('bluebird'),
     glob = require('glob'),
     logger = require('../../components/logger/logger'),
+    Worker = require('webworker-threads').Worker,
     env = process.env.NODE_ENV || 'development',
     config = require('../../config/config')[env],
     _ = require('underscore'),
@@ -16,7 +17,8 @@ var Execution = require('./execution.model'),
 
 // private methods
 var _methods = {
-    run: function(exc) {
+    run: function(exc, socket, callback) {
+        callback = callback || function() {};
 
         async.waterFall([
             // get job
@@ -212,7 +214,9 @@ var _methods = {
                     });
             }
         ], function() {
-            //done 
+            // broadcast finished execution to client
+            socket.io.broadcast('execution:finished', exc);
+            callback();
         });
     },
 
@@ -355,22 +359,35 @@ exports.terminateRunningExecutions = function(req, res) {
     });
 };
 
-exports.checkExecutionQueue = function(req, res) {
+exports.checkExecutionQueue = function(socket) {
     Execution.find({
         status: 'scheduled'
     }, function(err, excs) {
         if (err) {
-            return errors.handleResponseError(res || null, 500, err);
+            return errors.handleResponseError(null, 500, err);
         }
-        logger.info('Found ' + excs.length + 'ready for execution. Will schedule to run now...');
+        if (excs.length) {
+            logger.info('Found ' + excs.length + 'ready for execution. Will schedule to run now...');
+        } else {
+            logger.info('Did not find any ready for execution.');
+        }
 
         excs.forEach(function(exc) {
-            _methods.run(exc);
+            var worker = new Worker(function() {
+                postMessage('running execution');
+                _methods.run(exc, socket, function() {
+                    postMessage('execution finished');
+                });
+            });
+            
+            worker.onmessage = function(data) {
+                logger.info('Web worker says... ' + data);
+            };
         });
 
-        if (res) {
-            res.send(200);
-        }
+        // if (res) {
+        //     res.send(200);
+        // }
     });
 };
 

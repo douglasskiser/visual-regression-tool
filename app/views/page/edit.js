@@ -22,7 +22,7 @@ define(function(require) {
     Page.prototype.getModel = function() {
         var Model = this.getModelClass();
         return new Model({
-            id: this.options.params.id
+            id: this.options.params.id //_id: this.options.params._id
         });
     };
 
@@ -50,7 +50,7 @@ define(function(require) {
             })
             .then(function(data) {
                 that.$el.html(Template({
-                    id: that.id,
+                    id: that.id, //id: that._id,
                     header: that.getHeaderHtml(data),
                     form: that.getFormHtml(data)
                 }));
@@ -88,7 +88,7 @@ define(function(require) {
         var template = that.getHeaderTemplate();
 
         return template({
-            id: that.id,
+            id: that.id, //id: that._id,
             data: data,
             name: that.getPageName()
         });
@@ -99,7 +99,7 @@ define(function(require) {
         var template = that.getFormTemplate();
 
         return template({
-            id: that.id,
+            id: that.id, //id: that._id,
             fields: that.getFieldsHtml(data),
             buttons: that.getButtonsHtml(data)
         });
@@ -113,7 +113,7 @@ define(function(require) {
         var that = this;
         var template = that.getFieldsTemplate();
         return template({
-            id: that.id,
+            id: that.id, //id: that._id,
             data: data
         });
     };
@@ -128,7 +128,7 @@ define(function(require) {
         var template = that.getButtonsTemplate();
 
         return template({
-            id: that.id,
+            id: that.id, //id: that._id,
             data: data
         });
     };
@@ -181,7 +181,7 @@ define(function(require) {
         B.resolve(that.model.save(params))
             .then(function() {
                 if( isNew ){
-                    that.goTo(that.options.controller + '/view/id/' + that.model.id);
+                    that.goTo(that.options.controller + '/view/id/' + that.model.id); //that.goTo(that.options.controller + '/view/id/' + that.model._id);
                 }else{
                     that.back();
                 }

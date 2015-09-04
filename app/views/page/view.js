@@ -54,7 +54,7 @@ define(function(require) {
                 var data = that.prepareForOutput();
 
                 that.$el.html(that.getTemplate()({
-                    id: that.id,
+                    id: that.id, // id: that._id,
                     header: that.getHeaderHtml(data),
                     form: that.getFormHtml(data)
                 }));
@@ -95,7 +95,7 @@ define(function(require) {
         var template = that.getHeaderTemplate();
 
         return template({
-            id: that.id,
+            id: that.id, //id: that._id,
             data: data,
             name: that.getPageName()
         });
@@ -106,7 +106,7 @@ define(function(require) {
         var template = that.getFormTemplate();
 
         return template({
-            id: that.id,
+            id: that.id, //id: that._id,
             fields: that.getFieldsHtml(data),
             buttons: that.getButtonsHtml(data)
         });
@@ -120,7 +120,7 @@ define(function(require) {
         var that = this;
         var template = that.getFieldsTemplate();
         return template({
-            id: that.id,
+            id: that.id, //id: that._id,
             data: data
         });
     };
@@ -134,7 +134,7 @@ define(function(require) {
         var that = this;
         var template = that.getButtonsTemplate();
         return template({
-            id: that.id,
+            id: that.id, //id: that._id,
             action: that.options.action, 
             controller: that.options.controller,
             data: data

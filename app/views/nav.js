@@ -21,7 +21,7 @@ define(function(require) {
         var that = this;
 
         var params = {
-            id: this.id,
+            id: this.id, // _id: this._id,
             appFullName: window.app.config.get('fullName')
         };
 
