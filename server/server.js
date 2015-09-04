@@ -8,16 +8,12 @@ var path = require('path'),
     config = require('./config/config')[env],
     B = require('bluebird'),
     colors = require('colors'),
-    Worker = require('webworker-threads').Worker,
     logger = require('./components/logger/logger'),
     odm = require('./components/odm/odm'),
-    executionCtrl = require('./api/execution/execution.controller'),
-    agenda = require('./components/agenda/agenda')(),
-    fs = require('fs');
+    executionCtrl = require('./api/execution/execution.controller');
 
 var app = expressIO().http().io();
-
-var ExecutionStatus = require('./api/execution-status/execution-status.model');
+var agenda = require('./components/agenda/agenda')(app);
     
 B.all([odm.initialize()])
     .then(function() {
@@ -26,6 +22,7 @@ B.all([odm.initialize()])
         if (seed) {
             require('./seed');
         }
+        
         executionCtrl.terminateRunningExecutions();
         
         app.use('/resources', express.static(path.join(__dirname, '../app/dist'), {
