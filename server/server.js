@@ -10,10 +10,11 @@ var path = require('path'),
     colors = require('colors'),
     logger = require('./components/logger/logger'),
     odm = require('./components/odm/odm'),
+    Agenda = require('./components/agenda/agenda'),
     executionCtrl = require('./api/execution/execution.controller');
 
 var app = expressIO().http().io();
-var agenda = require('./components/agenda/agenda')(app);
+var agenda = new Agenda(app);
     
 B.all([odm.initialize()])
     .then(function() {
@@ -59,5 +60,4 @@ B.all([odm.initialize()])
         });
         
         agenda.start();
-        logger.info('Agenda started');
     });
