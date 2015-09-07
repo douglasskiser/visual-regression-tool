@@ -17,7 +17,7 @@ define(function(require) {
     View.prototype.getColumns = function() {
         var that = this;
         return new View.Columns([{
-            id: 'id',
+            id: '_id',
             name: '#',
             sortable: true,
             type: 'number'
@@ -46,7 +46,7 @@ define(function(require) {
             id: 'action',
             renderer: function(model, column, rowIndex, columnIndex) {
                 return ActionTemplate({
-                    id: model.id
+                    id: model._id
                 });
             }
         }]);

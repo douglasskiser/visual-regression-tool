@@ -123,7 +123,7 @@ define(function(require) {
         return B.resolve(execution.save())
             .then(function() {
                 that.toast.success('Job has been scheduled to run.');
-                that.goTo('#index/view/id/' + execution.id);
+                that.goTo('#index/view/id/' + execution._id);
             });
 
     };

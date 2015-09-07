@@ -68,7 +68,7 @@ define(function(require) {
             id: 'action',
             renderer: function(model, column, rowIndex, columnIndex) {
                 return ActionTemplate({
-                    id: model.id
+                    id: model._id
                 });
             }
         }]);

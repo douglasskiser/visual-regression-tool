@@ -12,10 +12,19 @@ var AgendaService = (function() {
     function AgendaService(socket) {
         this.socket = socket;
     }
+
+    AgendaService.prototype.failGracefully = function() {
+        if (this.agenda) {
+            this.agenda.stop(function() {
+            process.exit(0);
+          });
+        }
+    };
     
     AgendaService.prototype.start = function() {
         var self = this;
-        var agenda = new Agenda({
+
+        this.agenda = new Agenda({
             db: {
                 address: config.mongo.uri
             },
@@ -23,29 +32,22 @@ var AgendaService = (function() {
             processEvery: '5 seconds'
         });
         
-        // agenda.purge(function(err, numRemoved) {
+        // this.agenda.purge(function(err, numRemoved) {
         //     logger.info(numRemoved);
         // });
         
-        agenda.define('checkExecutionQueue', function(job, done) {
+        this.agenda.define('checkExecutionQueue', function(job, done) {
           logger.info('checking execution queue');
           executionCtrl.checkExecutionQueue(self.socket, function(excs) {
               logger.info('found ' + excs.length + ' running...');
+              done();
           });
-          done();
         });
         
-        agenda.every('5 seconds', 'checkExecutionQueue');
+        this.agenda.every('5 seconds', 'checkExecutionQueue');
         
-        // stop processes gracefully so they can restart later
-        function graceful() {
-          agenda.stop(function() {
-            process.exit(0);
-          });
-        }
-        
-        process.on('SIGTERM', graceful);
-        process.on('SIGINT' , graceful);
+        process.on('SIGTERM', this.failGracefully);
+        process.on('SIGINT' , this.failGracefully);
         
         //var jobs = ['visual-regression', 'health-check'];
         
@@ -66,7 +68,7 @@ var AgendaService = (function() {
         //         });
         // }
         
-        agenda.start();
+        this.agenda.start();
         logger.info('Agenda started');
     };
     

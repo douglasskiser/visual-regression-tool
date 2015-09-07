@@ -17,7 +17,7 @@ define(function(require) {
     View.prototype.getColumns = function() {
         var that = this;
         return new View.Columns([{
-            id: 'id',
+            _id: 'id',
             name: '#',
             sortable: true,
             type: 'number'

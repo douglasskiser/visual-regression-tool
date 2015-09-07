@@ -272,7 +272,7 @@ var _methods = {
                     });
             }
             else if (job.type === 'changes_moderator') {
-                var baselineScreenshotsPath = [config.rootPath, 'data', 'job', job._id, 'baseline'].join('/');
+                var baselineScreenshotsPath = [config.rootPath, 'data', 'job', job.id, 'baseline'].join('/');
 
                 return B.all([
                         new B(function(resolve, reject) {

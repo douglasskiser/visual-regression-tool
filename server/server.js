@@ -11,6 +11,7 @@ var path = require('path'),
     logger = require('./components/logger/logger'),
     odm = require('./components/odm/odm'),
     Agenda = require('./components/agenda/agenda'),
+    methodOverride = require('method-override')
     executionCtrl = require('./api/execution/execution.controller');
 
 var app = expressIO().http().io();
@@ -37,7 +38,7 @@ B.all([odm.initialize()])
         app.use(express.compress());  
         app.use(express.json());  
         app.use(express.urlencoded());  
-        app.use(express.methodOverride());
+        app.use(methodOverride());
         app.use(express.cookieParser());
         app.use(express.session({secret: 'something-secret-shhhhhhh'}));
         
