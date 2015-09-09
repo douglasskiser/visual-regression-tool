@@ -22,10 +22,13 @@ define(function(require) {
     View.prototype.getColumns = function() {
         var that = this;
         return new View.Columns([{
-            id: '_id',
+            id: 'id',
             name: '#',
             type: 'number',
-            sortable: true
+            sortable: true,
+            renderer: function(model, column, rowIndex, columnIndex) {
+                return model.id;
+            }
         }, {
             id: 'type',
             name: 'Type',
@@ -68,7 +71,7 @@ define(function(require) {
             id: 'action',
             renderer: function(model, column, rowIndex, columnIndex) {
                 return ActionTemplate({
-                    id: model._id
+                    id: model.id
                 });
             }
         }]);

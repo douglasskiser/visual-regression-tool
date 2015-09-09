@@ -11,7 +11,7 @@ var path = require('path'),
     logger = require('./components/logger/logger'),
     odm = require('./components/odm/odm'),
     Agenda = require('./components/agenda/agenda'),
-    methodOverride = require('method-override')
+    //methodOverride = require('method'),
     executionCtrl = require('./api/execution/execution.controller');
 
 var app = expressIO().http().io();
@@ -38,9 +38,10 @@ B.all([odm.initialize()])
         app.use(express.compress());  
         app.use(express.json());  
         app.use(express.urlencoded());  
-        app.use(methodOverride());
+        //app.use(methodOverride());
+        app.use(express.methodOverride());
         app.use(express.cookieParser());
-        app.use(express.session({secret: 'something-secret-shhhhhhh'}));
+        //app.use(express.session({secret: 'something-secret-shhhhhhh'}));
         
         app.set('views', path.normalize(__dirname + '/views'));
         app.engine('hbs', exphbs({
@@ -59,6 +60,4 @@ B.all([odm.initialize()])
             logger.info('Server is listening at %s, port: %d', server.address().address, server.address().port);
             
         });
-        
-        agenda.start();
     });

@@ -3,15 +3,18 @@ var mongoose = require('mongoose'),
 
 var ExecutionSchema = new Schema({
     id: Number,
-    jobId: String,
-    oldBoxId: String,
+    jobId: Number,
+    oldBoxId: Number,
     status: String,
     statusId: Number,
     createdAt: {
         type: Date,
         default: Date.now
     },
-    updatedAt: Date
+    updatedAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
 module.exports = mongoose.model('Execution', ExecutionSchema);

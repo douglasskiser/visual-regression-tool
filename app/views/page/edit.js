@@ -22,7 +22,7 @@ define(function(require) {
     Page.prototype.getModel = function() {
         var Model = this.getModelClass();
         return new Model({
-            id: this.options.params.id //_id: this.options.params._id
+            id: this.options.params.id
         });
     };
 
@@ -128,7 +128,7 @@ define(function(require) {
         var template = that.getButtonsTemplate();
 
         return template({
-            id: that.id, //id: that._id,
+            id: that.id,
             data: data
         });
     };
@@ -181,7 +181,7 @@ define(function(require) {
         B.resolve(that.model.save(params))
             .then(function() {
                 if( isNew ){
-                    that.goTo(that.options.controller + '/view/id/' + that.model.id); //that.goTo(that.options.controller + '/view/id/' + that.model._id);
+                    that.goTo(that.options.controller + '/view/id/' + that.model.id);
                 }else{
                     that.back();
                 }

@@ -1,4 +1,5 @@
 var fs = require('fs'),
+    _ = require('underscore'),
     B = require('bluebird'),
     Agenda = require('agenda'),
     env = process.env.NODE_ENV || 'development',
@@ -9,8 +10,40 @@ var fs = require('fs'),
     executionCtrl = require('../../api/execution/execution.controller');
     
 var AgendaService = (function() {
-    function AgendaService(socket) {
+    function AgendaService(socket, ops) {
         this.socket = socket;
+        this.ops = _.extend({}, ops || {
+            listeners: {
+                start: function(job) {
+                    logger.info('New job is starting...');
+                },
+                complete: function(job) {
+                    logger.info('Job is complete...');
+                },
+                fail: function(job) {
+                    logger.info('Job failed...');
+                }
+            }
+        });
+        this.agenda = new Agenda({
+            db: {
+                address: config.mongo.uri
+            },
+            processEvery: '5 seconds'
+        });
+        
+        this.agenda.define('runExecution', function(job, done) {
+          logger.info('running execution');
+          executionCtrl.run(job.attrs.data.id, this.socket, function(exc) {
+              logger.info('execution is finished running');
+              done();
+          }.bind(this));
+          
+          this.on('start', this.ops.listeners.start);
+          this.on('complete', this.ops.listeners.complete);
+          this.on('fail', this.ops.listeners.fail);
+          
+        });
     }
 
     AgendaService.prototype.failGracefully = function() {
@@ -20,32 +53,22 @@ var AgendaService = (function() {
           });
         }
     };
+
+    AgendaService.prototype.create = function(data) {
+        logger.info('adding execution to agenda');
+        this.agenda.now('runExecution', {id: data._id});
+    };
+    
+    AgendaService.prototype.purge = function() {
+        this.agenda.purge(function(err, numRemoved) {
+            if (err) {
+              logger.info('Error: purging agenda.');
+            }
+            logger.info(numRemoved);
+        });
+    };
     
     AgendaService.prototype.start = function() {
-        var self = this;
-
-        this.agenda = new Agenda({
-            db: {
-                address: config.mongo.uri
-            },
-            name: 'execution queue',
-            processEvery: '5 seconds'
-        });
-        
-        // this.agenda.purge(function(err, numRemoved) {
-        //     logger.info(numRemoved);
-        // });
-        
-        this.agenda.define('checkExecutionQueue', function(job, done) {
-          logger.info('checking execution queue');
-          executionCtrl.checkExecutionQueue(self.socket, function(excs) {
-              logger.info('found ' + excs.length + ' running...');
-              done();
-          });
-        });
-        
-        this.agenda.every('5 seconds', 'checkExecutionQueue');
-        
         process.on('SIGTERM', this.failGracefully);
         process.on('SIGINT' , this.failGracefully);
         

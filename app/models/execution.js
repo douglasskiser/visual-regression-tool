@@ -34,7 +34,7 @@ define(function(require) {
                                 path = baseUrl + '/old/' + s;
                             }
                             else if (job.get('typeId') === JobType.ID_CHANGES_MODERATOR) {
-                                path = ['screenshots', 'job', job.id, 'baseline', ] + '/' + s; // ['screenshots', 'job', job._id, 'baseline', ] + '/' + s;
+                                path = ['screenshots', 'job', job.id, 'baseline', ] + '/' + s;
                             }
 
                             return {

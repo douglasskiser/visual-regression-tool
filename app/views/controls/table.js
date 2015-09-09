@@ -25,7 +25,7 @@ define(function(require) {
             .then(function() {
 
                 that.$el.html(Template({
-                    id: that.id//id: that._id,
+                    id: that.id
                 }));
 
                 that.mapControls();
@@ -154,7 +154,7 @@ define(function(require) {
             if (typeof td === 'function') {
                 return td({
                     value: value,
-                    field: column.id, //field: column._id,
+                    field: column.id,
                     data: model.toJSON(),
                     column: column.toJSON(),
                     rowIndex: index,

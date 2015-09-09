@@ -13,14 +13,15 @@ var Execution = require('./execution.model'),
     env = process.env.NODE_ENV || 'development',
     config = require('../../config/config')[env],
     _ = require('underscore'),
-    errors = require('../../components/errors/errors');
+    errors = require('../../components/errors/errors'),
+    Agenda = require('../../components/agenda/agenda');
 
 // private methods
 var _methods = {
     run: function(exc, socket, callback) {
         callback = callback || function() {};
 
-        async.waterFall([
+        async.waterfall([
             // get job
             function(cb) {
                 Job.find({
@@ -215,8 +216,9 @@ var _methods = {
             }
         ], function() {
             // broadcast finished execution to client
+            console.log('im done')
             socket.io.broadcast('execution:finished', exc);
-            callback();
+            callback(exc);
         });
     },
 
@@ -372,19 +374,21 @@ exports.checkExecutionQueue = function(socket) {
             logger.info('Did not find any ready for execution.');
         }
 
-        excs.forEach(function(exc) {
-            var worker = new Worker(function() {
-                postMessage('running execution');
-                _methods.run(exc, socket, function() {
-                    postMessage('execution finished');
+        if (excs) {
+            excs.forEach(function(exc) {
+                var worker = new Worker(function() {
+                    postMessage('running execution');
+                    _methods.run(exc, socket, function() {
+                        postMessage('execution finished');
+                    });
                 });
+                
+                worker.onmessage = function(data) {
+                    logger.info('Web worker says... ' + data);
+                };
             });
-            
-            worker.onmessage = function(data) {
-                logger.info('Web worker says... ' + data);
-            };
-        });
 
+        }
         // if (res) {
         //     res.send(200);
         // }
@@ -426,13 +430,12 @@ exports.delete = function(req, res) {
     });
 };
 
-exports.run = function(req, res) {
-    Execution.findOne({id: req.params.id}, function(err, exc) {
+exports.run = function(id, socket, cb) {
+    Execution.findById(id, function(err, exc) {
         if (err) {
-            return errors.handleResponseError(res, 500, err);
+            return errors.handleResponseError(null, 500, err);
         }
-        _methods.run(exc);
-        return res.send(200);
+        _methods.run(exc, socket, cb);
     });
 };
 

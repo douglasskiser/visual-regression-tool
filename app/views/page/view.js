@@ -20,14 +20,6 @@ define(function(require) {
     };
 
     Page.prototype.getModel = function() {
-        // var model = this.getModelClass();
-        
-        // this.webSocket.on('data:' + model, + 'es', function(data) {
-        //     console.log(data);
-        //     return data; 
-        // });
-        
-        // this.webSocket.emit(model + ':getOne', {id: this.options.params.id});
         var Model = this.getModelClass();
         return new Model({
             id: this.options.params.id
@@ -106,7 +98,7 @@ define(function(require) {
         var template = that.getFormTemplate();
 
         return template({
-            id: that.id, //id: that._id,
+            id: that.id,
             fields: that.getFieldsHtml(data),
             buttons: that.getButtonsHtml(data)
         });
@@ -120,7 +112,7 @@ define(function(require) {
         var that = this;
         var template = that.getFieldsTemplate();
         return template({
-            id: that.id, //id: that._id,
+            id: that.id,
             data: data
         });
     };

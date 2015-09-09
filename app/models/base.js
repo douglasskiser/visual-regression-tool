@@ -7,7 +7,8 @@ define(function(require) {
         url: function(){
           return '/rest/' + this.name + (this.id ? '/' + this.id : '');
           //return '/rest/' + this.name + (this._id ? '/' + this._id : '');
-        } 
+        },
+        idAttribute: '_id'
     });
     
 

@@ -46,13 +46,13 @@ module.exports = function(app) {
             });  
         },
         run: function(req, data) {
-            Execution.findById(data.id, function(err, exc) {
+            Execution.create(data, function(err, exc) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                executionCtrl.methods.run(exc);
+                // add to agenda
                 return req.io.emit('data:executions:running', exc);
-            }); 
+            });
         },
         screenshots: function(req, data) {
             Execution.findById(data.id, function(err, exc) {
