@@ -19,207 +19,214 @@ var Execution = require('./execution.model'),
 // private methods
 var _methods = {
     run: function(exc, socket, callback) {
+        var job, oldBox, script, device, newBox, self = this;
         callback = callback || function() {};
 
-        async.waterfall([
-            // get job
-            function(cb) {
-                Job.find({
-                    id: exc.jobId
-                }, function(err, job) {
+        return new B(function(resolve, reject) {
+                Job.findById(exc.jobId, function(err, jobDoc) {
                     if (err) {
+                        reject();
                         return errors.handleResponseError(null, 500, err);
                     }
-                    return cb(null, job);
+                    job = jobDoc;
+                    return resolve();
                 });
-            },
-            // get old box
-            function(job, cb) {
-                Box.find({
-                    id: job.oldBoxId
-                }, function(err, oldBox) {
-                    if (err) {
-                        return errors.handleResponseError(null, 500, err);
-                    }
-                    return cb(null, job, oldBox);
-                });
-            },
-            // get script
-            function(job, oldBox, cb) {
-                Script.find({
-                    id: job.scriptId
-                }, function(err, script) {
-                    if (err) {
-                        return errors.handleResponseError(null, 500, err);
-                    }
-                    return cb(null, job, oldBox, script);
-                });
-            },
-            // get device
-            function(job, oldBox, script, cb) {
-                Device.find({
-                    id: job.deviceId
-                }, function(err, device) {
-                    if (err) {
-                        return errors.handleResponseError(null, 500, err);
-                    }
-                    return cb(null, job, oldBox, script, device);
-                });
-            },
-            // handle job type
-            function(job, oldBox, script, device, cb) {
-                if (job.type === 'visual_regression') {
-                    Box.find({
-                        id: job.newBoxId
-                    }, function(err, newBox) {
+            })
+            .then(function() {
+                return new B(function(resolve, reject) {
+                    Box.findById(exc.oldBoxId, function(err, oldBoxDoc) {
                         if (err) {
+                            reject();
                             return errors.handleResponseError(null, 500, err);
                         }
-                        return cb(null, job, oldBox, script, device, newBox);
+                        oldBox = oldBoxDoc;
+                        resolve();
                     });
-                }
-                else if (job.type === 'changes_moderator') {
-                    return cb(null, job, oldBox, script, device, null);
-                }
-            },
-            // save execution status
-            function(job, oldBox, script, device, newBox, cb) {
-                exc.status = 'running';
-                exc.save(function(err) {
+                });
+            })
+            .then(function() {
+                return new B(function(resolve, reject) {
+                    Script.findById(exc.scriptId, function(err, scriptDoc) {
                         if (err) {
+                            reject();
                             return errors.handleResponseError(null, 500, err);
                         }
-                        logger.info('done fetching required models');
-                        // finish
-                        var scriptAbsPath = scriptCtrl.getAbsolutePath(script);
-                        var executionBasePath = _methods.getExecutionBasePath(exc);
-                        var screenshotsPath = [executionBasePath, 'screenshots'].join('/');
-                        var logPath = [executionBasePath, 'log.txt'].join('/');
-                        var url = oldBox.url;
+                        script = scriptDoc;
+                        return resolve();
+                    });
+                });
+            })
+            .then(function() {
+                return new B(function(resolve, reject) {
+                    Device.findById(exc.deviceId, function(err, deviceDoc) {
+                        if (err) {
+                            reject();
+                            return errors.handleResponseError(null, 500, err);
+                        }
+                        device = deviceDoc;
+                        return resolve();
+                    });
+                });
+            })
+            .then(function() {
+                return new B(function(resolve, reject) {
+                    if (job.typeId === 1) {
+                        Box.findById(exc.newBoxId, function(err, newBoxDoc) {
+                            if (err) {
+                                reject();
+                                return errors.handleResponseError(null, 500, err);
+                            }
+                            newBox = newBoxDoc;
+                            resolve();
+                        });
+                        return resolve();
+                    }
+                });
+            })
+            .then(function() {
+                return new B(function(resolve, reject) {
+                    exc.statusId = 2;
+                    exc.status = 'running';
+                    exc.save(function(err, updatedExc) {
+                        if (err) {
+                            reject();
+                            return errors.handleResponseError(null, 500, err);
+                        }
+                        exc = updatedExc;
+                        return resolve();
+                    });
+                });
+            })
+            .then(function() {
+                var paths = {},
+                    cmds = {};
+                paths.scriptAbsPath = scriptCtrl.getAbsolutePath(script);
+                paths.executionBasePath = _methods.getExecutionBasePath(exc);
+                paths.screenshotsPath = [executionBasePath, 'screenshots'].join('/');
+                paths.logPath = [executionBasePath, 'log.txt'].join('/');
+                paths.url = oldBox.url;
 
-                        if (job.type === 'visual_regression') {
-                            var oldScreenshotsPath = [screenshotsPath, 'old'].join('/');
-                            var newScreenshotsPath = [screenshotsPath, 'new'].join('/');
-                            var newUrl = newBox.url;
+                if (job.typeId === 1) {
+                    paths.oldScreenshotsPath = [paths.screenshotsPath, 'old'].join('/');
+                    paths.newScreenshotsPath = [paths.screenshotsPath, 'new'].join('/');
+                    paths.newUrl = newBox.url;
 
-                            var oldCmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + oldScreenshotsPath, '--url=' + url, '--width=' + device.width, '--height=' + device.height, ' > ', logPath, '2>&1'].join(' ');
-                            var newCmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + newScreenshotsPath, '--url=' + newUrl, '--width=' + device.width, '--height=' + device.height, ' >> ', logPath, '2>&1'].join(' ');
+                    cmds.old = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.oldScreenshotsPath, '--url=' + paths.url, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
+                    cmds.new = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.newScreenshotsPath, '--url=' + paths.newUrl, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
 
-                            return B.resolve(new B(function(resolve, reject) {
-                                    nexpect.spawn('rm -rf ' + screenshotsPath)
-                                        .run(function(err, stdout, exitcode) {
-                                            resolve({
-                                                err: err,
-                                                stdout: stdout,
-                                                exitCode: exitcode
-                                            });
-                                        });
-
-                                }))
-                                .then(function() {
-                                    return B.resolve(
-                                        (function() {
-                                            logger.info('start capturing the first URL. Command: ', oldCmd);
-
-                                            return new B(function(resolve, reject) {
-                                                nexpect.spawn(oldCmd)
-                                                    .run(function(err, stdout, exitcode) {
-                                                        if (exitcode !== 0) {
-                                                            logger.error('error on first URL', stdout);
-                                                            reject({
-                                                                err: err,
-                                                                stdout: stdout,
-                                                                exitCode: exitcode
-                                                            });
-                                                            return;
-                                                        }
-                                                        logger.info('First URL completed', oldCmd);
-                                                        resolve({
-                                                            err: err,
-                                                            stdout: stdout,
-                                                            exitCode: exitcode
-                                                        });
-                                                    });
-                                            });
-                                        })()
-                                    ).then(function() {
-                                        return (function() {
-                                            logger.info('start capturing the second URL. Command: ', newCmd);
-
-                                            return new B(function(resolve, reject) {
-                                                nexpect.spawn(newCmd)
-                                                    .run(function(err, stdout, exitcode) {
-                                                        if (exitcode !== 0) {
-                                                            logger.error('error on second URL', stdout);
-                                                            reject({
-                                                                err: err,
-                                                                stdout: stdout,
-                                                                exitCode: exitcode
-                                                            });
-                                                            return;
-                                                        }
-                                                        logger.info('Second URL completed', oldCmd);
-                                                        resolve({
-                                                            err: err,
-                                                            stdout: stdout,
-                                                            exitCode: exitcode
-                                                        });
-                                                    });
-                                            });
-                                        })();
+                    return B.resolve(new B(function(resolve, reject) {
+                            nexpect.spawn('rm -rf ' + paths.screenshotsPath)
+                                .run(function(err, stdout, exitcode) {
+                                    resolve({
+                                        err: err,
+                                        stdout: stdout,
+                                        exitCode: exitcode
                                     });
                                 });
-                        }
-                        else if (job.type === 'changes_moderator') {
-                            logger.info('Running Changes Moderator job');
+                        }))
+                        .then(function() {
+                            return B.resolve(
+                                (function() {
+                                    logger.info('start capturing the first URL. Command: ', cmds.old);
 
-                            var cmd = [config.casper.absolutePath, scriptAbsPath, '--target=' + screenshotsPath, '--url=' + url, '--width=' + device.width, '--height=' + device.height, ' > ', logPath, '2>&1'].join(' ');
-                            logger.info(cmd);
-
-                            return new B(function(resolve, reject) {
-                                nexpect.spawn(cmd)
-                                    .run(function(err, stdout, exitcode) {
-                                        if (exitcode !== 0) {
-                                            reject({
-                                                err: err,
-                                                stdout: stdout,
-                                                exitCode: exitcode
+                                    return new B(function(resolve, reject) {
+                                        nexpect.spawn(cmds.old)
+                                            .run(function(err, stdout, exitcode) {
+                                                if (exitcode !== 0) {
+                                                    logger.error('error on first URL', stdout);
+                                                    reject({
+                                                        err: err,
+                                                        stdout: stdout,
+                                                        exitCode: exitcode
+                                                    });
+                                                    return;
+                                                }
+                                                logger.info('First URL completed', cmds.old);
+                                                resolve({
+                                                    err: err,
+                                                    stdout: stdout,
+                                                    exitCode: exitcode
+                                                });
                                             });
-                                            return;
-                                        }
-                                        resolve({
-                                            err: err,
-                                            stdout: stdout,
-                                            exitCode: exitcode
-                                        });
                                     });
+                                })()
+                            ).then(function() {
+                                return (function() {
+                                    logger.info('start capturing the second URL. Command: ', cmds.new);
+
+                                    return new B(function(resolve, reject) {
+                                        nexpect.spawn(cmds.new)
+                                            .run(function(err, stdout, exitcode) {
+                                                if (exitcode !== 0) {
+                                                    logger.error('error on second URL', stdout);
+                                                    reject({
+                                                        err: err,
+                                                        stdout: stdout,
+                                                        exitCode: exitcode
+                                                    });
+                                                    return;
+                                                }
+                                                logger.info('Second URL completed', cmds.old);
+                                                resolve({
+                                                    err: err,
+                                                    stdout: stdout,
+                                                    exitCode: exitcode
+                                                });
+                                            });
+                                    });
+                                })()
                             });
-                        }
-                    })
-                    .then(function() {
-                        exc.status = 'completed';
-                        exc.save(function(err) {
-                            if (err) {
-                                return errors.handleErrorResponse(null, 500, err);
-                            }
                         });
-                    })
-                    .catch(function(e) {
-                        logger.error('Error while runnning visual regression', e);
-                        exc.status = 'error';
-                        exc.save(function(err) {
-                            if (err) {
-                                return errors.handleErrorResponse(null, 500, err);
-                            }
-                        });
+                } else if (job.typeId === 2) {
+                    logger.info('Running Changes Moderator job');
+                    var cmd = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.screenshotsPath, '--url=' + paths.url, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
+                    logger.info(cmd);
+
+                    return new B(function(resolve, reject) {
+                        nexpect.spawn(cmd)
+                            .run(function(err, stdout, exitcode) {
+                                if (exitcode !== 0) {
+                                    reject({
+                                        err: err,
+                                        stdout: stdout,
+                                        exitCode: exitcode
+                                    });
+                                    return;
+                                }
+                                resolve({
+                                    err: err,
+                                    stdout: stdout,
+                                    exitCode: exitcode
+                                });
+                            });
                     });
-            }
-        ], function() {
-            // broadcast finished execution to client
-            console.log('im done')
-            socket.io.broadcast('execution:finished', exc);
-            callback(exc);
-        });
+                }
+            })
+            .then(function() {
+                exc.status = 'completed';
+                exc.statusId = 3;
+                exc.save(function(err, updatedExc) {
+                    if (err) {
+                        reject();
+                        return errors.handleResponseError(null, 500, err);
+                    }
+                    socket.io.broadcast('execution:finished', updatedExc);
+                    callback(updatedExc);
+                    resolve();
+                });
+            })
+            .catch(function(err) {
+                logger.error('Error while runnning visual regression', e);
+                exc.status = 'error';
+                exc.statusId = 4;
+                exc.save(function(err, updatedExc) {
+                    if (err) {
+                        reject();
+                        return errors.handleResponseError(null, 500, err);
+                    }
+                    resolve();
+                });
+            });
     },
 
     getExecutionBasePath: function(exc) {
@@ -230,14 +237,12 @@ var _methods = {
         var executionBasePath = _methods.getExecutionBasePath(exc);
         var screenshotsPath = [executionBasePath, 'screenshots'].join('/');
 
-        Job.find({
-            id: exc.jobId
-        }, function(err, job) {
+        Job.findById(exc.jobId, function(err, job) {
             if (err) {
                 return errors.handleErrorResponse(null, 500, err);
             }
 
-            if (job.type === 'visual_regression') {
+            if (job.typeId === 1) {
                 var oldScreenshotsPath = [screenshotsPath, 'old'].join('/');
                 var newScreenshotsPath = [screenshotsPath, 'new'].join('/');
 
@@ -272,8 +277,7 @@ var _methods = {
                             newScreenshots: newScreenshots
                         };
                     });
-            }
-            else if (job.type === 'changes_moderator') {
+            } else if (job.typeId === 3) {
                 var baselineScreenshotsPath = [config.rootPath, 'data', 'job', job.id, 'baseline'].join('/');
 
                 return B.all([
@@ -323,7 +327,9 @@ exports.get = function(req, res) {
 };
 
 exports.getOne = function(req, res) {
-    Execution.findOne({id: req.params.id}, function(err, exc) { //Execution.findById(req.params.id, function(err, device) {
+    Execution.findOne({
+        id: req.params.id
+    }, function(err, exc) { //Execution.findById(req.params.id, function(err, device) {
         if (err) {
             return errors.handleResponseError(res, 500, err);
         }
@@ -382,7 +388,7 @@ exports.checkExecutionQueue = function(socket) {
                         postMessage('execution finished');
                     });
                 });
-                
+
                 worker.onmessage = function(data) {
                     logger.info('Web worker says... ' + data);
                 };
@@ -440,7 +446,9 @@ exports.run = function(id, socket, cb) {
 };
 
 exports.screenshots = function(req, res) {
-    Execution.findOne({id: req.params.id}, function(err, exc) {
+    Execution.findOne({
+        id: req.params.id
+    }, function(err, exc) {
         if (err) {
             return errors.handleResponseError(res, 500, err);
         }

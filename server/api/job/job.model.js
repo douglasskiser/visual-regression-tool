@@ -7,6 +7,7 @@ var JobSchema = new Schema({
     newBoxId: Number,
     scriptId: Number,
     deviceId: Number,
+    type: String,
     typeId: {
         type: Number,
         default: 1

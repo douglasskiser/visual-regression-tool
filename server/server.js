@@ -58,6 +58,5 @@ B.all([odm.initialize()])
         var server = app.listen(port, process.env.IP, function() {
             logger.info(_s.repeat('=', 80).red);
             logger.info('Server is listening at %s, port: %d', server.address().address, server.address().port);
-            
         });
     });
