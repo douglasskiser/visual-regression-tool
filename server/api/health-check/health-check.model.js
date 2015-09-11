@@ -2,14 +2,16 @@ var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
     
 var HealthCheckSchema = new Schema({
-    id: Number,
-    boxId: Number,
-    status: Number,
+    boxId: Schema.Types.ObjectId,
+    status: Schema.Types.ObjectId,
     createdAt: {
         type: Date,
         default: Date.now
     },
-    updatedAt: Date,
+    updatedAt: {
+        type: Date,
+        default: Date.now
+    },
     script: String
 });
 

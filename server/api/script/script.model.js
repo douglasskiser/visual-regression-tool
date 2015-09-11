@@ -2,19 +2,21 @@ var mongoose = require('mongoose'),
     Schema = mongoose.Schema;
     
 var ScriptSchema = new Schema({
-    id: Number,
     name: String,
     createdAt: {
         type: Date,
         default: Date.now
     },
-    updatedAt: Date,
+    updatedAt: {
+        type: Date,
+        default: Date.now
+    },
     nbOfScreenshots: {
         type: Number,
         default: 0
     },
     code: String,
-    typeId: Number
+    typeId: Schema.Types.ObjectId
 });
 
 module.exports = mongoose.model('Script', ScriptSchema);
