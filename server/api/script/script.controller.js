@@ -1,5 +1,6 @@
 var Script = require('./script.model'),
-    config = require('../../config/config'),
+    env = process.env.NODE_ENV || 'development',
+    config = require('../../config/config')[env],
     path = require('path'),
     fs = require('fs'),
     _ = require('underscore'),
@@ -7,6 +8,8 @@ var Script = require('./script.model'),
 
 var _methods = {
     getAbsolutePath: function(model) {
+        console.log('get abs path for model');
+        console.log(path.join(config.rootPath, 'data', 'scripts', model._id + '.js'));
         return path.join(config.rootPath, 'data', 'scripts', model._id + '.js');
     },
     writeScriptToFile: function(model) {
@@ -69,3 +72,5 @@ exports.delete = function(req, res) {
         return res.send(204);
     });
 };
+
+exports.methods = _methods;

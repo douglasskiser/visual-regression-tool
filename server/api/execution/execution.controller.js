@@ -1,6 +1,7 @@
 var Execution = require('./execution.model'),
     ExecutionStatus = require('../execution-status/execution-status.model'),
     Job = require('../job/job.model'),
+    JobTypes = require('../job-type/job-type.model'),
     Box = require('../box/box.model'),
     Script = require('../script/script.model'),
     scriptCtrl = require('../script/script.controller'),
@@ -20,7 +21,7 @@ var Execution = require('./execution.model'),
 // private methods
 var _methods = {
     run: function(exc, socket, callback) {
-        var job, oldBox, script, device, newBox, excStatuses = {}, self = this;
+        var job, oldBox, script, device, newBox, excStatuses = {}, jobTypes = {}, self = this;
 
         callback = callback || function() {};
 
@@ -45,7 +46,21 @@ var _methods = {
 
                         console.log('Got Statuses', excStatuses);
 
-                        return resolve();
+                        JobTypes.find(function(err, types) {
+                            if (err) {
+                                reject(err);
+                                return errors.handleResponseError(null, 500, err);
+                            }
+                            jobTypes = types;
+
+                            _.each(types, function(item) {
+                                jobTypes[item.name] = item._id;
+                            });
+
+                            console.log('Got Types', jobTypes);
+
+                            return resolve();
+                        });
                     });
                 });
             })
@@ -92,11 +107,14 @@ var _methods = {
             .then(function() {
                 return new B(function(resolve, reject) {
 
-                    console.log('ScheduledID: ', excStatuses.Scheduled);
+                    console.log('VRJobID: ', jobTypes['Visual Regression']);
+                    console.log('JobTypeID: ', job.typeId);
 
-                    if (job.typeId === scheduledStatusId) {
+                    if (job.typeId.toString() === jobTypes['Visual Regression'].toString()) {
+                        console.log('jobtype matches Scheduled');
                         Box.findById(job.newBoxId, function(err, newBoxDoc) {
                             if (err) {
+                                console.log('Hey Err');
                                 reject(err);
                                 return errors.handleResponseError(null, 500, err);
                             }
@@ -105,6 +123,7 @@ var _methods = {
                             return resolve();
                         });
                     } else {
+                        console.log('jobtype does not match scheduled');
                         return resolve();
                     }
                 });
@@ -116,10 +135,13 @@ var _methods = {
                     //exc.status = 'running';
                     exc.save(function(err, updatedExc) {
                         if (err) {
+                            console.log('hello save err');
                             reject(err);
                             return errors.handleResponseError(null, 500, err);
                         }
+                        console.log('Set status to running');
                         exc = updatedExc;
+                        console.log('Bout to resolve');
                         return resolve();
                     });
                 });
@@ -128,13 +150,22 @@ var _methods = {
                 paths = {},
                 cmds = {};
 
-                paths.scriptAbsPath = scriptCtrl.getAbsolutePath(script);
-                paths.executionBasePath = _methods.getExecutionBasePath(exc);
-                paths.screenshotsPath = [executionBasePath, 'screenshots'].join('/');
-                paths.logPath = [executionBasePath, 'log.txt'].join('/');
-                paths.url = oldBox.url;
+                console.log('bout to get paths');
 
-                if (job.typeId === excStatuses.Scheduled) {
+                paths.scriptAbsPath = scriptCtrl.methods.getAbsolutePath(script);
+                console.log('1st Path ', paths.scriptAbsPath);
+                paths.executionBasePath = _methods.getExecutionBasePath(exc);
+                console.log('2nd Path ', paths.executionBasePath);
+                paths.screenshotsPath = [paths.executionBasePath, 'screenshots'].join('/');
+                console.log('3rd Path ', paths.screenshotsPath);
+                paths.logPath = [paths.executionBasePath, 'log.txt'].join('/');
+                console.log('4th Path ', paths.logPath);
+                paths.url = oldBox.url;
+                console.log('5th Path ', paths.url);
+                console.log('got paths');
+
+                if (job.typeId.toString() === jobTypes['Visual Regression'].toString()) {
+                    console.log('Got paths and job type is VR');
                     paths.oldScreenshotsPath = [paths.screenshotsPath, 'old'].join('/');
                     paths.newScreenshotsPath = [paths.screenshotsPath, 'new'].join('/');
                     paths.newUrl = newBox.url;
@@ -143,6 +174,7 @@ var _methods = {
                     cmds.new = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.newScreenshotsPath, '--url=' + paths.newUrl, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
 
                     return B.resolve(new B(function(resolve, reject) {
+                            console.log('nexpect time');
                             nexpect.spawn('rm -rf ' + paths.screenshotsPath)
                                 .run(function(err, stdout, exitcode) {
                                     resolve({
@@ -205,30 +237,31 @@ var _methods = {
                                 })()
                             });
                         });
-                } else if (job.typeId === excStatuses.Running) {
-                    logger.info('Running Changes Moderator job');
-                    var cmd = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.screenshotsPath, '--url=' + paths.url, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
-                    logger.info(cmd);
+                    }
+                // } else if (job.typeId == excStatuses.Running) {
+                //     logger.info('Running Changes Moderator job');
+                //     var cmd = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.screenshotsPath, '--url=' + paths.url, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
+                //     logger.info(cmd);
 
-                    return new B(function(resolve, reject) {
-                        nexpect.spawn(cmd)
-                            .run(function(err, stdout, exitcode) {
-                                if (exitcode !== 0) {
-                                    reject({
-                                        err: err,
-                                        stdout: stdout,
-                                        exitCode: exitcode
-                                    });
-                                    return;
-                                }
-                                resolve({
-                                    err: err,
-                                    stdout: stdout,
-                                    exitCode: exitcode
-                                });
-                            });
-                    });
-                }
+                //     return new B(function(resolve, reject) {
+                //         nexpect.spawn(cmd)
+                //             .run(function(err, stdout, exitcode) {
+                //                 if (exitcode !== 0) {
+                //                     reject({
+                //                         err: err,
+                //                         stdout: stdout,
+                //                         exitCode: exitcode
+                //                     });
+                //                     return;
+                //                 }
+                //                 resolve({
+                //                     err: err,
+                //                     stdout: stdout,
+                //                     exitCode: exitcode
+                //                 });
+                //             });
+                //     });
+                // }
             })
             .then(function() {
                 exc.statusId = excStatuses.Completed;
@@ -254,7 +287,7 @@ var _methods = {
                     if (err) {
                         return errors.handleResponseError(null, 500, err);
                     }
-                    logger.info('execution saved with error', updatedExc);
+                    logger.info('execution saved with error', err);
                 });
             });
     },
