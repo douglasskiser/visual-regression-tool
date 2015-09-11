@@ -1,4 +1,5 @@
 var Execution = require('./execution.model'),
+    ExecutionStatus = require('../execution-status/execution-status.model'),
     Job = require('../job/job.model'),
     Box = require('../box/box.model'),
     Script = require('../script/script.model'),
@@ -19,77 +20,103 @@ var Execution = require('./execution.model'),
 // private methods
 var _methods = {
     run: function(exc, socket, callback) {
-        var job, oldBox, script, device, newBox, self = this;
+        var job, oldBox, script, device, newBox, excStatuses = {}, self = this;
+
         callback = callback || function() {};
 
         return new B(function(resolve, reject) {
                 Job.findById(exc.jobId, function(err, jobDoc) {
                     if (err) {
-                        reject();
+                        reject(err);
                         return errors.handleResponseError(null, 500, err);
                     }
                     job = jobDoc;
-                    return resolve();
+                    //return resolve();
+                    ExecutionStatus.find(function(err, statuses) {
+                        if (err) {
+                            reject(err);
+                            return errors.handleResponseError(null, 500, err);
+                        }
+                        excStatuses = statuses;
+
+                        _.each(statuses, function(item) {
+                            excStatuses[item.name] = item._id;
+                        });
+
+                        console.log('Got Statuses', excStatuses);
+
+                        return resolve();
+                    });
                 });
             })
             .then(function() {
                 return new B(function(resolve, reject) {
-                    Box.findById(exc.oldBoxId, function(err, oldBoxDoc) {
+                    Box.findById(job.oldBoxId, function(err, oldBoxDoc) {
                         if (err) {
-                            reject();
+                            reject(err);
                             return errors.handleResponseError(null, 500, err);
                         }
                         oldBox = oldBoxDoc;
+                        console.log('Old Box: ', oldBox);
                         resolve();
                     });
                 });
             })
             .then(function() {
                 return new B(function(resolve, reject) {
-                    Script.findById(exc.scriptId, function(err, scriptDoc) {
+                    Script.findById(job.scriptId, function(err, scriptDoc) {
                         if (err) {
-                            reject();
+                            reject(err);
                             return errors.handleResponseError(null, 500, err);
                         }
+
                         script = scriptDoc;
+                        console.log('Found Script: ', script);
                         return resolve();
                     });
                 });
             })
             .then(function() {
                 return new B(function(resolve, reject) {
-                    Device.findById(exc.deviceId, function(err, deviceDoc) {
+                    Device.findById(job.deviceId, function(err, deviceDoc) {
                         if (err) {
-                            reject();
+                            reject(err);
                             return errors.handleResponseError(null, 500, err);
                         }
                         device = deviceDoc;
+                        console.log('Found Devices: ', device);
                         return resolve();
                     });
                 });
             })
             .then(function() {
                 return new B(function(resolve, reject) {
-                    if (job.typeId === 1) {
-                        Box.findById(exc.newBoxId, function(err, newBoxDoc) {
+
+                    console.log('ScheduledID: ', excStatuses.Scheduled);
+
+                    if (job.typeId === scheduledStatusId) {
+                        Box.findById(job.newBoxId, function(err, newBoxDoc) {
                             if (err) {
-                                reject();
+                                reject(err);
                                 return errors.handleResponseError(null, 500, err);
                             }
                             newBox = newBoxDoc;
-                            resolve();
+                            console.log('Found New Box: ', newBox);
+                            return resolve();
                         });
+                    } else {
                         return resolve();
                     }
                 });
             })
             .then(function() {
                 return new B(function(resolve, reject) {
-                    exc.statusId = 2;
-                    exc.status = 'running';
+                    exc.statusId = excStatuses.Running;
+                    //exc.statusId = 2;
+                    //exc.status = 'running';
                     exc.save(function(err, updatedExc) {
                         if (err) {
-                            reject();
+                            reject(err);
                             return errors.handleResponseError(null, 500, err);
                         }
                         exc = updatedExc;
@@ -98,15 +125,16 @@ var _methods = {
                 });
             })
             .then(function() {
-                var paths = {},
-                    cmds = {};
+                paths = {},
+                cmds = {};
+
                 paths.scriptAbsPath = scriptCtrl.getAbsolutePath(script);
                 paths.executionBasePath = _methods.getExecutionBasePath(exc);
                 paths.screenshotsPath = [executionBasePath, 'screenshots'].join('/');
                 paths.logPath = [executionBasePath, 'log.txt'].join('/');
                 paths.url = oldBox.url;
 
-                if (job.typeId === 1) {
+                if (job.typeId === excStatuses.Scheduled) {
                     paths.oldScreenshotsPath = [paths.screenshotsPath, 'old'].join('/');
                     paths.newScreenshotsPath = [paths.screenshotsPath, 'new'].join('/');
                     paths.newUrl = newBox.url;
@@ -177,7 +205,7 @@ var _methods = {
                                 })()
                             });
                         });
-                } else if (job.typeId === 2) {
+                } else if (job.typeId === excStatuses.Running) {
                     logger.info('Running Changes Moderator job');
                     var cmd = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.screenshotsPath, '--url=' + paths.url, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
                     logger.info(cmd);
@@ -203,28 +231,30 @@ var _methods = {
                 }
             })
             .then(function() {
-                exc.status = 'completed';
-                exc.statusId = 3;
+                exc.statusId = excStatuses.Completed;
+                //exc.status = 'completed';
+                //exc.statusId = 3;
                 exc.save(function(err, updatedExc) {
                     if (err) {
-                        reject();
+                        reject(err);
                         return errors.handleResponseError(null, 500, err);
                     }
+                    logger.info('execution finished');
                     socket.io.broadcast('execution:finished', updatedExc);
                     callback(updatedExc);
                     resolve();
                 });
             })
             .catch(function(err) {
-                logger.error('Error while runnning visual regression', e);
-                exc.status = 'error';
-                exc.statusId = 4;
+                logger.error('Error while runnning visual regression', err);
+                exc.statusId = excStatuses.Error;
+                //exc.status = 'error';
+                //exc.statusId = 4;
                 exc.save(function(err, updatedExc) {
                     if (err) {
-                        reject();
                         return errors.handleResponseError(null, 500, err);
                     }
-                    resolve();
+                    logger.info('execution saved with error', updatedExc);
                 });
             });
     },
@@ -327,9 +357,7 @@ exports.get = function(req, res) {
 };
 
 exports.getOne = function(req, res) {
-    Execution.findOne({
-        id: req.params.id
-    }, function(err, exc) { //Execution.findById(req.params.id, function(err, device) {
+    Execution.findById(req.params.id, function(err, exc) { //Execution.findById(req.params.id, function(err, device) {
         if (err) {
             return errors.handleResponseError(res, 500, err);
         }
@@ -437,11 +465,13 @@ exports.delete = function(req, res) {
 };
 
 exports.run = function(id, socket, cb) {
-    Execution.findById(id, function(err, exc) {
+    console.log('ID: ', id);
+    return Execution.findById(id, function(err, exc) {
         if (err) {
             return errors.handleResponseError(null, 500, err);
         }
-        _methods.run(exc, socket, cb);
+        console.log(exc);
+        return _methods.run(exc, socket, cb);
     });
 };
 

@@ -19,13 +19,13 @@ var agenda = new Agenda(app);
     
 B.all([odm.initialize()])
     .then(function() {
-        var seed = false;
+        // var seed = false;
 
-        if (seed) {
-            require('./seed');
-        }
+        // if (seed) {
+        //     require('./seed');
+        // }
         
-        executionCtrl.terminateRunningExecutions();
+        //executionCtrl.terminateRunningExecutions();
         
         app.use('/resources', express.static(path.join(__dirname, '../app/dist'), {
             // maxAge: 86400000

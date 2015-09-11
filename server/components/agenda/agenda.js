@@ -36,6 +36,7 @@ var AgendaService = (function() {
 
         this.agenda.define('runExecution', function(job, done) {
             logger.info('running execution');
+            console.log('HEY: ', job.attrs.data.id);
             executionCtrl.run(job.attrs.data.id, this.socket, function(exc) {
                 logger.info('execution is finished running');
                 done();
@@ -58,6 +59,7 @@ var AgendaService = (function() {
 
     AgendaService.prototype.create = function(data) {
         logger.info('adding execution to agenda');
+        console.log('Data: ', data._id);
         var job = this.agenda.create('runExecution', {
             id: data._id
         });

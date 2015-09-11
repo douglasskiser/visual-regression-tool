@@ -19,6 +19,7 @@ module.exports = function(app) {
             if (err) {
                 errors.handleResponseError(res, 500, err);
             }
+            console.log('EXC: ', exc);
             agenda.create(exc);
             res.send(200);
         })
