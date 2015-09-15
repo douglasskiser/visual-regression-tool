@@ -31,7 +31,7 @@ exports.get = function(req, res) {
 };
 
 exports.getOne = function(req, res) {
-    Script.findOne({id: req.params.id}, function(err, script) { //Script.findById(req.params.id, function(err, script) {
+    Script.findById(req.params.id, function(err, script) { //Script.findById(req.params.id, function(err, script) {
         if (err) {
             return errors.handleResponseError(res, 500, err);
         }

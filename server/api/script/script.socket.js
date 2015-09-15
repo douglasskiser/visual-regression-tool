@@ -12,13 +12,22 @@ module.exports = function(app) {
                 return req.io.emit('data:scripts', scripts);
             });
         },
-        getOne: function(req, data) {
-            Script.findById(data.id, function(err, script) {
-                if (err) {
-                    return errors.handleSocketError(req, err);
-                }
-                return req.io.emit('data:scripts', script);
-            });
+        read: function(req) {
+            if (req.data && req.data._id && req.data._id.length) {
+                Script.findById(req.data._id, function(err, script) {
+                    if (err) {
+                        return errors.handleSocketError(req, err);
+                    }
+                    return req.io.emit('data:script', script);
+                });
+            } else {
+                Script.find(function(err, script) {
+                    if (err) {
+                       return errors.handleSocketError(req, err); 
+                    }
+                    return req.io.emit('data:script', script);
+                });
+            }
         },
         create: function(req, data) {
             Script.create(data, function(err, script) {

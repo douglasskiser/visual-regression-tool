@@ -40,25 +40,25 @@ define(function(require) {
         return B.resolve(that.model.fetch())
             .then(function() {
                 that.type = new Type({
-                    id: that.model.get('typeId')
+                    _id: that.model.get('typeId')
                 });
 
                 that.oldBox = new Box({
-                    id: that.model.get('oldBoxId')
+                    _id: that.model.get('oldBoxId')
                 });
 
                 if (that.model.get('typeId') == Type.ID_VISUAL_REGRESSION) {
                     that.newBox = new Box({
-                        id: that.model.get('newBoxId')
+                        _id: that.model.get('newBoxId')
                     });
 
                     that.device = new Device({
-                        id: that.model.get('deviceId')
+                        _id: that.model.get('deviceId')
                     });
                 }
 
                 that.script = new Script({
-                    id: that.model.get('scriptId')
+                    _id: that.model.get('scriptId')
                 });
 
                 return B.all([that.script.fetch(), that.type.fetch(), that.oldBox.fetch(), (function() {

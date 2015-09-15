@@ -9,15 +9,15 @@ module.exports = function(app) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:jobTypes', jobTypes);
+                return req.io.emit('data:job-type', jobTypes);
             });
         },
-        getOne: function(req, data) {
-            JobType.findById(data.id, function(err, jobType) {
+        read: function(req) {
+            JobType.findById(req.data._id, function(err, jobType) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:jobTypes', jobType);
+                return req.io.emit('data:job-type', jobType);
             });
         },
         create: function(req, data) {

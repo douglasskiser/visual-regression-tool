@@ -9,15 +9,15 @@ module.exports = function(app) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:devices', devices);
+                return req.io.emit('data:device', devices);
             });
         },
-        getOne: function(req, data) {
-            Device.findById(data.id, function(err, device) {
+        read: function(req) {
+            Device.findById(req.data._id, function(err, device) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:devices', device);
+                return req.io.emit('data:device', device);
             });
         },
         create: function(req, data) {

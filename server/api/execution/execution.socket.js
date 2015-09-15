@@ -5,13 +5,23 @@ var Execution = require('./execution.model'),
 
 module.exports = function(app) {
     return {
-        get: function(req) {
-            Execution.find(function(err, excs) {
-                if (err) {
-                    return errors.handleSocketError(req, err);
-                }
-                return req.io.emit('data:executions', excs);
-            });
+        read: function(req) {
+            if (req.data && req.data._id && req.data._id.length) {
+                Execution.findById(req.data._id, function(err, exc) {
+                    if (err) {
+                        return errors.handleSocketError(req, err);
+                    }
+                    return req.io.emit('data:execution', exc);
+                });
+            } else {
+                Execution.find(function(err, exc) {
+                    if (err) {
+                        return errors.handleResponseError(req, err);
+                    } 
+                    
+                    return req.io.emit('data:execution', exc);
+                });
+            }
         },
         create: function(req, data) {
             Execution.create(data, function(err, exc) {

@@ -12,7 +12,7 @@ exports.get = function(req, res) {
 };
 
 exports.getOne = function(req, res) {
-    JobType.findOne({id: req.params.id}, function(err, jobType) { //JobType.findById(req.params.id, function(err, jobType) {
+    JobType.findById(req.params.id, function(err, jobType) { //JobType.findById(req.params.id, function(err, jobType) {
         if (err) {
             return errors.handleResponseError(res, 500, err);
         }

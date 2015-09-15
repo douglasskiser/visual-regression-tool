@@ -4,7 +4,8 @@ var Box = require('./box.model'),
 
 module.exports = function(app) {
     return {
-        get: function(req) {
+        read: function(req) {
+            console.log(req);
             Box.find(function(err, boxes) {
                 if (err) {
                     return errors.handleSocketError(req, err);
@@ -12,12 +13,12 @@ module.exports = function(app) {
                 return req.io.emit('data:boxes', boxes);
             });
         },
-        getOne: function(req, data) {
-            Box.findById(data.id, function(err, box) {
+        read: function(req) {
+            Box.findById(req.data._id, function(err, box) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:boxes', box);
+                return req.io.emit('data:box', box);
             });
         },
         create: function(req, data) {

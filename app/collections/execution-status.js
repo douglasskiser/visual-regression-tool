@@ -19,7 +19,12 @@ define(function(require) {
             allowClear: false,
             formatResult: format,
             formatSelection: format,
-            data: that.toJSON(),
+            data: that.map(function(model) {
+                return {
+                    id: model.id,
+                    text: model.get('name')
+                };
+            }),
             createSearchChoice: undefined
         }, options);
 

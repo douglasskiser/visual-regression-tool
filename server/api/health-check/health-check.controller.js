@@ -12,7 +12,7 @@ exports.get = function(req, res) {
 };
 
 exports.getOne = function(req, res) {
-    HealthCheck.findOne({id: req.params.id}, function(err, healthCheck) { //HealthCheck.findById(req.params.id, function(err, healthCheck) {
+    HealthCheck.findById(req.params.id, function(err, healthCheck) { //HealthCheck.findById(req.params.id, function(err, healthCheck) {
         if (err) {
             return errors.handleResponseError(res, 500, err);
         }

@@ -33,6 +33,7 @@ define(function(require) {
     
     App.prototype.initWebSocket = function() {
         this.webSocket = io.connect();
+
         return B.resolve();
     };
     

@@ -22,7 +22,7 @@ define(function(require) {
     Page.prototype.getModel = function() {
         var Model = this.getModelClass();
         return new Model({
-            id: this.options.params.id
+            _id: this.options.params.id
         });
     };
 

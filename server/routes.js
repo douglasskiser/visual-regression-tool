@@ -32,9 +32,9 @@ module.exports = function(app) {
     app.io.route('box', require('./api/box/box.socket')(app));
     app.io.route('device', require('./api/device/device.socket')(app));
     app.io.route('job', require('./api/job/job.socket')(app));
-    app.io.route('jobtype', require('./api/job-type/job-type.socket')(app));
+    app.io.route('job-type', require('./api/job-type/job-type.socket')(app));
     app.io.route('script', require('./api/script/script.socket')(app));
     app.io.route('execution', require('./api/execution/execution.socket')(app));
-    app.io.route('healthCheck', require('./api/health-check/health-check.socket')(app));
-    app.io.route('executionStatus', require('./api/execution-status/execution-status.socket')(app));
+    app.io.route('health-check', require('./api/health-check/health-check.socket')(app));
+    app.io.route('execution-status', require('./api/execution-status/execution-status.socket')(app));
 };

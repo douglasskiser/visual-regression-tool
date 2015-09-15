@@ -38,6 +38,8 @@ define(function (require) {
         };
         options = options || {};
         options.data = _.extend({}, opts, options.data);
+        
+        console.log('Fetching: ', options, this);
 
         return Super.prototype.fetch.call(this, options);    
     };

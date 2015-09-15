@@ -25,7 +25,12 @@ define(function(require) {
             allowClear: false,
             formatResult: formatResult,
             formatSelection: formatSelection,
-            data: that.toJSON(),
+            data: that.map(function(model) {
+                return {
+                    id: model.id,
+                    text: model.get('name')
+                };
+            }),
             createSearchChoice: undefined
         }, options);
         

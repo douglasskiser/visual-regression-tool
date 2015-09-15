@@ -12,12 +12,12 @@ module.exports = function(app) {
                 return req.io.emit('data:healthChecks', healthChecks);
             });
         },
-        getOne: function(req, data) {
-            HealthCheck.findById(data.id, function(err, healthCheck) {
+        read: function(req) {
+            HealthCheck.findById(req.data._id, function(err, healthCheck) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:healthChecks', healthCheck);
+                return req.io.emit('data:health-check', healthCheck);
             });
         },
         create: function(req, data) {
