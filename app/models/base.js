@@ -24,7 +24,7 @@ define(function(require) {
                 namespace,
                 socket;
 
-            opts.url = this.name;//(opts.url) ? _.result(opts, 'url') : (model.url) ? _.result(model, 'url') : void 0;
+            opts.url = this.name;
 
             if (!opts.url) {
                 urlError();
@@ -41,11 +41,8 @@ define(function(require) {
 
             socket = opts.socket || window.app.webSocket;
             
-            console.log('adding listener: data:' + namespace + method);
-            
             socket.once('data:' + namespace + method, function(data) {
-                console.log('SOcket Data: ', data);
-                var success = true;//(data && !data.error); // Expects server json response to contain a boolean 'success' field
+                var success = (data && !data.error);
                 if (success) {
                     if (_.isFunction(options.success)) {
                         options.success(data);
@@ -58,8 +55,6 @@ define(function(require) {
                 }
                 defer.reject(data);
             });
-            
-            console.log(namespace + method, opts.data);
             
             socket.emit(namespace + method, opts.data);
 
@@ -75,7 +70,6 @@ define(function(require) {
     Backbone.Model.prototype.namespace = function(url){
         url = url || this.url();
         url = _s.trim(url, '/').replace('/', ':') + ":";
-        //url = url.slice(url.indexOf(':') + 1, url.length);
 
         return url;
     };

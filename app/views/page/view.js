@@ -1,4 +1,4 @@
-/*global _, _s*/
+/*global _, _s, app*/
 define(function(require) {
     var Super = require('views/page'),
         B = require('bluebird'),
@@ -29,9 +29,9 @@ define(function(require) {
     Page.prototype.getModelClass = function() {
         throw new Error("You must define Page.prototype.getModelClass()");
     };
-    
-    Page.prototype.getTemplate = function(){
-        return Template;  
+
+    Page.prototype.getTemplate = function() {
+        return Template;
     };
 
 
@@ -62,11 +62,11 @@ define(function(require) {
                 that.ready();
             });
     };
-    
-    Page.prototype.fetch = function(){
+
+    Page.prototype.fetch = function() {
         return this.model.fetch();
     };
-    
+
     Page.prototype.getPageName = function() {
         return '';
     };
@@ -127,7 +127,7 @@ define(function(require) {
         var template = that.getButtonsTemplate();
         return template({
             id: that.id, //id: that._id,
-            action: that.options.action, 
+            action: that.options.action,
             controller: that.options.controller,
             data: data
         });
@@ -153,12 +153,12 @@ define(function(require) {
     Page.prototype.prepareForOutput = function() {
         return this.model.toJSON();
     };
-    
-    Page.prototype.deleteButtonClickHandler = function(event){
+
+    Page.prototype.deleteButtonClickHandler = function(event) {
         event.preventDefault();
-        
-        var that = this; 
-        
+
+        var that = this;
+
         var confirmDlg = new Dialog({
             body: 'Are you sure you want to delete this item?',
             buttons: [{
@@ -166,13 +166,13 @@ define(function(require) {
                 label: "Yes. I'm sure.",
                 iconClass: 'fa fa-check',
                 buttonClass: 'btn-danger'
-        }, {
+            }, {
                 id: 'no',
                 label: 'Nope!',
                 iconClass: 'fa fa-times',
                 buttonClass: 'btn-default',
                 autoClose: true
-        }]
+            }]
         });
         confirmDlg.on('yes', function() {
             B.resolve()
@@ -192,7 +192,9 @@ define(function(require) {
                     NProgress.done();
                 });
         });
-};
+    };
+
+   
 
     return Page;
 

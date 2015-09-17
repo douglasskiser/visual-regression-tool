@@ -36,7 +36,7 @@ define(function(require) {
         return B.resolve(that.model.fetch())
             .then(function() {
                 that.type = new Type({
-                    id: that.model.get('typeId')
+                    _id: that.model.get('typeId')
                 });
 
                 return that.type.fetch();

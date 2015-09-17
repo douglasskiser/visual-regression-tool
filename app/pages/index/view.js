@@ -1,4 +1,4 @@
-/*global _, _s*/
+/*global _, _s, app*/
 define(function(require) {
     var Super = require('views/page/view'),
         B = require('bluebird'),
@@ -39,34 +39,34 @@ define(function(require) {
         return B.resolve(that.model.fetch())
             .then(function() {
                 that.job = new Job({
-                    id: that.model.get('jobId')
+                    _id: that.model.get('jobId')
                 });
                 that.statuses = new StatusCollection({})
                 return B.all([that.job.fetch(), that.statuses.fetch()]);
             })
             .then(function() {
                 that.type = new Type({
-                    id: that.job.get('typeId')
+                    _id: that.job.get('typeId')
                 });
 
                 that.oldBox = new Box({
-                    id: that.job.get('oldBoxId')
+                    _id: that.job.get('oldBoxId')
                 });
 
                 that.device = new Device({
-                    id: that.job.get('deviceId')
+                    _id: that.job.get('deviceId')
                 });
 
                 if (that.job.get('typeId') == Type.ID_VISUAL_REGRESSION) {
                     that.newBox = new Box({
-                        id: that.job.get('newBoxId')
+                        _id: that.job.get('newBoxId')
                     });
 
 
                 }
 
                 that.script = new Script({
-                    id: that.job.get('scriptId')
+                    _id: that.job.get('scriptId')
                 });
 
                 return B.all([that.script.fetch(), that.type.fetch(), that.oldBox.fetch(), that.device.fetch(), (function() {
@@ -122,11 +122,12 @@ define(function(require) {
 
     Page.prototype.postRender = function() {
         var that = this;
-        that.on('status-change', that.onStatusChangeHandler.bind(that));
+        that.createSocketListener.call(this);
+        //that.on('status-change', that.onStatusChangeHandler.bind(that));
         that.renderResults();
         that.adjustButtons();
         that.renderStatus();
-        _.delay(that.checkStatus.bind(that), 5000);
+        //_.delay(that.checkStatus.bind(that), 5000);
     };
 
     Page.prototype.adjustButtons = function() {
@@ -243,6 +244,18 @@ define(function(require) {
                 that.trigger('status-change');
                 _.delay(that.checkStatus.bind(that), 5000);
             });
+    };
+    
+    Page.prototype.createSocketListener = function() {
+        console.log('STAUS LISTENER CREATED!!!');
+        app.webSocket.on('data:execution:status', this.onSocketHandler.bind(this));
+    };
+
+    Page.prototype.onSocketHandler = function(data) {
+        this.model.set({
+            statusId: data.statusId
+        });
+        this.onStatusChangeHandler.call(this);
     };
 
     return Page;

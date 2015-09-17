@@ -24,6 +24,7 @@ define(function(require) {
 
         that.statusCollection = new StatusCollection();
     };
+    
 
     Page.prototype.getCollection = function() {
         return new Collection();

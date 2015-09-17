@@ -68,6 +68,8 @@ module.exports = function(app, agenda) {
                         agenda.create({_id: newExc._id});
                         
                         req.io.emit('data:execution:create', newExc);
+                        app.io.broadcast('data:execution:create', newExc);
+                        console.log('just broacasted execution creation.');
                     });
                 });
                 

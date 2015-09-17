@@ -46,8 +46,6 @@ var _methods = {
                             excStatuses[item.name] = item._id;
                         });
 
-                        console.log('Got Statuses', excStatuses);
-
                         JobTypes.find(function(err, types) {
                             if (err) {
                                 reject(err);
@@ -58,8 +56,6 @@ var _methods = {
                             _.each(types, function(item) {
                                 jobTypes[item.name] = item._id;
                             });
-
-                            console.log('Got Types', jobTypes);
 
                             return resolve();
                         });
@@ -74,7 +70,7 @@ var _methods = {
                             return errors.handleResponseError(null, 500, err);
                         }
                         oldBox = oldBoxDoc;
-                        console.log('Old Box: ', oldBox);
+
                         resolve();
                     });
                 });
@@ -88,7 +84,7 @@ var _methods = {
                         }
 
                         script = scriptDoc;
-                        console.log('Found Script: ', script);
+
                         return resolve();
                     });
                 });
@@ -101,7 +97,7 @@ var _methods = {
                             return errors.handleResponseError(null, 500, err);
                         }
                         device = deviceDoc;
-                        console.log('Found Devices: ', device);
+
                         return resolve();
                     });
                 });
@@ -109,24 +105,22 @@ var _methods = {
             .then(function() {
                 return new B(function(resolve, reject) {
 
-                    console.log('VRJobID: ', jobTypes['Visual Regression']);
-                    console.log('JobTypeID: ', job.typeId);
 
                     if (job.typeId.toString() === jobTypes['Visual Regression'].toString()) {
-                        console.log('jobtype matches Scheduled');
+
                         Box.findById(job.newBoxId, function(err, newBoxDoc) {
                             if (err) {
-                                console.log('Hey Err');
+
                                 reject(err);
                                 return errors.handleResponseError(null, 500, err);
                             }
                             newBox = newBoxDoc;
-                            console.log('Found New Box: ', newBox);
+
                             return resolve();
                         });
                     }
                     else {
-                        console.log('jobtype does not match scheduled');
+
                         return resolve();
                     }
                 });
@@ -135,20 +129,18 @@ var _methods = {
                 return new B(function(resolve, reject) {
                     exc.statusId = excStatuses.Running;
                     
-                    socket.io.emit('data:execution:status', {_id: exc._id, status: 'Running'});
-                    socket.io.broadcast('data:execution:status', {_id: exc._id, status: 'Running'});
-                    console.log('JUST BROADCASTED FOO');
+                    //socket.io.emit('data:execution:status', {_id: exc._id, status: 'Running'});
+                    
                     //exc.statusId = 2;
                     //exc.status = 'running';
                     exc.save(function(err, updatedExc) {
                         if (err) {
-                            console.log('hello save err');
                             reject(err);
                             return errors.handleResponseError(null, 500, err);
                         }
-                        console.log('Set status to running');
-                        exc = updatedExc;
-                        console.log('Bout to resolve');
+                        
+                        socket.io.broadcast('data:execution:status', {_id: exc._id, statusId: exc.statusId});
+                        
                         return resolve();
                     });
                 });
@@ -157,33 +149,32 @@ var _methods = {
                 var paths = {},
                     cmds = {};
 
-                console.log('bout to get paths');
 
                 paths.scriptAbsPath = scriptCtrl.methods.getAbsolutePath(script);
-                console.log('1st Path ', paths.scriptAbsPath);
+
                 paths.executionBasePath = _methods.getExecutionBasePath(exc);
-                console.log('2nd Path ', paths.executionBasePath);
+                
                 paths.screenshotsPath = [paths.executionBasePath, 'screenshots'].join('/');
-                console.log('3rd Path ', paths.screenshotsPath);
+                
                 paths.logPath = [paths.executionBasePath, 'log.txt'].join('/');
-                console.log('4th Path ', paths.logPath);
+                
                 paths.url = oldBox.url;
-                console.log('5th Path ', paths.url);
-                console.log('got paths');
+                
+                
 
                 if (job.typeId.toString() === jobTypes['Visual Regression'].toString()) {
-                    console.log('Got paths and job type is VR');
+                    
                     paths.oldScreenshotsPath = [paths.screenshotsPath, 'old'].join('/');
-                    console.log('Old Screenshot Path: ', paths.oldScreenshotsPath);
+                    
                     paths.newScreenshotsPath = [paths.screenshotsPath, 'new'].join('/');
-                    console.log('New Screenshot Path: ', paths.newScreenshotsPath);
+                    
                     paths.newUrl = newBox.url;
 
                     cmds.old = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.oldScreenshotsPath, '--url=' + paths.url, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
                     cmds.new = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.newScreenshotsPath, '--url=' + paths.newUrl, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
 
                     return B.resolve(new B(function(resolve, reject) {
-                            console.log('nexpect time');
+                            
                             nexpect.spawn('rm -rf ' + paths.screenshotsPath)
                                 .run(function(err, stdout, exitcode) {
                                     resolve({
@@ -243,7 +234,7 @@ var _methods = {
                         .then(function() {
                             exc.statusId = excStatuses.Completed;
                             
-                            socket.io.broadcast('data:execution:status', {_id: exc._id, status: 'Completed'});
+                            
                             //exc.status = 'completed';
                             //exc.statusId = 3;
                             return exc.save(function(err, updatedExc) {
@@ -251,6 +242,7 @@ var _methods = {
                                     return errors.handleResponseError(null, 500, err);
                                 }
                                 logger.info('execution finished');
+                                socket.io.broadcast('data:execution:status', {_id: exc._id, statusId: exc.statusId});
                                 callback();
                             });
                         })
@@ -258,7 +250,7 @@ var _methods = {
                             logger.error('Error while runnning visual regression', err);
                             exc.statusId = excStatuses.Error;
                             
-                            socket.io.broadcast('data:execution:status', {_id: exc._id, status: 'Error'});
+                            
                             //exc.status = 'error';
                             //exc.statusId = 4;
                             exc.save(function(err, updatedExc) {
@@ -266,6 +258,7 @@ var _methods = {
                                     return errors.handleResponseError(null, 500, err);
                                 }
                                 logger.info('execution saved with error', err);
+                                socket.io.broadcast('data:execution:status', {_id: exc._id, statusId: exc.statusId});
                                 callback();
                             });
                         });
@@ -506,12 +499,12 @@ exports.delete = function(req, res) {
 };
 
 exports.run = function(id, socket, cb) {
-    console.log('ID: ', id);
+
     return Execution.findById(id, function(err, exc) {
         if (err) {
             return errors.handleResponseError(null, 500, err);
         }
-        console.log(exc);
+
         return _methods.run(exc, socket, cb);
     });
 };

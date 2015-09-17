@@ -17,6 +17,7 @@ define(function(require) {
         //super(options)
         Super.prototype.initialize.call(this, options);
         this.columns = this.getColumns();
+        this.listenTo(this.collection, 'change', this.render.bind(this));
     };
 
     View.prototype.render = function() {
