@@ -119,11 +119,12 @@ define(function(require) {
             jobId: that.model.id,
             statusId: ExecutionStatus.ID_SCHEDULED
         });
-
+        
         return B.resolve(execution.save())
-            .then(function() {
+            .then(function(data) {
+                console.log('data from execution creation : ', data);
                 that.toast.success('Job has been scheduled to run.');
-                that.goTo('#index/view/id/' + execution._id);
+                that.goTo('#index/view/id/' + execution.id);
             });
 
     };

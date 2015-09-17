@@ -4,51 +4,52 @@ var Device = require('./device.model'),
 
 module.exports = function(app) {
     return {
-        get: function(req) {
-            Device.find(function(err, devices) {
+        read: function(req) {
+            if (req.data && req.data._id && req.data._id.length) {
+               Device.findById(req.data._id, function(err, device) {
+                    if (err) {
+                        return errors.handleSocketError(req, err);
+                    }
+                    return req.io.emit('data:device:read', device);
+                }); 
+            } else {
+                Device.find(function(err, devices) {
+                    if (err) {
+                        return errors.handleSocketError(req, err);
+                    }
+                    return req.io.emit('data:device:read', devices);
+                });
+            }
+        },
+        create: function(req) {
+            Device.create(req.data, function(err, device) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:device', devices);
+                return req.io.emit('data:device:create', device);
             });
         },
-        read: function(req) {
+        update: function(req) {
             Device.findById(req.data._id, function(err, device) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:device', device);
-            });
-        },
-        create: function(req, data) {
-            Device.create(data, function(err, device) {
-                if (err) {
-                    return errors.handleSocketError(req, err);
-                }
-                return req.io.emit('data:devices:created', device);
-            });
-        },
-        update: function(req, data) {
-            Device.findById(data.id, function(err, device) {
-                if (err) {
-                    return errors.handleSocketError(req, err);
-                }
-                _.extend(device, data);
+                _.extend(device, req.data);
                 
                 device.save(function(err, updatedDevice) {
                     if (err) {
                         return errors.handleSocketError(req, err);
                     }
-                    return req.io.emit('data:devices:updated', updatedDevice);
+                    return req.io.emit('data:device:update', updatedDevice);
                 });
             });
         },
-        delete: function(req, data) {
-            Device.findByIdAndRemove(data.id, function(err) {
+        delete: function(req) {
+            Device.findByIdAndRemove(req.data._id, function(err) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:devices:deleted', data._id);
+                return req.io.emit('data:device:delete', req.data._id);
             });
         }
     };

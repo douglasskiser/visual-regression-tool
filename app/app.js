@@ -33,7 +33,11 @@ define(function(require) {
     
     App.prototype.initWebSocket = function() {
         this.webSocket = io.connect();
-
+        
+        this.webSocket.on('data:execution:status', function(data) {
+            console.log('EXECUTION STATUS UPDATE: ', data);
+        });
+        
         return B.resolve();
     };
     

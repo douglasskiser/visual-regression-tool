@@ -5,51 +5,51 @@ var Box = require('./box.model'),
 module.exports = function(app) {
     return {
         read: function(req) {
-            console.log(req);
-            Box.find(function(err, boxes) {
+            if (req.data && req.data._id && req.data._id.length) {
+                Box.findById(req.data._id, function(err, box) {
+                    if (err) {
+                        return errors.handleSocketError(req, err);
+                    }
+                    return req.io.emit('data:box:read', box);
+                });
+            } else {
+                Box.find(function(err, boxes) {
+                    if (err) {
+                        return errors.handleSocketError(req, err);
+                    }
+                    return req.io.emit('data:box:read', boxes);
+                });
+            }
+        },
+        create: function(req) {
+            Box.create(req.data, function(err, box) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:boxes', boxes);
+                return req.io.emit('data:box:create', box);
             });
         },
-        read: function(req) {
+        update: function(req) {
             Box.findById(req.data._id, function(err, box) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:box', box);
-            });
-        },
-        create: function(req, data) {
-            Box.create(data, function(err, box) {
-                if (err) {
-                    return errors.handleSocketError(req, err);
-                }
-                return req.io.emit('data:boxes:created', box);
-            });
-        },
-        update: function(req, data) {
-            Box.findById(data.id, function(err, box) {
-                if (err) {
-                    return errors.handleSocketError(req, err);
-                }
-                _.extend(box, data);
+                _.extend(box, req.data);
                 
                 box.save(function(err, updatedBox) {
                     if (err) {
                         return errors.handleSocketError(req, err);
                     }
-                    return req.io.emit('data:boxes:updated', updatedBox);
+                    return req.io.emit('data:box:update', updatedBox);
                 });
             });
         },
-        delete: function(req, data) {
-            Box.findByIdAndRemove(data.id, function(err) {
+        delete: function(req) {
+            Box.findByIdAndRemove(req.data._id, function(err) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:boxes:deleted', data._id);
+                return req.io.emit('data:box:delete', req.data._id);
             });
         }
     };

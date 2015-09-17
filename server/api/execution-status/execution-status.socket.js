@@ -10,14 +10,14 @@ module.exports = function(app) {
                     if (err) {
                         return errors.handleSocketError(req, err);
                     }
-                    return req.io.emit('data:execution-status', status);
+                    return req.io.emit('data:execution-status:read', status);
                 });
             } else {
                 ExecutionStatus.find(function(err, status) {
                     if (err) {
                         return errors.handleSocketError(req, err);
                     }
-                    return req.io.emit('data:execution-status', status);
+                    return req.io.emit('data:execution-status:read', status);
                 });
             }
         }

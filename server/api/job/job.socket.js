@@ -5,22 +5,15 @@ var Job = require('./job.model'),
 
 module.exports = function(app) {
     return {
-        // read: function(req) {
-        //     Job.find(function(err, jobs) {
-        //         if (err) {
-        //             return errors.handleSocketError(req, err);
-        //         }
-        //         return req.io.emit('data:job', jobs);
-        //     });
-        // },
         read: function(req) {
+            console.log('hello read');
             if (req.data && req.data._id && req.data._id.length) {
                 Job.findById(req.data._id, function(err, job) {
                     if (err) {
                         return errors.handleSocketError(req, err);
                     }
                     
-                    return req.io.emit('data:job', job);
+                    return req.io.emit('data:job:read', job);
                 });
             } else {
                 Job.find(function(err, jobs) {
@@ -28,7 +21,7 @@ module.exports = function(app) {
                         return errors.handleResponseError(req, err);
                     } 
                     
-                    return req.io.emit('data:job', jobs);
+                    return req.io.emit('data:job:read', jobs);
                 });
             }
         },
@@ -37,11 +30,11 @@ module.exports = function(app) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:job:created', job);
+                return req.io.emit('data:job:create', job);
             });
         },
         update: function(req) {
-            Job.findById(req.data.id, function(err, job) {
+            Job.findById(req.data._id, function(err, job) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
@@ -51,16 +44,16 @@ module.exports = function(app) {
                     if (err) {
                         return errors.handleSocketError(req, err);
                     }
-                    return req.io.emit('data:job:updated', updatedJob);
+                    return req.io.emit('data:job:update', updatedJob);
                 });
             });
         },
         delete: function(req) {
-            Job.findByIdAndRemove(req.data.id, function(err) {
+            Job.findByIdAndRemove(req.data._id, function(err) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:job:deleted', req.data._id);
+                return req.io.emit('data:job:delete', req.data._id);
             });
         }
     };

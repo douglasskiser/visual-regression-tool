@@ -191,6 +191,7 @@ define(function(require) {
     Page.prototype.renderStatus = function() {
         var that = this;
         var status = that.statuses.get(that.model.get('statusId'));
+        console.log('STATUS: ', status);
         // var status = that.statuses.get(that.model.attributes[0].statusId);
 
         that.controls.statusId.html(status.toHTML());

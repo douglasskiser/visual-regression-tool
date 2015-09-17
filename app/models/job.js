@@ -6,10 +6,10 @@ define(function(require) {
 
     var Model = Super.extend({
         defaults: {
-            oldBoxId: 3,
-            newBoxId: 2,
-            scriptId: 1,
-            deviceId: 1
+            oldBoxId: '55f19f841309203f03000001',//3,
+            newBoxId: '55f19f841309203f03000002',//2,
+            scriptId: '55f19f841309203f0300004f',//1,
+            deviceId: '55f19f841309203f03000009'//1
         },
         name: 'job'
     });
@@ -17,14 +17,23 @@ define(function(require) {
 
     Model.prototype.run = function(params) {
         var that = this;
-
-        return app.socket.request({
-            url: '/execution/' + that.id + '/run',
-            type: 'POST',
-            data: params
+        
+        //setup a listener
+        
+        app.webSocket.once('data:execution:run', function(data) {
+            //do something with data
+            console.log('data:execution:run ', data);
         });
-    };
+        
+        app.webSocket.emit('execution:run', {_id: that.id});
 
+        // return app.socket.request({
+        //     url: '/execution/' + that.id + '/run',
+        //     type: 'POST',
+        //     data: params
+        // });
+    };
+    
     Model.prototype.getScreenshots = function() {
         var that = this;
 

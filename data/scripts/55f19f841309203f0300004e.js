@@ -64,7 +64,7 @@ casper.evaluate(function() {
 
 
 casper.wait(5000);
-
+/**
 casper.then(function() {
     casper.echo("Make it a one way flight'");
     casper.evaluate(function(a) {
@@ -991,7 +991,7 @@ casper.then(function() {
 });
 
 
-
+**/
 casper.run(function() {
     casper.echo("CASPER COMPLETED.");
     casper.exit();

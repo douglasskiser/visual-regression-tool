@@ -24,7 +24,7 @@ var _methods = {
         var job, oldBox, script, device, newBox, excStatuses = {},
             jobTypes = {},
             self = this;
-
+            
         callback = callback || function() {};
 
         return new B(function(resolve, reject) {
@@ -134,6 +134,10 @@ var _methods = {
             .then(function() {
                 return new B(function(resolve, reject) {
                     exc.statusId = excStatuses.Running;
+                    
+                    socket.io.emit('data:execution:status', {_id: exc._id, status: 'Running'});
+                    socket.io.broadcast('data:execution:status', {_id: exc._id, status: 'Running'});
+                    console.log('JUST BROADCASTED FOO');
                     //exc.statusId = 2;
                     //exc.status = 'running';
                     exc.save(function(err, updatedExc) {
@@ -238,6 +242,8 @@ var _methods = {
                         })
                         .then(function() {
                             exc.statusId = excStatuses.Completed;
+                            
+                            socket.io.broadcast('data:execution:status', {_id: exc._id, status: 'Completed'});
                             //exc.status = 'completed';
                             //exc.statusId = 3;
                             return exc.save(function(err, updatedExc) {
@@ -245,13 +251,14 @@ var _methods = {
                                     return errors.handleResponseError(null, 500, err);
                                 }
                                 logger.info('execution finished');
-                                socket.io.broadcast('execution:finished', updatedExc);
-                                return callback(updatedExc);
+                                callback();
                             });
                         })
                         .catch(function(err) {
                             logger.error('Error while runnning visual regression', err);
                             exc.statusId = excStatuses.Error;
+                            
+                            socket.io.broadcast('data:execution:status', {_id: exc._id, status: 'Error'});
                             //exc.status = 'error';
                             //exc.statusId = 4;
                             exc.save(function(err, updatedExc) {
@@ -259,9 +266,35 @@ var _methods = {
                                     return errors.handleResponseError(null, 500, err);
                                 }
                                 logger.info('execution saved with error', err);
+                                callback();
                             });
                         });
-                }
+                } else if (job.typeId.toString() === jobTypes['Changes Moderator'].toString()) {
+                    logger.info('Running Changes Moderator job');
+    
+                    var cmd = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.screenshotsPath, '--url=' + paths.url, '--width=' + device.get('width'), '--height=' + device.get('height'), ' > ', paths.logPath, '2>&1'].join(' ');
+                    logger.info(cmd);
+    
+                    return new B(function(resolve, reject) {
+                        nexpect.spawn(cmd)
+                            .run(function(err, stdout, exitcode) {
+                                if (exitcode !== 0) {
+                                    reject({
+                                        err: err,
+                                        stdout: stdout,
+                                        exitCode: exitcode
+                                    });
+                                    return;
+                                }
+                                resolve({
+                                    err: err,
+                                    stdout: stdout,
+                                    exitCode: exitcode
+                                });
+                            });
+                    });
+
+            }
             });
     },
 
@@ -372,35 +405,35 @@ exports.getOne = function(req, res) {
     });
 };
 
-exports.terminateRunningExecutions = function(req, res) {
-    var numOfTerminations = 0;
+// exports.terminateRunningExecutions = function(req, res) {
+//     var numOfTerminations = 0;
 
-    Execution.find({
-        status: 'running'
-    }, function(err, excsRunning) {
-        if (err) {
-            return errors.handleResponseError(res || null, 500, err);
-        }
-        if (excsRunning.length) {
-            excsRunning.forEach(function(exc) {
-                exc.status = 'terminated';
-                //exc.statusId = 5;
-                exc.save(function(err) {
-                    if (err) {
-                        return errors.handleResponseError(res || null, 500, err);
-                    }
-                    numOfTerminations++;
-                });
-            });
+//     Execution.find({
+//         status: 'running'
+//     }, function(err, excsRunning) {
+//         if (err) {
+//             return errors.handleResponseError(res || null, 500, err);
+//         }
+//         if (excsRunning.length) {
+//             excsRunning.forEach(function(exc) {
+//                 exc.status = 'terminated';
+//                 //exc.statusId = 5;
+//                 exc.save(function(err) {
+//                     if (err) {
+//                         return errors.handleResponseError(res || null, 500, err);
+//                     }
+//                     numOfTerminations++;
+//                 });
+//             });
 
-            logger.info('There were ' + numOfTerminations + 'terminated.');
+//             logger.info('There were ' + numOfTerminations + 'terminated.');
 
-            if (res) {
-                res.send(200);
-            }
-        }
-    });
-};
+//             if (res) {
+//                 res.send(200);
+//             }
+//         }
+//     });
+// };
 
 exports.checkExecutionQueue = function(socket) {
     Execution.find({

@@ -4,60 +4,52 @@ var Script = require('./script.model'),
 
 module.exports = function(app) {
     return {
-        get: function(req) {
-            Script.find(function(err, scripts) {
-                if (err) {
-                    return errors.handleSocketError(req, err);
-                }
-                return req.io.emit('data:scripts', scripts);
-            });
-        },
         read: function(req) {
             if (req.data && req.data._id && req.data._id.length) {
                 Script.findById(req.data._id, function(err, script) {
                     if (err) {
                         return errors.handleSocketError(req, err);
                     }
-                    return req.io.emit('data:script', script);
+                    return req.io.emit('data:script:read', script);
                 });
             } else {
                 Script.find(function(err, script) {
                     if (err) {
                        return errors.handleSocketError(req, err); 
                     }
-                    return req.io.emit('data:script', script);
+                    return req.io.emit('data:script:read', script);
                 });
             }
         },
-        create: function(req, data) {
-            Script.create(data, function(err, script) {
+        create: function(req) {
+            Script.create(req.data, function(err, script) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:scripts:created', script);
+                return req.io.emit('data:script:create', script);
             });
         },
-        update: function(req, data) {
-            Script.findById(data.id, function(err, script) {
+        update: function(req) {
+            Script.findById(req.data._id, function(err, script) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                _.extend(script, data);
+                _.extend(script, req.data);
                 
                 script.save(function(err, updatedScript) {
                     if (err) {
                         return errors.handleSocketError(req, err);
                     }
-                    return req.io.emit('data:scripts:updated', updatedScript);
+                    return req.io.emit('data:script:update', updatedScript);
                 });
             });
         },
-        delete: function(req, data) {
-            Script.findByIdAndRemove(data.id, function(err) {
+        delete: function(req) {
+            Script.findByIdAndRemove(req.data._id, function(err) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:scripts:deleted', data._id);
+                return req.io.emit('data:script:delete', req.data._id);
             });
         }
     };

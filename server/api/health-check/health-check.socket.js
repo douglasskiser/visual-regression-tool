@@ -4,51 +4,52 @@ var HealthCheck = require('./health-check.model'),
 
 module.exports = function(app) {
     return {
-        get: function(req) {
-            HealthCheck.find(function(err, healthChecks) {
+        read: function(req) {
+            if (req.data && req.data._id && req.data._id.length) {
+                HealthCheck.findById(req.data._id, function(err, healthCheck) {
+                    if (err) {
+                        return errors.handleSocketError(req, err);
+                    }
+                    return req.io.emit('data:health-check:read', healthCheck);
+                });
+            } else {
+                HealthCheck.find(function(err, healthChecks) {
+                    if (err) {
+                        return errors.handleSocketError(req, err);
+                    }
+                    return req.io.emit('data:health-check:read', healthChecks);
+                });
+            }
+        },
+        create: function(req) {
+            HealthCheck.create(req.data, function(err, healthCheck) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:healthChecks', healthChecks);
+                return req.io.emit('data:health-check:create', healthCheck);
             });
         },
-        read: function(req) {
+        update: function(req) {
             HealthCheck.findById(req.data._id, function(err, healthCheck) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:health-check', healthCheck);
-            });
-        },
-        create: function(req, data) {
-            HealthCheck.create(data, function(err, healthCheck) {
-                if (err) {
-                    return errors.handleSocketError(req, err);
-                }
-                return req.io.emit('data:healthChecks:created', healthCheck);
-            });
-        },
-        update: function(req, data) {
-            HealthCheck.findById(data.id, function(err, healthCheck) {
-                if (err) {
-                    return errors.handleSocketError(req, err);
-                }
-                _.extend(healthCheck, data);
+                _.extend(healthCheck, req.data);
                 
                 healthCheck.save(function(err, updatedHealthCheck) {
                     if (err) {
                         return errors.handleSocketError(req, err);
                     }
-                    return req.io.emit('data:healthChecks:updated', updatedHealthCheck);
+                    return req.io.emit('data:health-check:update', updatedHealthCheck);
                 });
             });
         },
-        delete: function(req, data) {
-            HealthCheck.findByIdAndRemove(data.id, function(err) {
+        delete: function(req) {
+            HealthCheck.findByIdAndRemove(req.data._id, function(err) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:healthChecks:deleted', data._id);
+                return req.io.emit('data:health-check:delete', req.data._id);
             });
         }
     };

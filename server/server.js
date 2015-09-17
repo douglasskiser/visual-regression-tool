@@ -15,7 +15,7 @@ var path = require('path'),
     executionCtrl = require('./api/execution/execution.controller');
 
 var app = expressIO().http().io();
-var agenda = new Agenda(app);
+
     
 B.all([odm.initialize()])
     .then(function() {
@@ -41,7 +41,7 @@ B.all([odm.initialize()])
         //app.use(methodOverride());
         app.use(express.methodOverride());
         app.use(express.cookieParser());
-        //app.use(express.session({secret: 'something-secret-shhhhhhh'}));
+        app.use(express.session({secret: 'something-secret-shhhhhhh'}));
         
         app.set('views', path.normalize(__dirname + '/views'));
         app.engine('hbs', exphbs({
@@ -51,8 +51,10 @@ B.all([odm.initialize()])
         app.set('view engine', 'hbs');
         
         app.use(app.router);
+        
+        var agenda = new Agenda(app, {});
 
-        require('./routes')(app);
+        require('./routes')(app, agenda);
         
         var port = process.env.PORT || 5000;
         var server = app.listen(port, process.env.IP, function() {

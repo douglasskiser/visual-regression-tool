@@ -40,23 +40,12 @@ define(function(require) {
             }
 
             socket = opts.socket || window.app.webSocket;
-            // Add a listener for our namespaced method, and resolve or reject our deferred based on the response
-            // socket.once(namespace + method, function(res) {
-                // var success = (res && res.success); // Expects server json response to contain a boolean 'success' field
-                // if (success) {
-                //     if (_.isFunction(options.success)) options.success(res);
-                //     defer.resolve(res);
-                //     return;
-                // }
-                // if (_.isFunction(options.error)) options.error(res);
-                // defer.reject(res);
-            // });
             
-            console.log('adding listener: data:' + this.name);
+            console.log('adding listener: data:' + namespace + method);
             
-            socket.once('data:' + this.name, function(data) {
+            socket.once('data:' + namespace + method, function(data) {
                 console.log('SOcket Data: ', data);
-                var success = (data && Object.keys(data).length); // Expects server json response to contain a boolean 'success' field
+                var success = true;//(data && !data.error); // Expects server json response to contain a boolean 'success' field
                 if (success) {
                     if (_.isFunction(options.success)) {
                         options.success(data);
@@ -64,10 +53,10 @@ define(function(require) {
                     defer.resolve(data);
                     return;
                 }
-                // if (_.isFunction(options.error)) {
-                //     options.error(data);
-                // }
-                // defer.reject(data);
+                if (_.isFunction(options.error)) {
+                    options.error(data);
+                }
+                defer.reject(data);
             });
             
             console.log(namespace + method, opts.data);

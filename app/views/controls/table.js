@@ -44,7 +44,7 @@ define(function(require) {
     View.prototype.sortableColumnClickHandler = function(event) {
         var that = this;
         var e = $(event.currentTarget);
-        var field = e.data('id'); //maybe?
+        var field = e.data('id');
         var column = that.columns.get(field);
         var direction = '';
 
@@ -79,7 +79,7 @@ define(function(require) {
         var that = this;
         // console.log('renderHead()', that.columns.toJSON());
         that.controls.thead.html(THEAD({
-            id: that.id, //id: that._id,
+            id: that.id,
             columns: that.columns.map(function(column, index) {
                 return that.tranformColumn(column, index);
             })
@@ -126,7 +126,7 @@ define(function(require) {
     View.prototype.renderBody = function() {
         var that = this;
         that.controls.tbody.html(TBODY({
-            id: that.id, //id: that._id,
+            id: that.id,
             rows: that.collection.map(function(model, index) {
                 return that.tranformRow(model, index);
             }),
@@ -173,7 +173,7 @@ define(function(require) {
 
     View.prototype.getDefaultRenderer = function() {
         return function(model, column, rowIndex, columnIndex) {
-            return model.get(column.id); //return model.get(column._id);
+            return model.get(column.id);
         };
     };
 

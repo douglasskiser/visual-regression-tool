@@ -11,6 +11,8 @@ var fs = require('fs'),
 
 var AgendaService = (function() {
     function AgendaService(socket, ops) {
+        var that = this;
+        console.log('init with socket:***************** ', socket);
         this.socket = socket;
         this.ops = _.extend({
             listeners: {
@@ -36,11 +38,12 @@ var AgendaService = (function() {
 
         this.agenda.define('runExecution', function(job, done) {
             logger.info('running execution');
-            console.log('HEY: ', job.attrs.data.id);
-            executionCtrl.run(job.attrs.data.id, this.socket, function(exc) {
-                logger.info('execution is finished running');
+            
+            console.log('SOCKET********* ', that.socket);
+
+            executionCtrl.run(job.attrs.data.id, that.socket, function() {
                 done();
-            }.bind(this));
+            });
 
             this.agenda.on('start', this.ops.listeners.start);
             this.agenda.on('complete', this.ops.listeners.complete);
@@ -59,7 +62,7 @@ var AgendaService = (function() {
 
     AgendaService.prototype.create = function(data) {
         logger.info('adding execution to agenda');
-        console.log('Data: ', data._id);
+
         var job = this.agenda.create('runExecution', {
             id: data._id
         });
@@ -73,10 +76,11 @@ var AgendaService = (function() {
 
     AgendaService.prototype.purge = function() {
         this.agenda.purge(function(err, numRemoved) {
+            var msg = numRemoved === 1 ? ' item were purged from the agenda.' : ' items were purged from the agenda.';
             if (err) {
                 logger.info('Error: purging agenda.');
             }
-            logger.info(numRemoved);
+            logger.info(numRemoved + msg);
         });
     };
 

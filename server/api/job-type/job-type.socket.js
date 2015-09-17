@@ -4,42 +4,43 @@ var JobType = require('./job-type.model'),
 
 module.exports = function(app) {
     return {
-        get: function(req) {
-            JobType.find(function(err, jobTypes) {
+        read: function(req) {
+            if (req.data && req.data._id && req.data._id.length) {
+               JobType.findById(req.data._id, function(err, jobType) {
+                    if (err) {
+                        return errors.handleSocketError(req, err);
+                    }
+                    return req.io.emit('data:job-type:read', jobType);
+                }); 
+            } else {
+                JobType.find(function(err, jobTypes) {
+                    if (err) {
+                        return errors.handleSocketError(req, err);
+                    }
+                    return req.io.emit('data:job-type:read', jobTypes);
+                });
+            }
+        },
+        create: function(req) {
+            JobType.create(req.data, function(err, jobType) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:job-type', jobTypes);
+                return req.io.emit('data:job-type:create', jobType);
             });
         },
-        read: function(req) {
+        update: function(req) {
             JobType.findById(req.data._id, function(err, jobType) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:job-type', jobType);
-            });
-        },
-        create: function(req, data) {
-            JobType.create(data, function(err, jobType) {
-                if (err) {
-                    return errors.handleSocketError(req, err);
-                }
-                return req.io.emit('data:jobTypes:created', jobType);
-            });
-        },
-        update: function(req, data) {
-            JobType.findById(data.id, function(err, jobType) {
-                if (err) {
-                    return errors.handleSocketError(req, err);
-                }
-                _.extend(jobType, data);
+                _.extend(jobType, req.data);
                 
                 jobType.save(function(err, updatedJobType) {
                     if (err) {
                         return errors.handleSocketError(req, err);
                     }
-                    return req.io.emit('data:jobTypes:updated', updatedJobType);
+                    return req.io.emit('data:job-type:update', updatedJobType);
                 });
             });
         },
@@ -48,7 +49,7 @@ module.exports = function(app) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:jobTypes:deleted', data._id);
+                return req.io.emit('data:job-type:delete', data._id);
             });
         }
     };

@@ -1,9 +1,12 @@
 var Execution = require('./execution.model'),
+    ExecutionStatus = require('../execution-status/execution-status.model'),
+    Job = require('../job/job.model'),
     executionCtrl = require('./execution.controller'),
     _ = require('underscore'),
-    errors = require('../../components/errors/errors');
+    errors = require('../../components/errors/errors'),
+    mongoose = require('mongoose');
 
-module.exports = function(app) {
+module.exports = function(app, agenda) {
     return {
         read: function(req) {
             if (req.data && req.data._id && req.data._id.length) {
@@ -11,7 +14,7 @@ module.exports = function(app) {
                     if (err) {
                         return errors.handleSocketError(req, err);
                     }
-                    return req.io.emit('data:execution', exc);
+                    return req.io.emit('data:execution:read', exc);
                 });
             } else {
                 Execution.find(function(err, exc) {
@@ -19,60 +22,103 @@ module.exports = function(app) {
                         return errors.handleResponseError(req, err);
                     } 
                     
-                    return req.io.emit('data:execution', exc);
+                    return req.io.emit('data:execution:read', exc);
                 });
             }
         },
-        create: function(req, data) {
-            Execution.create(data, function(err, exc) {
+        create: function(req) {
+            var statuses = [
+                'Scheduled',
+                'Running',
+                'Completed',
+                'Error',
+                'Terminated'
+            ];
+            
+            ExecutionStatus.findOne({name: statuses[req.data.statusId + 1]}, function(err, status) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                return req.io.emit('data:executions:created', exc);
+                
+                
+                req.data.statusId = status._id;
+                
+                Job.findById(req.data.jobId, function(err, job) {
+                    if (err) {
+                        return errors.handleSocketError(req, err);
+                    }
+                    
+                    req.data.jobId = job._id;
+                    
+                    console.log(req.data);
+                    // Execution.create(req.data, function(err, exc) {
+                    //     if (err) {
+                    //         return errors.handleSocketError(req, err);
+                    //     }
+                    //     return req.io.emit('data:execution:create', exc);
+                    //     //DO I NEED TO RUN HERE?
+                    // });
+                    var exc = new Execution(req.data);
+                    
+                    exc.save(function(err, newExc) {
+                        if (err) {
+                            return errors.handleSocketError(req, err);
+                        }
+                        
+                        agenda.create({_id: newExc._id});
+                        
+                        req.io.emit('data:execution:create', newExc);
+                    });
+                });
+                
+                
             });
         },
-        update: function(req, data) {
-            Execution.findById(data.id, function(err, exc) {
+        update: function(req) {
+            Execution.findById(req.data._id, function(err, exc) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
-                _.extend(exc, data);
+                _.extend(exc, req.data);
                 
                 exc.save(function(err, updatedExecution) {
                     if (err) {
                         return errors.handleSocketError(req, err);
                     }
-                    return req.io.emit('data:scripts:updated', updatedExecution);
+                    return req.io.emit('data:execution:update', updatedExecution);
                 });
             });
         },
-        delete: function(req, data) {
-            Execution.findByIdAndRemove(data.id, function(err) {
+        delete: function(req) {
+            Execution.findByIdAndRemove(req.data._id, function(err) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
                 
-                return req.io.emit('data:executions:deleted');
+                return req.io.emit('data:execution:delete');
             });  
         },
-        run: function(req, data) {
-            Execution.create(data, function(err, exc) {
+        run: function(req) {
+            Execution.findById(req.data._id, function(err, exc) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
                 // add to agenda
-                return req.io.emit('data:executions:running', exc);
+                agenda.create({_id: req.data._id});
+                
+                // tell them its in the agenda
+                return req.io.emit('data:execution:run', exc);
             });
         },
-        screenshots: function(req, data) {
-            Execution.findById(data.id, function(err, exc) {
+        screenshots: function(req) {
+            Execution.findById(req.data._id, function(err, exc) {
                 if (err) {
                     return errors.handleSocketError(req, err);
                 }
                 
                 var ss = executionCtrl.methods.getScreenshots(exc);
                 
-                return req.io.emit('data:executions:screenshot', ss);
+                return req.io.emit('data:execution:screenshots', ss);
             });
         }
     };

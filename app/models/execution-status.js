@@ -7,11 +7,17 @@ define(function(require) {
     });
 
 
-    Model.ID_SCHEDULED = 1;
-    Model.ID_RUNNING = 2;
-    Model.ID_COMPLETED = 3;
-    Model.ID_ERROR = 4;
-    Model.ID_TERMINATED = 5;
+    // Model.ID_SCHEDULED = 1;
+    // Model.ID_RUNNING = 2;
+    // Model.ID_COMPLETED = 3;
+    // Model.ID_ERROR = 4;
+    // Model.ID_TERMINATED = 5;
+    
+    Model.ID_SCHEDULED = '55f19f841309203f03000033';
+    Model.ID_RUNNING = '55f19f841309203f03000034';
+    Model.ID_COMPLETED = '55f19f841309203f03000035';
+    Model.ID_ERROR = '55f19f841309203f03000036';
+    Model.ID_TERMINATED = '55f19f841309203f03000037';
     
 
     Model.prototype.toHTML = function() {
