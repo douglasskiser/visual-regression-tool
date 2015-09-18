@@ -36,19 +36,20 @@ define(function(require) {
 
     Page.prototype.render = function() {
         var that = this;
+        console.log('going to render');
         B.resolve(that.model.fetch())
             .then(function() {
                 that.oldBox = new Box({
-                    id: that.model.get('oldBoxId')
+                    _id: that.model.get('oldBoxId')
                 });
                 that.newBox = new Box({
-                    id: that.model.get('newBoxId')
+                    _id: that.model.get('newBoxId')
                 });
                 that.script = new Script({
-                    id: that.model.get('scriptId')
+                    _id: that.model.get('scriptId')
                 });
                 that.device = new Device({
-                    id: that.model.get('deviceId')
+                    _id: that.model.get('deviceId')
                 });
 
                 return B.all([
@@ -59,7 +60,7 @@ define(function(require) {
             ]);
             })
             .then(function() {
-
+                console.log('Status: ', that.model.get('status'));
                 that.$el.html(Template({
                     id: that.id,
                     data: _.extend(that.model.toJSON(), {
@@ -78,11 +79,12 @@ define(function(require) {
                     that.refreshStatus();
                 }
                 else if (that.model.get('status') == Model.STATUS_COMPLETED) {
+                    console.log('trying to render shots call');
                     that.renderScreenshots();
                 }
 
                 var events = {};
-
+                
                 events['click ' + that.toId('run')] = 'runButtonClickHandler';
                 events['click ' + that.toId('delete')] = 'deleteButtonClickHandler';
                 events['click ' + that.toId('back')] = 'backButtonClickHandler';
@@ -304,9 +306,10 @@ define(function(require) {
 
     Page.prototype.renderScreenshots = function() {
         var that = this;
-
+        console.log('render screen shots');
         return B.resolve(that.model.getScreenshots())
             .then(function(screenshots) {
+                console.log('SCREENSHOTS MAN')
                 that.screenshots.reset(screenshots);
                 
                 if( that.screenshots.length >0 ){
@@ -419,6 +422,7 @@ define(function(require) {
         event.preventDefault();
 
         NProgress.start();
+        console.log('about to refresh');
         _.delay(that.refreshStatus.bind(that), 10000);
 
         that.controls.status.html('<i class="fa fa-spinner fa-spin"></i> ' + Model.getStatusName(Model.STATUS_RUNNING));

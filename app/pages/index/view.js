@@ -61,8 +61,6 @@ define(function(require) {
                     that.newBox = new Box({
                         _id: that.job.get('newBoxId')
                     });
-
-
                 }
 
                 that.script = new Script({
@@ -123,7 +121,7 @@ define(function(require) {
     Page.prototype.postRender = function() {
         var that = this;
         that.createSocketListener.call(this);
-        //that.on('status-change', that.onStatusChangeHandler.bind(that));
+        that.on('status-change', that.onStatusChangeHandler.bind(that));
         that.renderResults();
         that.adjustButtons();
         that.renderStatus();
@@ -133,14 +131,14 @@ define(function(require) {
     Page.prototype.adjustButtons = function() {
         var that = this;
 
-        if (_.contains([ExecutionStatus.ID_COMPLETED, ExecutionStatus.ID_ERROR, ExecutionStatus.ID_TERMINATED], parseInt(that.model.get('statusId'), 10))) {
+        if (_.contains([ExecutionStatus.ID_COMPLETED, ExecutionStatus.ID_ERROR, ExecutionStatus.ID_TERMINATED], that.model.get('statusId'))) {
             that.controls.rerun.removeClass('hidden');
         }
         else {
             that.controls.rerun.addClass('hidden');
         }
 
-        if (_.contains([ExecutionStatus.ID_RUNNING], parseInt(that.model.get('statusId'), 10))) {
+        if (_.contains([ExecutionStatus.ID_RUNNING], that.model.get('statusId'))) {
             that.controls.delete.addClass('hidden');
         }
         else {
@@ -229,7 +227,7 @@ define(function(require) {
     Page.prototype.rerunButtonClickHandler = function(event) {
         var that = this;
         event.preventDefault();
-
+        console.log('rerun clicked');
         B.resolve()
             .then(function() {
                 return that.model.save({
@@ -247,7 +245,6 @@ define(function(require) {
     };
     
     Page.prototype.createSocketListener = function() {
-        console.log('STAUS LISTENER CREATED!!!');
         app.webSocket.on('data:execution:status', this.onSocketHandler.bind(this));
     };
 

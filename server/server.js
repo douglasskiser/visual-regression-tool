@@ -25,7 +25,7 @@ B.all([odm.initialize()])
         //     require('./seed');
         // }
         
-        //executionCtrl.terminateRunningExecutions();
+        executionCtrl.terminateRunningExecutions();
         
         app.use('/resources', express.static(path.join(__dirname, '../app/dist'), {
             // maxAge: 86400000

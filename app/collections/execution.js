@@ -26,11 +26,23 @@ define(function(require) {
     Collection.prototype.createSocketListener = function() {
          app.webSocket.on('data:execution:status', this.onSocketHandler.bind(this));
          app.webSocket.on('data:execution:create', this.onExecutionCreateHandler.bind(this));
+         app.webSocket.on('data:execution:delete', this.onExecutionDeleteHandler.bind(this));
     };
     
     Collection.prototype.onExecutionCreateHandler = function(data) {
+        console.log('creating new model')
         var m = new Model(data);
         this.add(m);
+    };
+    
+    Collection.prototype.onExecutionDeleteHandler = function(data) {
+        var m = this.find(function(model) {
+            return model.get('_id').toString() == data._id.toString();
+        });
+        
+        this.remove(m);
+        
+        console.log('Item removed in socket');
     };
     
     Collection.prototype.onSocketHandler = function(data) {
@@ -41,6 +53,8 @@ define(function(require) {
         subModel.set({
             statusId: data.statusId
         });
+        
+        console.log('onSOcketHandler finished');
     };
 
     return Collection;

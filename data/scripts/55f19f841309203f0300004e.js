@@ -64,7 +64,7 @@ casper.evaluate(function() {
 
 
 casper.wait(5000);
-/**
+
 casper.then(function() {
     casper.echo("Make it a one way flight'");
     casper.evaluate(function(a) {
@@ -78,7 +78,7 @@ casper.then(function() {
 casper.then(function() {
     camera.capture('#app-container', 'Air Search Page');
 });
-
+/**
 casper.then(function() {
     casper.evaluate(function() {
         var e = $('#departure-airport');
@@ -106,7 +106,8 @@ casper.then(function() {
 });
 
 casper.wait(4000);
-
+**/
+/**
 casper.waitFor(function() {
     return casper.evaluate(function() {
         return $('.error').is(':visible');
@@ -128,7 +129,7 @@ casper.then(function() {
 casper.then(function() {
     camera.capture('#app-container', 'Air Search Page - Arrival Airport selected');
 });
-
+casper.wait(4000);
 
 // set a date before today
 casper.then(function() {

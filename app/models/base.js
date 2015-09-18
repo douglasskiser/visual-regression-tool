@@ -43,6 +43,10 @@ define(function(require) {
             
             socket.once('data:' + namespace + method, function(data) {
                 var success = (data && !data.error);
+                if (!data) {
+                    defer.resolve();
+                    return;
+                }
                 if (success) {
                     if (_.isFunction(options.success)) {
                         options.success(data);
@@ -53,6 +57,7 @@ define(function(require) {
                 if (_.isFunction(options.error)) {
                     options.error(data);
                 }
+
                 defer.reject(data);
             });
             

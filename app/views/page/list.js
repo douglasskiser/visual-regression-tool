@@ -16,40 +16,7 @@ define(function(require) {
         if (!this.collection) {
             this.collection = this.getCollection();
         }
-        
-        //this.createSocketListener.call(this);
     };
-    
-    // Page.prototype.createSocketListener = function() {
-    //     console.log('socket listener created===============================');
-    //     app.webSocket.on('data:execution:status', this.onSocketHandler.bind(this));
-    // };
-
-    // Page.prototype.onSocketHandler = function(data) {
-    //     console.log('running socket handler');
-    //     var executionModel;
-    //     this.model.set({
-    //             statusId: data.statusId
-    //         });
-    //     // if (!this.model) {
-    //     //     executionModel = this.collection.find(function(model) {
-    //     //         return model.get('id') == data._id;
-    //     //     });
-    //     //     //this.onStatusChangeHandler = this.onStatusChangeHandler || function() {};
-    //     //     executionModel.set({
-    //     //         statusId: data.statusId
-    //     //     });
-    //     // } else {
-    //     //     this.model.set({
-    //     //         statusId: data.statusId
-    //     //     });
-    //     // }
-    //     this.onStatusChangeHandler.call(this);
-    // };
-    
-    // Page.prototype.onStatusChangeHandler = function() {
-    //     console.log('inside on status change handler. buddy!');
-    // };
 
     Page.prototype.getCollection = function() {
         throw new Error("getCollection() must be overriden!");

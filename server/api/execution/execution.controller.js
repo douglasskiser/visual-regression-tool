@@ -24,7 +24,7 @@ var _methods = {
         var job, oldBox, script, device, newBox, excStatuses = {},
             jobTypes = {},
             self = this;
-            
+
         callback = callback || function() {};
 
         return new B(function(resolve, reject) {
@@ -128,9 +128,9 @@ var _methods = {
             .then(function() {
                 return new B(function(resolve, reject) {
                     exc.statusId = excStatuses.Running;
-                    
+
                     //socket.io.emit('data:execution:status', {_id: exc._id, status: 'Running'});
-                    
+
                     //exc.statusId = 2;
                     //exc.status = 'running';
                     exc.save(function(err, updatedExc) {
@@ -138,9 +138,12 @@ var _methods = {
                             reject(err);
                             return errors.handleResponseError(null, 500, err);
                         }
-                        
-                        socket.io.broadcast('data:execution:status', {_id: exc._id, statusId: exc.statusId});
-                        
+
+                        socket.io.broadcast('data:execution:status', {
+                            _id: exc._id,
+                            statusId: exc.statusId
+                        });
+
                         return resolve();
                     });
                 });
@@ -153,28 +156,28 @@ var _methods = {
                 paths.scriptAbsPath = scriptCtrl.methods.getAbsolutePath(script);
 
                 paths.executionBasePath = _methods.getExecutionBasePath(exc);
-                
+
                 paths.screenshotsPath = [paths.executionBasePath, 'screenshots'].join('/');
-                
+
                 paths.logPath = [paths.executionBasePath, 'log.txt'].join('/');
-                
+
                 paths.url = oldBox.url;
-                
-                
+
+
 
                 if (job.typeId.toString() === jobTypes['Visual Regression'].toString()) {
-                    
+
                     paths.oldScreenshotsPath = [paths.screenshotsPath, 'old'].join('/');
-                    
+
                     paths.newScreenshotsPath = [paths.screenshotsPath, 'new'].join('/');
-                    
+
                     paths.newUrl = newBox.url;
 
                     cmds.old = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.oldScreenshotsPath, '--url=' + paths.url, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
                     cmds.new = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.newScreenshotsPath, '--url=' + paths.newUrl, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
 
                     return B.resolve(new B(function(resolve, reject) {
-                            
+
                             nexpect.spawn('rm -rf ' + paths.screenshotsPath)
                                 .run(function(err, stdout, exitcode) {
                                     resolve({
@@ -233,8 +236,8 @@ var _methods = {
                         })
                         .then(function() {
                             exc.statusId = excStatuses.Completed;
-                            
-                            
+
+
                             //exc.status = 'completed';
                             //exc.statusId = 3;
                             return exc.save(function(err, updatedExc) {
@@ -242,15 +245,18 @@ var _methods = {
                                     return errors.handleResponseError(null, 500, err);
                                 }
                                 logger.info('execution finished');
-                                socket.io.broadcast('data:execution:status', {_id: exc._id, statusId: exc.statusId});
+                                socket.io.broadcast('data:execution:status', {
+                                    _id: exc._id,
+                                    statusId: exc.statusId
+                                });
                                 callback();
                             });
                         })
                         .catch(function(err) {
                             logger.error('Error while runnning visual regression', err);
                             exc.statusId = excStatuses.Error;
-                            
-                            
+
+
                             //exc.status = 'error';
                             //exc.statusId = 4;
                             exc.save(function(err, updatedExc) {
@@ -258,16 +264,20 @@ var _methods = {
                                     return errors.handleResponseError(null, 500, err);
                                 }
                                 logger.info('execution saved with error', err);
-                                socket.io.broadcast('data:execution:status', {_id: exc._id, statusId: exc.statusId});
+                                socket.io.broadcast('data:execution:status', {
+                                    _id: exc._id,
+                                    statusId: exc.statusId
+                                });
                                 callback();
                             });
                         });
-                } else if (job.typeId.toString() === jobTypes['Changes Moderator'].toString()) {
+                }
+                else if (job.typeId.toString() === jobTypes['Changes Moderator'].toString()) {
                     logger.info('Running Changes Moderator job');
-    
+
                     var cmd = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.screenshotsPath, '--url=' + paths.url, '--width=' + device.get('width'), '--height=' + device.get('height'), ' > ', paths.logPath, '2>&1'].join(' ');
                     logger.info(cmd);
-    
+
                     return new B(function(resolve, reject) {
                         nexpect.spawn(cmd)
                             .run(function(err, stdout, exitcode) {
@@ -287,7 +297,10 @@ var _methods = {
                             });
                     });
 
-            }
+                }
+                else if (job.typeId.toString() === jobTypes['Health Check'].toString()) {
+                    logger.info('Running Health Check Job');
+                }
             });
     },
 
@@ -295,87 +308,127 @@ var _methods = {
         return [config.rootPath.slice(0, config.rootPath.length - 1), 'data', 'executions', exc.id].join('/');
     },
 
-    getScreenshots: function(exc) {
+    getScreenshots: function(exc, callback) {
         var executionBasePath = _methods.getExecutionBasePath(exc);
         var screenshotsPath = [executionBasePath, 'screenshots'].join('/');
+        var jobTypes = {};
+        var job;
+        var callback = callback || function(){};
 
-        Job.findById(exc.jobId, function(err, job) {
-            if (err) {
-                return errors.handleErrorResponse(null, 500, err);
-            }
+        return new B(function(resolve, reject) {
+                return JobTypes.find(function(err, types) {
+                    if (err) {
+                        reject();
+                        return errors.handleResponseError(null, 500, err);
+                    }
+                    jobTypes = types;
 
-            if (job.typeId === 1) {
-                var oldScreenshotsPath = [screenshotsPath, 'old'].join('/');
-                var newScreenshotsPath = [screenshotsPath, 'new'].join('/');
-
-
-                return B.all([
-                        new B(function(resolve, reject) {
-                            glob("*.png", {
-                                cwd: oldScreenshotsPath
-                            }, function(err, files) {
-                                if (err) {
-                                    reject(err);
-                                    return;
-                                }
-                                resolve(files);
-                            });
-                        }),
-                        new B(function(resolve, reject) {
-                            glob("*.png", {
-                                cwd: newScreenshotsPath
-                            }, function(err, files) {
-                                if (err) {
-                                    reject(err);
-                                    return;
-                                }
-                                resolve(files);
-                            });
-                        })
-                    ])
-                    .spread(function(oldScreenshots, newScreenshots) {
-                        return {
-                            oldScreenshots: oldScreenshots,
-                            newScreenshots: newScreenshots
-                        };
+                    _.each(types, function(item) {
+                        jobTypes[item.name] = item._id;
                     });
-            }
-            else if (job.typeId === 3) {
-                var baselineScreenshotsPath = [config.rootPath, 'data', 'job', job.id, 'baseline'].join('/');
 
-                return B.all([
-                        new B(function(resolve, reject) {
-                            glob("*.png", {
-                                cwd: baselineScreenshotsPath
-                            }, function(err, files) {
-                                if (err) {
-                                    reject(err);
-                                    return;
-                                }
-                                resolve(files);
-                            });
-                        }),
-                        new B(function(resolve, reject) {
-                            glob("*.png", {
-                                cwd: screenshotsPath
-                            }, function(err, files) {
-                                if (err) {
-                                    reject(err);
-                                    return;
-                                }
-                                resolve(files);
-                            });
-                        })
-                    ])
-                    .spread(function(oldScreenshots, newScreenshots) {
-                        return {
-                            oldScreenshots: oldScreenshots,
-                            newScreenshots: newScreenshots
-                        };
+                    return resolve();
+                });
+            })
+            .then(function() {
+                return new B(function(resolve, reject) {
+                    Job.findById(exc.jobId, function(err, thisJob) {
+                        if (err) {
+                            return errors.handleErrorResponse(null, 500, err);
+                        }
+                        job = thisJob;
+                        return resolve();
                     });
-            }
-            return B.resolve();
-        });
+                });
+            })
+            .then(function() {
+                if (job.typeId.toString() === jobTypes['Visual Regression'].toString()) {
+                    var oldScreenshotsPath = [screenshotsPath, 'old'].join('/');
+                    var newScreenshotsPath = [screenshotsPath, 'new'].join('/');
+                    console.log('in vr screen shots ', {
+                        oldScreenshotsPath: oldScreenshotsPath,
+                        newScreenshotsPath: newScreenshotsPath
+                    });
+                    return B.all([
+                            new B(function(resolve, reject) {
+                                console.log('getting shot');
+                                glob("*.png", {
+                                    cwd: oldScreenshotsPath
+                                }, function(err, files) {
+                                    if (err) {
+                                        console.log('err shot ', err);
+                                        reject(err);
+                                        return;
+                                    }
+                                    console.log('resolve shot');
+                                    resolve(files);
+                                });
+                            }),
+                            new B(function(resolve, reject) {
+                                console.log('getting 2nd shot');
+                                glob("*.png", {
+                                    cwd: newScreenshotsPath
+                                }, function(err, files) {
+                                    if (err) {
+                                        console.log('err shot', err);
+                                        reject(err);
+                                        return;
+                                    }
+                                    console.log('resolving 2nd shot');
+                                    resolve(files);
+                                });
+                            })
+                        ])
+                        .spread(function(oldScreenshots, newScreenshots) {
+                            console.log('Spread ');
+                            console.log('old shot ', oldScreenshots); 
+                            return callback({
+                                oldScreenshots: oldScreenshots,
+                                newScreenshots: newScreenshots
+                            })
+                        });
+                }
+                else if (job.typeId.toString() === jobTypes['Changes Moderator'].toString()) {
+                    var baselineScreenshotsPath = [config.rootPath, 'data', 'job', job.id, 'baseline'].join('/');
+
+                    return B.all([
+                            new B(function(resolve, reject) {
+                                glob("*.png", {
+                                    cwd: baselineScreenshotsPath
+                                }, function(err, files) {
+                                    if (err) {
+                                        console.log('error shot', err);
+                                        reject(err);
+                                        return;
+                                    }
+                                    console.log('resolving shot');
+                                    resolve(files);
+                                });
+                            }),
+                            new B(function(resolve, reject) {
+                                glob("*.png", {
+                                    cwd: screenshotsPath
+                                }, function(err, files) {
+                                    if (err) {
+                                        reject(err);
+                                        return;
+                                    }
+                                    resolve(files);
+                                });
+                            })
+                        ])
+                        .spread(function(oldScreenshots, newScreenshots) {
+                            return callback({
+                                oldScreenshots: oldScreenshots,
+                                newScreenshots: newScreenshots
+                            });
+                        });
+                }
+                return B.resolve();
+            })
+            .catch(function(err) {
+                console.log('Screenshot caught err ', err);
+            });
     }
 };
 
@@ -398,35 +451,35 @@ exports.getOne = function(req, res) {
     });
 };
 
-// exports.terminateRunningExecutions = function(req, res) {
-//     var numOfTerminations = 0;
+exports.terminateRunningExecutions = function(req, res) {
+    var numOfTerminations = 0;
 
-//     Execution.find({
-//         status: 'running'
-//     }, function(err, excsRunning) {
-//         if (err) {
-//             return errors.handleResponseError(res || null, 500, err);
-//         }
-//         if (excsRunning.length) {
-//             excsRunning.forEach(function(exc) {
-//                 exc.status = 'terminated';
-//                 //exc.statusId = 5;
-//                 exc.save(function(err) {
-//                     if (err) {
-//                         return errors.handleResponseError(res || null, 500, err);
-//                     }
-//                     numOfTerminations++;
-//                 });
-//             });
+    Execution.find({
+        statusId: '55f19f841309203f03000034' // SHOULD USE EXECUTION_STATUS for status IDS
+    }, function(err, excsRunning) {
+        if (err) {
+            return errors.handleResponseError(res || null, 500, err);
+        }
+        if (excsRunning.length) {
+            excsRunning.forEach(function(exc) {
+                exc.statusId = '55f19f841309203f03000037';
+                //exc.statusId = 5;
+                exc.save(function(err) {
+                    if (err) {
+                        return errors.handleResponseError(res || null, 500, err);
+                    }
+                    numOfTerminations++;
+                });
+            });
 
-//             logger.info('There were ' + numOfTerminations + 'terminated.');
+            logger.info('There were ' + numOfTerminations + ' executions terminated.');
 
-//             if (res) {
-//                 res.send(200);
-//             }
-//         }
-//     });
-// };
+            if (res) {
+                res.send(200);
+            }
+        }
+    });
+};
 
 exports.checkExecutionQueue = function(socket) {
     Execution.find({
@@ -510,16 +563,16 @@ exports.run = function(id, socket, cb) {
 };
 
 exports.screenshots = function(req, res) {
-    Execution.findOne({
-        id: req.params.id
-    }, function(err, exc) {
+    Execution.findById(req.params.id, function(err, exc) {
         if (err) {
             return errors.handleResponseError(res, 500, err);
         }
 
-        var ss = _methods.getScreenshots(exc);
+        _methods.getScreenshots(exc, function(data) {
+            return res.send(data);
+        });
 
-        return res.send(ss);
+        // return res.send(ss);
     });
 };
 

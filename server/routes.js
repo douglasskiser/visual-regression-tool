@@ -25,8 +25,10 @@ module.exports = function(app, agenda) {
     require('./api/job-type')(app);
     require('./api/script')(app);
     require('./api/execution')(app, agenda);
-    require('./api/health-check')(app);
     require('./api/execution-status')(app);
+    require('./api/health-check')(app);
+    require('./api/user')(app);
+    require('./auth')(app);
     
     // Web Socket Routes
     app.io.route('box', require('./api/box/box.socket')(app));

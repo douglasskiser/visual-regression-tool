@@ -41,6 +41,7 @@ define(function(require) {
                 url: '/execution/' + that.id + '/screenshots'
             }))
             .then(function(resp) {
+                console.log('RESP: ', resp);
                 var oldScreenshots = _.sortBy(resp.oldScreenshots, function(screenshot) {
                     return parseInt(/^(\d+)-/.exec(screenshot)[1], 10);
                 });

@@ -12,9 +12,9 @@ module.exports = function(app) {
     app.put('/rest/execution/:id', controller.update);
     app.delete('/rest/execution/:id', controller.delete);
     // app.post('/execution/:id/run', controller.run);
-    app.get('/rest/execution/:id/screenshots', controller.screenshots);
+    app.get('/execution/:id/screenshots', controller.screenshots);
     
-    app.get('/rest/execution/:id/run', function(req, res) {
+    app.get('/execution/:id/run', function(req, res) {
         Execution.findById(req.params.id, function(err, exc) {
             if (err) {
                 errors.handleResponseError(res, 500, err);

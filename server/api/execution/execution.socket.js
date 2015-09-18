@@ -49,15 +49,7 @@ module.exports = function(app, agenda) {
                     }
                     
                     req.data.jobId = job._id;
-                    
-                    console.log(req.data);
-                    // Execution.create(req.data, function(err, exc) {
-                    //     if (err) {
-                    //         return errors.handleSocketError(req, err);
-                    //     }
-                    //     return req.io.emit('data:execution:create', exc);
-                    //     //DO I NEED TO RUN HERE?
-                    // });
+
                     var exc = new Execution(req.data);
                     
                     exc.save(function(err, newExc) {
@@ -69,7 +61,6 @@ module.exports = function(app, agenda) {
                         
                         req.io.emit('data:execution:create', newExc);
                         app.io.broadcast('data:execution:create', newExc);
-                        console.log('just broacasted execution creation.');
                     });
                 });
                 
@@ -87,7 +78,8 @@ module.exports = function(app, agenda) {
                     if (err) {
                         return errors.handleSocketError(req, err);
                     }
-                    return req.io.emit('data:execution:update', updatedExecution);
+                    req.io.emit('data:execution:update', updatedExecution);
+                    app.io.broadcast('data:execution:update', updatedExecution);
                 });
             });
         },
@@ -97,7 +89,8 @@ module.exports = function(app, agenda) {
                     return errors.handleSocketError(req, err);
                 }
                 
-                return req.io.emit('data:execution:delete');
+                req.io.emit('data:execution:delete', {_id: req.data._id});
+                app.io.broadcast('data:execution:delete', {_id: req.data._id});
             });  
         },
         run: function(req) {

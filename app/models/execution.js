@@ -10,12 +10,13 @@ define(function(require) {
     });
 
     Model.prototype.getScreenshots = function(job) {
-        var that = this;
-
+        var that = this, path;
+        
         return B.resolve(app.socket.request({
                 url: '/execution/' + that.id + '/screenshots'
             }))
             .then(function(resp) {
+                console.log('RESP EXC: ', resp);
                 var oldScreenshots = _.sortBy(resp.oldScreenshots, function(screenshot) {
                     return parseInt(/^(\d+)-/.exec(screenshot)[1], 10);
                 });

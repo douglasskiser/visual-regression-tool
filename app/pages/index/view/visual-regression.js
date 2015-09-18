@@ -29,9 +29,11 @@ define(function(require) {
 
     View.prototype.render = function() {
         var that = this;
+        
+        console.log('trying to render vr');
 
         var params = {
-            id: this.id //_id: this._id
+            id: this.id
         };
 
         this.$el.html(TEMPLATE(params));
@@ -54,16 +56,16 @@ define(function(require) {
             window.clearTimeout(that.delayHandler);
         }
 
-        if (_.contains([ExecutionStatus.ID_COMPLETED, ExecutionStatus.ID_ERROR, ExecutionStatus.ID_TERMINATED], parseInt(that.model.get('statusId'), 10))) {
+        if (_.contains([ExecutionStatus.ID_COMPLETED, ExecutionStatus.ID_ERROR, ExecutionStatus.ID_TERMINATED], that.model.get('statusId'))) {
             _.defer(that.renderScreenshots.bind(that));
         }
-        else if (_.contains([ExecutionStatus.ID_RUNNING], parseInt(that.model.get('statusId'), 10))) {
+        else if (_.contains([ExecutionStatus.ID_RUNNING], that.model.get('statusId'))) {
             that.renderScreenshots()
                 .then(function() {
                     that.delayHandler = _.delay(that.draw.bind(that), 5000);
                 });
         }
-        else if (_.contains([ExecutionStatus.ID_SCHEDULED], parseInt(that.model.get('statusId'), 10))) {
+        else if (_.contains([ExecutionStatus.ID_SCHEDULED], that.model.get('statusId'))) {
             that.controls.screenshots.empty();
             that.controls.result.addClass('hidden');
         }
@@ -71,11 +73,13 @@ define(function(require) {
 
     View.prototype.renderScreenshots = function() {
         var that = this;
+        
+        console.log(that.model.getScreenshots);
 
         return B.resolve(that.model.getScreenshots(that.job))
             .then(function(screenshots) {
                 that.screenshots.reset(screenshots);
-
+                console.log('Screenshots : ', screenshots);
                 if (that.screenshots.length > 0) {
                     that.controls.result.removeClass('hidden');
                     that.controls.subtitle.text(accounting.formatNumber(that.screenshots.reduce(function(memo, s){
