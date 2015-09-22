@@ -19,7 +19,7 @@ var app = expressIO().http().io();
     
 B.all([odm.initialize()])
     .then(function() {
-        // var seed = false;
+        // var seed = true;
 
         // if (seed) {
         //     require('./seed');
@@ -41,7 +41,7 @@ B.all([odm.initialize()])
         //app.use(methodOverride());
         app.use(express.methodOverride());
         app.use(express.cookieParser());
-        app.use(express.session({secret: 'something-secret-shhhhhhh'}));
+        app.use(express.session({secret: config.secrets.session}));
         
         app.set('views', path.normalize(__dirname + '/views'));
         app.engine('hbs', exphbs({

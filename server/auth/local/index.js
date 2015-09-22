@@ -2,7 +2,9 @@ var passport = require('passport');
 var auth = require('../auth.service');
 
 module.exports = function(app) {
-    app.post('/', function(req, res, next) {
+    app.post('/auth/local', function(req, res, next) {
+      console.log('bout to authenticate passport');
+        
       passport.authenticate('local', function (err, user, info) {
         var error = err || info;
         if (error) {

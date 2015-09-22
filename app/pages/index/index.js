@@ -1,4 +1,4 @@
-/*global _, _s*/
+/*global _, _s, app*/
 define(function(require) {
     var Super = require('views/page/list'),
         B = require('bluebird'),
@@ -21,6 +21,8 @@ define(function(require) {
         var that = this;
         //super(options)
         Super.prototype.initialize.call(that, options);
+        
+        
 
         that.statusCollection = new StatusCollection();
     };

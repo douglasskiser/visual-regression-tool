@@ -640,7 +640,8 @@ module.exports = function (grunt) {
                         "pages/change-moderator/index",
                         "pages/change-moderator/edit",
                         "pages/change-moderator/view",
-                        
+                        "pages/login/login",
+                        "pages/login/signup"
                     ],
                     excludeShallow: [
                         'dist'

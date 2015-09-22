@@ -1,4 +1,4 @@
-/*global _, _s*/
+/*global _, _s, app*/
 define(function(require) {
     var Super = require('views/page/view'),
         B = require('bluebird'),
@@ -117,7 +117,8 @@ define(function(require) {
         //create a new execution
         var execution = new Execution({
             jobId: that.model.id,
-            statusId: ExecutionStatus.ID_SCHEDULED
+            statusId: ExecutionStatus.ID_SCHEDULED,
+            ownerId: app.user.get('_id') || ''
         });
         
         return B.resolve(execution.save())

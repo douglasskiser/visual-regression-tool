@@ -4,7 +4,7 @@ requirejs.config({
     //    urlArgs: 'v=' + [config.app.version.major, config.app.version.minor, config.app.version.patch].join('.'),
     baseUrl: './',
     locale: "en-us",
-    waitSeconds: 30,
+    waitSeconds: 40,
     paths: {
         backbone: '//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min',
         bootstrap: '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min',
@@ -36,6 +36,7 @@ requirejs.config({
         jszip: '//cdnjs.cloudflare.com/ajax/libs/jszip/2.4.0/jszip.min',
         FileSaver: '//cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.0.0/FileSaver.min',
         ace: '//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace',
+        jsCookie: 'vendors/js-cookie/src/js.cookie',
         socketIO: '//dev-dougkiser.c9.io/socket.io/socket.io'
     },
     hbs: {

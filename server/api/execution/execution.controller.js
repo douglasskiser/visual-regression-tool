@@ -175,6 +175,8 @@ var _methods = {
 
                     cmds.old = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.oldScreenshotsPath, '--url=' + paths.url, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
                     cmds.new = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.newScreenshotsPath, '--url=' + paths.newUrl, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
+                    
+                    console.log('COMMANDS:===================>', cmds);
 
                     return B.resolve(new B(function(resolve, reject) {
 
@@ -448,6 +450,15 @@ exports.getOne = function(req, res) {
             return errors.handleResponseError(res, 500, err);
         }
         return res.json(exc);
+    });
+};
+
+exports.getOneForUser = function(req, res) {
+    Execution.find({ownerId: req.params.ownerId}, function(err, excs) {
+        if (err) {
+            return errors.handleResponseError(res, 500, err);
+        }
+        return res.json(excs);
     });
 };
 

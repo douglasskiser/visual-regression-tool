@@ -2,30 +2,13 @@ define(function(require) {
     var Super = require('./base');
 
     var Model = Super.extend({
-        urlRoot: '/rest/model/user'
+        // urlRoot: '/rest/model/user'
+        name: 'user'
     });
     
-    /**
-     * class member
-     **/
-    Model.getAvatarUrl = function(orgUrl, size){
-        if( size ){
-            return orgUrl.replace(/sz=\d+$/, 'sz=' + size);
-        }
-        return orgUrl;
+    Model.prototype.isLoggedIn = function() {
+        return !this.isNew();
     };
-    
-    /**
-     * instance member 
-     */
-    Model.prototype.getAvatarUrl = function(size){
-        if( size ){
-            return Model.getAvatarUrl(this.get('avatarUrl'), size);
-        }
-        return this.get('avatarUrl');
-    };
-    
-
 
     return Model;
 });

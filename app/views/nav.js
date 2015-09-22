@@ -1,4 +1,4 @@
-/*global Backbone, _*/
+/*global Backbone, _, app*/
 define(function(require) {
 
     var Super = require('views/base'),
@@ -13,21 +13,23 @@ define(function(require) {
 
     View.prototype.initialize = function(options) {
         Super.prototype.initialize.call(this, options);
-
-
-    }
+    };
 
     View.prototype.render = function() {
         var that = this;
+        
+        var isLoggedIn = app.user && app.user.get('_id');
 
         var params = {
-            id: this.id, // _id: this._id,
-            appFullName: window.app.config.get('fullName')
+            id: this.id,
+            appFullName: window.app.config.get('fullName'),
+            isNotLoggedIn: !isLoggedIn
         };
 
         this.$el.html(Template(params));
         this.mapControls();
         var events = {};
+        events['click .logout'] = 'onLogoutClick';
 
         this.delegateEvents(events);
 
@@ -38,6 +40,37 @@ define(function(require) {
         var that = this;
         that.controls.items.find('>li').removeClass('active');
         that.controls.items.find('[data-controller=' + page.options.controller + ']').addClass('active');
+    };
+    
+    View.prototype.onLogoutClick = function(event) {
+        event.preventDefault();
+        
+        var that = this;
+        
+         Promise.resolve(app.socket.request({
+            url: '/rest/user/logout',
+            type: 'POST'
+        }))
+        .then(function(data){
+            var logoutBtn = $('.logout');
+            
+            app.user = undefined;
+            app.token = undefined;
+            app.cookieStore.remove('token');
+            
+            if (!logoutBtn.hasClass('hidden')) {
+                logoutBtn.addClass('hidden');
+            }
+
+            app.router.navigate('login/login', {trigger: true, replace: true});
+            //that.toast.success('You have successfully logged out.');
+        })
+        .catch(function(err) {
+            if (err) {
+                console.log('ERR', err);
+            }
+            //that.toast.error('Error logging you out!');
+        });
     };
 
     return View;

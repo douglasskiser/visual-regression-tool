@@ -1,4 +1,4 @@
-/* global Backbone*/
+/* global Backbone, app*/
 
 define(function(require) {
 
@@ -10,8 +10,10 @@ define(function(require) {
         Socket = require('./socket'),
         Toastr = require('toastr'),
         B = require('bluebird'),
-        io = require('socketIO');
-        
+        io = require('socketIO'),
+        Cookies = require('jsCookie'),
+        User = require('models/user');
+
 
     var App = Super.extend({});
 
@@ -30,12 +32,17 @@ define(function(require) {
         });
         return B.resolve();
     };
-    
+
+    App.prototype.initCookieStore = function() {
+        this.cookieStore = Cookies;
+        return B.resolve();
+    };
+
     App.prototype.initWebSocket = function() {
         this.webSocket = io.connect();
         return B.resolve();
     };
-    
+
     App.prototype.initSocket = function() {
         this.socket = new Socket({
             app: this
@@ -64,6 +71,27 @@ define(function(require) {
         return B.resolve();
     };
 
+    function initAppUser() {
+        if (app.cookieStore && app.cookieStore.get('token')) {
+            B.resolve(this.app.socket.request({
+                    url: '/rest/user/me',
+                    data: {},
+                    type: 'GET',
+                    headers: {
+                        authorization: 'Bearer ' + app.cookieStore.get('token')
+                    }
+                }))
+                .then(function(data) {
+                    app.user = new User(data);
+                })
+                .catch(function() {
+                    // that.toast.error('Incorrect username or password!');
+                });
+        } else {
+            B.resolve();
+        }
+    }
+
     App.prototype.run = function() {
         var that = this;
 
@@ -72,8 +100,13 @@ define(function(require) {
             this.initLayout(),
             this.initSocket(),
             this.initWebSocket(),
-            this.initRouter()
-        ]).then(function() {
+            this.initRouter(),
+            this.initCookieStore()
+        ])
+        .then(function() {
+            return initAppUser();
+        })
+        .then(function() {
             return that.layout.render();
         }).then(function() {
             return that.router.start();
@@ -88,7 +121,7 @@ define(function(require) {
             this.set('router', val);
         }
     });
-    
+
     Object.defineProperty(App.prototype, 'layout', {
         get: function() {
             return this.get('layout');
@@ -106,7 +139,7 @@ define(function(require) {
             this.set('config', val);
         }
     });
-    
+
     Object.defineProperty(App.prototype, 'socket', {
         get: function() {
             return this.get('socket');
@@ -115,13 +148,40 @@ define(function(require) {
             this.set('socket', val);
         }
     });
-    
+
     Object.defineProperty(App.prototype, 'webSocket', {
         get: function() {
             return this.get('webSocket');
         },
         set: function(val) {
             this.set('webSocket', val);
+        }
+    });
+
+    Object.defineProperty(App.prototype, 'user', {
+        get: function() {
+            return this.get('user');
+        },
+        set: function(val) {
+            this.set('user', val);
+        }
+    });
+
+    Object.defineProperty(App.prototype, 'token', {
+        get: function() {
+            return this.get('token');
+        },
+        set: function(val) {
+            this.set('token', val);
+        }
+    });
+
+    Object.defineProperty(App.prototype, 'cookieStore', {
+        get: function() {
+            return this.get('cookieStore');
+        },
+        set: function(val) {
+            return this.set('cookieStore', val);
         }
     });
 

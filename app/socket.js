@@ -1,4 +1,4 @@
-/*global Backbone, _*/
+/*global Backbone, _, app*/
 define(function(require) {
     var Backbone = require('backbone'),
         Super = Backbone.Model,
@@ -27,12 +27,11 @@ define(function(require) {
         var callbacks = {
             success: function(resp, textStatus, jqXHR) {
                 if (!oldCallbacks.success || oldCallbacks.success(resp, textStatus, jqXHR) !== false) {
-                    console.log(options.url, resp);
+                    return;
                 }
             }.bind(this),
             error: function(jqXHR, status, errorThrown) {
                 if (!oldCallbacks.error || oldCallbacks.error(jqXHR, status, errorThrown) !== false) {
-                    console.error(jqXHR, status, errorThrown);
                     this.trigger('error', jqXHR, status, errorThrown);
                 }
             }.bind(this)

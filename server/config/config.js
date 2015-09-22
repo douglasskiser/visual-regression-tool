@@ -21,6 +21,10 @@ module.exports = {
         seedDB: true,
         casper: {
             absolutePath: '/home/ubuntu/.nvm/v0.10.35/lib/node_modules/casperjs/bin/casperjs'
-        }
+        },
+        secrets: {
+            session: 'shhhhhhhhhhItsASecret'
+        },
+        userRoles: ['guest', 'user', 'admin']
     }
 };

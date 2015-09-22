@@ -8,7 +8,7 @@ var jwt = require('jsonwebtoken');
 var expressJwt = require('express-jwt');
 var compose = require('composable-middleware');
 var User = require('../api/user/user.model');
-var validateJwt = expressJwt({ secret: 'shhhhhhh, its a secret'/**config.secrets.session**/ });
+var validateJwt = expressJwt({ secret: config.secrets.session });
 
 /**
  * Attaches the user object to the request if authenticated
@@ -26,6 +26,7 @@ function isAuthenticated() {
     })
     // Attach user to request
     .use(function(req, res, next) {
+      console.log('USER ID IS: ', req.body);
       User.findById(req.user._id, function (err, user) {
         if (err) return next(err);
         if (!user) return res.send(401);

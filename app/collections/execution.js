@@ -11,14 +11,16 @@ define(function(require) {
     Collection.prototype.initialize = function(options){
         var url;
         Super.prototype.initialize.call(this, options);
-        if( _.isEmpty(_.result(this, 'url')) ){
-            url = _.result(this.model.prototype, 'url');
-            if( !_.isEmpty(url) ){
-                this.url = url;
-            }else{
-                this.url = '/rest' + (this.name || this.model.prototype.name);
-            }
-        }
+        
+        this.url = '/rest/' + (this.name || this.model.prototype.name) + (app.user && app.user.get('_id') ? ('/all/' + app.user.get('_id')) : '');
+        // if( _.isEmpty(_.result(this, 'url')) ){
+        //     url = _.result(this.model.prototype, 'url');
+        //     // if( !_.isEmpty(url) ){
+        //     //     this.url = url + (app.user.get('_id') ? ('/all/' + app.user.get('_id')) : '');
+        //     // }else{
+        //     //     this.url = '/rest' + (this.name || this.model.prototype.name) + (app.user.get('_id') ? ('/all/' + app.user.get('_id')) : '');
+        //     // }
+        // }
 
         this.createSocketListener.call(this);
     };
@@ -41,8 +43,6 @@ define(function(require) {
         });
         
         this.remove(m);
-        
-        console.log('Item removed in socket');
     };
     
     Collection.prototype.onSocketHandler = function(data) {
@@ -53,8 +53,6 @@ define(function(require) {
         subModel.set({
             statusId: data.statusId
         });
-        
-        console.log('onSOcketHandler finished');
     };
 
     return Collection;

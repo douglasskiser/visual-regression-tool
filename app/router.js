@@ -1,3 +1,4 @@
+/*global _, _s, app*/
 define(function (require) {
     var NProgress = require('nprogress'),
         Backbone = require('backbone'),
@@ -11,6 +12,7 @@ define(function (require) {
                 "*action": 'defaultAction'
             }
         });
+        
     Router.prototype.initialize = function (options) {
         Backbone.Router.prototype.initialize.call(this, options);
         this.app = options.app || console.error("app must be passed!");
@@ -21,6 +23,14 @@ define(function (require) {
         if (!url) {
             url = 'index/index';
         }
+
+        if (url !== 'login/login') {
+            if (!that.app.cookieStore.get('token')) {
+                that.navigate('login/login', {trigger: true, replace: true});
+                return;
+            }
+        }
+        
         if (that.app.page) {
             //clean up
             that.app.page.close();
@@ -41,6 +51,7 @@ define(function (require) {
                 params[S.camelize(parts[i])] = parts[i + 1];
             }
         }
+        
         NProgress.start();
 
         var pagePath = 'pages/' + controller + '/' + action;
@@ -88,7 +99,6 @@ define(function (require) {
     Router.prototype.start = function () {
         Backbone.history.start();
     };
-
 
     return Router;
 });

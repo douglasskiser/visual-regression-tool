@@ -8,6 +8,7 @@ module.exports = function(app) {
     
     app.get('/rest/execution', controller.get);
     app.get('/rest/execution/:id', controller.getOne);
+    app.get('/rest/execution/all/:ownerId', controller.getOneForUser);
     app.post('/rest/execution', controller.create);
     app.put('/rest/execution/:id', controller.update);
     app.delete('/rest/execution/:id', controller.delete);

@@ -8,12 +8,12 @@ var validationError = function(res, err) {
     return res.json(422, err);
 };
 
-exports.get = function(res, req) {
+exports.get = function(req, res) {
     User.find({}, '-salt -hashedPassword', function(err, users) {
         if (err) {
             return res.send(500, err);
         }
-        res.json(200, users);
+        res.send(200, users);
     });
 };
 
@@ -72,4 +72,9 @@ exports.me = function(req, res, next) {
 
 exports.authCallback = function(req, res, next) {
     res.redirect('/');
+};
+
+exports.logout = function(req, res) {
+    req.logOut();
+    res.send(200);
 };
