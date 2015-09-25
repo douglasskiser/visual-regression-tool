@@ -73,7 +73,7 @@ define(function(require) {
 
     function initAppUser() {
         if (app.cookieStore && app.cookieStore.get('token')) {
-            B.resolve(this.app.socket.request({
+            return B.resolve(this.app.socket.request({
                     url: '/rest/user/me',
                     data: {},
                     type: 'GET',
@@ -88,7 +88,7 @@ define(function(require) {
                     // that.toast.error('Incorrect username or password!');
                 });
         } else {
-            B.resolve();
+            return B.resolve();
         }
     }
 

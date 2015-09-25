@@ -18,20 +18,11 @@ define(function(require) {
     Model.prototype.run = function(params) {
         var that = this;
         
-        //setup a listener
-        
         app.webSocket.once('data:execution:run', function(data) {
-            //do something with data
             console.log('data:execution:run ', data);
         });
         
         app.webSocket.emit('execution:run', {_id: that.id});
-
-        // return app.socket.request({
-        //     url: '/execution/' + that.id + '/run',
-        //     type: 'POST',
-        //     data: params
-        // });
     };
     
     Model.prototype.getScreenshots = function() {
@@ -41,7 +32,6 @@ define(function(require) {
                 url: '/execution/' + that.id + '/screenshots'
             }))
             .then(function(resp) {
-                console.log('RESP: ', resp);
                 var oldScreenshots = _.sortBy(resp.oldScreenshots, function(screenshot) {
                     return parseInt(/^(\d+)-/.exec(screenshot)[1], 10);
                 });

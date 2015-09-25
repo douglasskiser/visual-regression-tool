@@ -628,6 +628,7 @@ module.exports = function (grunt) {
                         "pages/index/edit",
                         "pages/index/view",
                         "pages/job/index",
+                        "pages/job/new",
                         "pages/job/edit",
                         "pages/job/view",
                         "pages/box/index",

@@ -12,7 +12,7 @@ var fs = require('fs'),
 var AgendaService = (function() {
     function AgendaService(socket, ops) {
         var that = this;
-        console.log('init with socket:***************** ', socket);
+        
         this.socket = socket;
         this.ops = _.extend({
             listeners: {
@@ -38,8 +38,6 @@ var AgendaService = (function() {
 
         this.agenda.define('runExecution', function(job, done) {
             logger.info('running execution');
-            
-            console.log('SOCKET********* ', that.socket);
 
             executionCtrl.run(job.attrs.data.id, that.socket, function() {
                 done();
@@ -48,7 +46,6 @@ var AgendaService = (function() {
             this.agenda.on('start', this.ops.listeners.start);
             this.agenda.on('complete', this.ops.listeners.complete);
             this.agenda.on('fail', this.ops.listeners.fail);
-
         });
     }
 
@@ -87,26 +84,6 @@ var AgendaService = (function() {
     AgendaService.prototype.start = function() {
         process.on('SIGTERM', this.failGracefully);
         process.on('SIGINT', this.failGracefully);
-
-        //var jobs = ['visual-regression', 'health-check'];
-
-        // jobs.forEach(function(module) {
-        //     // var modulePath = '../../jobs/' + module; // check this path later
-
-        //     // fs.exists(modulePath, function(exists) {
-        //     //     if (exists) {
-        //     //         require(modulePath);
-        //     //     }
-        //     // });
-        // });
-
-        // NOT NEEDED SINCE DB HAS ALREADY BEEN INITIALIZED
-        // if (jobs.length) {
-        //     B.all([odm.initialize()])
-        //         .then(function() {
-        //             return;
-        //         });
-        // }
 
         this.agenda.start();
         logger.info('Agenda started');

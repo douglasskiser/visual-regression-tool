@@ -6,7 +6,6 @@ var Job = require('./job.model'),
 module.exports = function(app) {
     return {
         read: function(req) {
-            console.log('hello read');
             if (req.data && req.data._id && req.data._id.length) {
                 Job.findById(req.data._id, function(err, job) {
                     if (err) {

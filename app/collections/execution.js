@@ -13,6 +13,7 @@ define(function(require) {
         Super.prototype.initialize.call(this, options);
         
         this.url = '/rest/' + (this.name || this.model.prototype.name) + (app.user && app.user.get('_id') ? ('/all/' + app.user.get('_id')) : '');
+        
         // if( _.isEmpty(_.result(this, 'url')) ){
         //     url = _.result(this.model.prototype, 'url');
         //     // if( !_.isEmpty(url) ){
@@ -32,7 +33,6 @@ define(function(require) {
     };
     
     Collection.prototype.onExecutionCreateHandler = function(data) {
-        console.log('creating new model')
         var m = new Model(data);
         this.add(m);
     };

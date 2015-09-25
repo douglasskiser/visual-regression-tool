@@ -29,8 +29,6 @@ define(function(require) {
 
     View.prototype.render = function() {
         var that = this;
-        
-        console.log('trying to render vr');
 
         var params = {
             id: this.id
@@ -73,13 +71,11 @@ define(function(require) {
 
     View.prototype.renderScreenshots = function() {
         var that = this;
-        
-        console.log(that.model.getScreenshots);
 
         return B.resolve(that.model.getScreenshots(that.job))
             .then(function(screenshots) {
                 that.screenshots.reset(screenshots);
-                console.log('Screenshots : ', screenshots);
+
                 if (that.screenshots.length > 0) {
                     that.controls.result.removeClass('hidden');
                     that.controls.subtitle.text(accounting.formatNumber(that.screenshots.reduce(function(memo, s){
@@ -111,7 +107,7 @@ define(function(require) {
                             oldImg.bind('load', function() {
                                 oldImg.data('loaded', true);
                                 oldImg.unbind('load');
-                                // //console.log('old ' + index + ' is loaded');
+
                                 _.defer(function() {
                                     that.compare(index);
                                 });
@@ -126,7 +122,7 @@ define(function(require) {
                             newImg.bind('load', function() {
                                 newImg.data('loaded', true);
                                 newImg.unbind('load');
-                                // //console.log('new ' + index + ' is loaded');
+
                                 _.defer(function() {
                                     that.compare(index);
                                 });

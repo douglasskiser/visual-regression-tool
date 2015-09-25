@@ -33,8 +33,9 @@ var _methods = {
                         reject(err);
                         return errors.handleResponseError(null, 500, err);
                     }
+                    
                     job = jobDoc;
-                    //return resolve();
+                    
                     ExecutionStatus.find(function(err, statuses) {
                         if (err) {
                             reject(err);
@@ -175,8 +176,6 @@ var _methods = {
 
                     cmds.old = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.oldScreenshotsPath, '--url=' + paths.url, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
                     cmds.new = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.newScreenshotsPath, '--url=' + paths.newUrl, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
-                    
-                    console.log('COMMANDS:===================>', cmds);
 
                     return B.resolve(new B(function(resolve, reject) {
 
@@ -347,43 +346,32 @@ var _methods = {
                 if (job.typeId.toString() === jobTypes['Visual Regression'].toString()) {
                     var oldScreenshotsPath = [screenshotsPath, 'old'].join('/');
                     var newScreenshotsPath = [screenshotsPath, 'new'].join('/');
-                    console.log('in vr screen shots ', {
-                        oldScreenshotsPath: oldScreenshotsPath,
-                        newScreenshotsPath: newScreenshotsPath
-                    });
+
                     return B.all([
                             new B(function(resolve, reject) {
-                                console.log('getting shot');
                                 glob("*.png", {
                                     cwd: oldScreenshotsPath
                                 }, function(err, files) {
                                     if (err) {
-                                        console.log('err shot ', err);
                                         reject(err);
                                         return;
                                     }
-                                    console.log('resolve shot');
                                     resolve(files);
                                 });
                             }),
                             new B(function(resolve, reject) {
-                                console.log('getting 2nd shot');
                                 glob("*.png", {
                                     cwd: newScreenshotsPath
                                 }, function(err, files) {
                                     if (err) {
-                                        console.log('err shot', err);
                                         reject(err);
                                         return;
                                     }
-                                    console.log('resolving 2nd shot');
                                     resolve(files);
                                 });
                             })
                         ])
                         .spread(function(oldScreenshots, newScreenshots) {
-                            console.log('Spread ');
-                            console.log('old shot ', oldScreenshots); 
                             return callback({
                                 oldScreenshots: oldScreenshots,
                                 newScreenshots: newScreenshots
@@ -399,11 +387,9 @@ var _methods = {
                                     cwd: baselineScreenshotsPath
                                 }, function(err, files) {
                                     if (err) {
-                                        console.log('error shot', err);
                                         reject(err);
                                         return;
                                     }
-                                    console.log('resolving shot');
                                     resolve(files);
                                 });
                             }),
@@ -429,7 +415,7 @@ var _methods = {
                 return B.resolve();
             })
             .catch(function(err) {
-                console.log('Screenshot caught err ', err);
+                // console.log('Screenshot caught err ', err);
             });
     }
 };
@@ -445,7 +431,7 @@ exports.get = function(req, res) {
 };
 
 exports.getOne = function(req, res) {
-    Execution.findById(req.params.id, function(err, exc) { //Execution.findById(req.params.id, function(err, device) {
+    Execution.findById(req.params.id, function(err, exc) {
         if (err) {
             return errors.handleResponseError(res, 500, err);
         }
@@ -521,9 +507,6 @@ exports.checkExecutionQueue = function(socket) {
             });
 
         }
-        // if (res) {
-        //     res.send(200);
-        // }
     });
 };
 
@@ -582,8 +565,6 @@ exports.screenshots = function(req, res) {
         _methods.getScreenshots(exc, function(data) {
             return res.send(data);
         });
-
-        // return res.send(ss);
     });
 };
 

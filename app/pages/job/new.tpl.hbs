@@ -1,0 +1,10 @@
+<div class="container">
+    {{#each data}}
+        <div class="panel panel-default col-sm-12 col-md-6 col-lg-4">
+            <h2>ID: {{this.model._id}}</h2>
+            <h2>JobId: {{this.job._id}}</h2>
+        </div>
+    {{else}}
+        <h2>You have no jobs yet buddy. Go ahead a kick one off.</h2>
+    {{/each}}
+</div>

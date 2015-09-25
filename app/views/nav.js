@@ -67,7 +67,7 @@ define(function(require) {
         })
         .catch(function(err) {
             if (err) {
-                console.log('ERR', err);
+                //console.log('ERR', err);
             }
             //that.toast.error('Error logging you out!');
         });

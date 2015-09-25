@@ -54,7 +54,7 @@ casper.on("mouse.click", function(args) {
 
 casper.waitFor(function() {
 	return casper.evaluate(function() {
-		return $ && !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#departure-airport>option').size() > 0;
+		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#departure-airport>option').size() > 0;
 	});
 });
 
@@ -342,7 +342,7 @@ casper.then(function() {
 casper.waitFor(function() {
 	return casper.evaluate(function() {
 		return $($('.fare-breakdown')[0]).hasClass('active') && $($('.fare-breakdown')[1]).hasClass('active');
-	})
+	});
 });
 
 casper.wait(2000);
@@ -365,7 +365,7 @@ casper.wait(4000);
 casper.waitFor(function() {
 	return casper.evaluate(function() {
 		return !$('.fare-breakdown').is(':visible');
-	})
+	});
 });
 
 // Expand the passenger Add Details section
@@ -377,585 +377,585 @@ casper.then(function() {
 });
 
 // check if all the data is loaded
-// casper.waitFor(function() {
-//     return casper.evaluate(function() {
-//         return $('#passenger-1').find('.save-psng').is(':visible')
-//     })
-// });
+casper.waitFor(function() {
+    return casper.evaluate(function() {
+        return $('#passenger-1').find('.save-psng').is(':visible');
+    });
+});
 
 casper.wait(10000);
 
-casper.waitUntilVisible('#passenger-1',
-	function() {
-		//camera.capture('#app-container', 'Passengers Page - Add Details Section Extended');
-	},
-	function() {
-		casper.echo('Add Passenger Details operation has expired');
-	},
-	10000
-);
-
-// fill out the passenger details
-casper.then(function() {
-	casper.echo("Fill out passenger information");
-	camera.capture('#app-container', 'Log In Page - passenger details before filled out');
-	casper.evaluate(function() {
-		// set the title
-		var title = $($('select')[0]);
-		title.val($(title.find('option')[1]).attr('value'));
-
-		// generate random name
-		var text = "";
-		var possible = "abcdefghijklmnopqrstuvwxyz";
-
-		for (var i = 0; i < 5; i++)
-			text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-		// set firsnt name and last name
-		$('#passenger-1 input[name="passengers[0].firstName"]').val(text);
-
-		text = "";
-		for (var i = 0; i < 5; i++)
-			text += possible.charAt(Math.floor(Math.random() * possible.length));
-		$('#passenger-1 input[name="passengers[0].lastName"]').val(text);
-
-		// set gender
-		$('#passenger-1 input[value="MALE" ]').click()
-
-		//setting the birth Date
-		var now = new Date();
-		var day = ("0" + now.getDate()).slice(-2);
-		var month = ("0" + (now.getMonth() + 1)).slice(-2);
-		var today = now.getFullYear() - 30 + "-" + (month) + "-" + (day);
-		$('input[type="date"]').val(today);
-
-		// st the phone number
-		$('#passenger-1 input[name="passengers[0].info.phone.number"]').val('817' + (Math.floor(Math.random() * 9000000) + 10000));
-
-		// set email addresses
-		text = "";
-		for (var i = 0; i < 8; i++)
-			text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-		$('#passenger-1 input[name="passengers[0].info.email"]').val(text + '@gmail.com');
-		$('#passenger-1 input[name="passengers[0].info.emailConfirm"]').val(text + '@gmail.com');
-	});
-});
-
-casper.then(function() {
-	camera.capture('#app-container', 'Log In Page - passenger details filled out');
-});
-
-// Save user details
-casper.then(function() {
-	casper.echo("Save Passenger Information");
-	casper.evaluate(function() {
-		$('#passenger-1 button[type="submit"]').click();
-	});
-});
-
-// wait for the save function to finish
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		return !$('#passenger-1').find('.save-psng').is(':visible') && $('#psng-1 a.edit-details').is(':visible')
-	})
-});
-
-casper.wait(5000);
-
-casper.then(function() {
-	camera.capture('#app-container', 'Log In Page - passenger details saved');
-});
-
-// click login button without username or password
-casper.then(function() {
-	casper.echo("Click Login button without information");
-	casper.evaluate(function() {
-		$('#login_1 button[type="submit"]').click();
-	});
-});
-
-// wait until the required field validation error occurs
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		return $('#login_1 .validation-error').length > 0;
-	})
-});
-
-casper.wait(2000);
-
-casper.then(function() {
-	camera.capture('#app-container', 'Log In Page - Empty Login Information provided');
-});
-
-// fill in incorrect user name and password
-// casper.then(function() {
-//     casper.echo("Enter Incorrect passenger login information");
-//     casper.evaluate(function() {
-//         $('input[name="username"]').not('#login-form input[name="username"]').val('InvalidCredentials');
-//         $('input[name="password"]').not('#login-form input[name="password"]').val('Invalid');
-//         $('#login_1 button[type="submit"]').click();
-//     });
-// });
-
-// wait until the error overlay appears with incorrect login cred details
-// casper.waitFor(function() {
-//     return casper.evaluate(function() {
-//         return !$('#loading').is(':visible') && $('#overlay').is(':visible');
-//     })
-// });
-
-// casper.wait(2000);
-
-// casper.then(function() {
-//     camera.capture('#app-container', 'Log In Page - Incorrect Login Information provided');
-// });
-
-// // close the over lay
-// casper.then(function() {
-//     casper.echo("Close incorrect login information provided overlay");
-//     casper.evaluate(function() {
-//         $('#modal button').click();
-//     });
-// });
-
-// // wait until the error overlay disappears with incorrect login cred details
-// casper.waitFor(function() {
-//     return casper.evaluate(function() {
-//         return !$('#loading').is(':visible') && !$('#overlay').is(':visible');
-//     })
-// });
-
-// casper.wait(2000);
-
-// // fill in user name and password
-// casper.then(function() {
-//     casper.echo("Enter passenger login information");
-//     casper.evaluate(function() {
-//         $('input[name="username"]').not('#login-form input[name="username"]').val('100104793084');
-//         $('input[name="password"]').not('#login-form input[name="password"]').val('awPTCesx');
-//         $('#login_1 button[type="submit"]').click();
-//         $('#login_1 button[type="submit"]').click();
-//         $('#login_1 button[type="submit"]').submit();
-//     });
-// });
-
-// // wait for the login process to compelte
-// casper.waitFor(function() {
-//     return casper.evaluate(function() {
-//         return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#sign-in span:nth-child(-n + 2)').text() === "My Etihad Guest,Sumera";
-//     })
-// });
-
-// casper.wait('4000');
-
-// // capture image
-// casper.then(function() {
-//     camera.capture('#app-container', 'Log In Page - Passenger Logged In');
-// });
-
-// click the continue button and move to next screen
-// casper.then(function() {
-//     casper.echo("Proceed to Personalize Flight Section");
-//     casper.evaluate(function() {
-//         $('#continue').click();
-//     });
-// });
-
-// // this user has incorrect phone number details, so this needs to be captured and handled
-// casper.waitFor(function() {
-//     return casper.evaluate(function() {
-//     	var errorText = "There was an error with your submission, please review your entries.";
-//         return !$('#loading').is(':visible') && $('#overlay').is(':visible') && $('#modal p').text() === errorText;
-//     })
-// });
-
-// // Take a screen shot of the error screen
-// casper.then(function() {
-//     camera.capture('#app-container', 'Log In Page - Submission Error');
-// });
-
-// // click on the close button on the overlay
-// casper.then(function() {
-//     casper.echo("Close the error submission overlay");
-//     casper.evaluate(function() {
-//         $('#modal button').click();
-//     });
-// });
-
-// casper.waitFor(function() {
-//     return casper.evaluate(function() {
-//         return !$('#loading').is(':visible') && !$('#overlay').is(':visible');
-//     })
-// });
-
-// casper.wait('2000');
-
-// // click on edit details and correct the passenger phone number info
-// casper.then(function() {
-//     casper.echo("Edit passenger information");
-//     casper.evaluate(function() {
-//         $('#psng-1 .edit-details').click();
-//     });
-// });
-
-// casper.wait(8000);
-
-
 // casper.waitUntilVisible('#passenger-1',
-//     function() {
-//         //camera.capture('#app-container', 'Passengers Page - Add Details Section Extended');
-//     },
-//     function(){
-//         casper.echo('Edit Passenger Details operation has expired');
-//     },
-//     10000
+// 	function() {
+// 		//camera.capture('#app-container', 'Passengers Page - Add Details Section Extended');
+// 	},
+// 	function() {
+// 		casper.echo('Add Passenger Details operation has expired');
+// 	},
+// 	10000
 // );
 
-// casper.wait(2000);
-
-
-// // fill out the phone number details
+// // fill out the passenger details
 // casper.then(function() {
-//     casper.echo("Correct Passnger Phone Number");
-//     camera.capture('#app-container', 'Log In Page - Phone Number too short error');
-//     casper.evaluate(function() {
-//         // st the phone number
-//         $('#passenger-1 input[name="passengers[0].info.phone.number"]').val(8179869123);
-//         $('#passenger-1 input[name="passengers[0].info.email"]').val('john.doe@gmail.com')
-//         //setting the birth Date
-//         var now = new Date();
-//         var day = ("0" + now.getDate()).slice(-2);
-//         var month = ("0" + (now.getMonth() + 1)).slice(-2);
-//         var today = now.getFullYear() - 30 +"-"+(month)+"-"+(day) ;
-//         $('input[type="date"]').val(today);
-//     });
+// 	casper.echo("Fill out passenger information");
+// 	camera.capture('#app-container', 'Log In Page - passenger details before filled out');
+// 	casper.evaluate(function() {
+// 		// set the title
+		// var title = $($('select')[0]);
+		// title.val($(title.find('option')[1]).attr('value'));
+
+		// // generate random name
+		// var text = "";
+		// var possible = "abcdefghijklmnopqrstuvwxyz";
+
+		// for (var i = 0; i < 5; i++)
+		// 	text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+		// // set firsnt name and last name
+		// $('#passenger-1 input[name="passengers[0].firstName"]').val(text);
+
+		// text = "";
+		// for (var i = 0; i < 5; i++)
+		// 	text += possible.charAt(Math.floor(Math.random() * possible.length));
+		// $('#passenger-1 input[name="passengers[0].lastName"]').val(text);
+
+		// // set gender
+		// $('#passenger-1 input[value="MALE" ]').click()
+
+		// //setting the birth Date
+		// var now = new Date();
+		// var day = ("0" + now.getDate()).slice(-2);
+		// var month = ("0" + (now.getMonth() + 1)).slice(-2);
+		// var today = now.getFullYear() - 30 + "-" + (month) + "-" + (day);
+		// $('input[type="date"]').val(today);
+
+		// // st the phone number
+		// $('#passenger-1 input[name="passengers[0].info.phone.number"]').val('817' + (Math.floor(Math.random() * 9000000) + 10000));
+
+		// // set email addresses
+		// text = "";
+		// for (var i = 0; i < 8; i++)
+		// 	text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+		// $('#passenger-1 input[name="passengers[0].info.email"]').val(text + '@gmail.com');
+		// $('#passenger-1 input[name="passengers[0].info.emailConfirm"]').val(text + '@gmail.com');
+// 	});
+// });
+
+// casper.then(function() {
+// 	camera.capture('#app-container', 'Log In Page - passenger details filled out');
 // });
 
 // // Save user details
 // casper.then(function() {
-//     casper.echo("Save Passenger Information");
-//     casper.evaluate(function() {
-//         $('#passenger-1 button[type="submit"]').click();
-//     });
+// 	casper.echo("Save Passenger Information");
+// 	casper.evaluate(function() {
+// 		$('#passenger-1 button[type="submit"]').click();
+// 	});
 // });
 
 // // wait for the save function to finish
 // casper.waitFor(function() {
-//     return casper.evaluate(function() {
-//         return !$('#passenger-1').find('.save-psng').is(':visible') && $('#psng-1 a.edit-details').is(':visible')
-//     })
+// 	return casper.evaluate(function() {
+// 		return !$('#passenger-1').find('.save-psng').is(':visible') && $('#psng-1 a.edit-details').is(':visible')
+// 	})
 // });
 
 // casper.wait(5000);
 
-// Re-click the continue button and move to next screen
-casper.then(function() {
-	casper.echo("Proceed to Personalize Flight Section Second Time");
-	casper.evaluate(function() {
-		$('#continue').click();
-	});
-});
-
-// wait for the next page to laod
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#ancillary_1').length === 1;
-	})
-});
-
-casper.wait('8000');
-
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		var images = document.getElementsByTagName('img');
-		return Array.prototype.every.call(images, function(i) {
-			return i.complete;
-		});
-	});
-}, function then() {
-	camera.capture('#app-container', 'Personalize Flight - Landing Page');
-});
-
-// Click On seats option
-casper.then(function() {
-	casper.echo("Select Seats for the flight");
-	casper.evaluate(function() {
-		var style = document.createElement('style');
-		style.innerHTML = '* { -webkit-animation-delay: 0.01s !important; -webkit-animation-duration: 0.01s !important; }';
-		document.body.appendChild(style);
-		$('#seats_1 ul li').first().find('header').click();
-	});
-});
-
-// wait for the Seat Selection page laods
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#seatmap-container').is(':visible');
-	})
-});
-
-casper.wait('4000');
-
-// Take a screen shot of the landing page
-casper.then(function() {
-	camera.capture('#app-container', 'Seat Selection - Landing Page');
-});
-
-casper.wait(2000);
-
-// expand the flight
 // casper.then(function() {
-//     casper.echo("Expand the first flight seating avaiablilty");
-//     casper.evaluate(function() {
-//         $('#seatmap-container .seats>ul>li').first().find('.plus-minus-icon').click();
-//     });
+// 	camera.capture('#app-container', 'Log In Page - passenger details saved');
 // });
 
-casper.wait(2000);
+// // click login button without username or password
+// casper.then(function() {
+// 	casper.echo("Click Login button without information");
+// 	casper.evaluate(function() {
+// 		$('#login_1 button[type="submit"]').click();
+// 	});
+// });
 
-// make sure the seat loading page opens up
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('.seat-map-legend').is(':visible');
-	})
-});
+// // wait until the required field validation error occurs
+// casper.waitFor(function() {
+// 	return casper.evaluate(function() {
+// 		return $('#login_1 .validation-error').length > 0;
+// 	})
+// });
 
-casper.wait(2000);
+// casper.wait(2000);
 
-// Take a screen shot of the error screen
-casper.then(function() {
-	camera.capture('#app-container', 'Seat Selection - First Flight avaiable seats');
-});
+// casper.then(function() {
+// 	camera.capture('#app-container', 'Log In Page - Empty Login Information provided');
+// });
 
-// proceed to make a selection
-// select an available seat
-casper.then(function() {
-	casper.echo("Pick a seat that is avaible");
-	casper.evaluate(function() {
-		var rows = $('#seatmap-container .seats>ul>li').first().find('.seat-map table>tbody>tr');
-		rowLoop: for (i = 0; i < rows.length; i++) {
-			var cells = $(rows[i]).find('td');
-			cellLoop: for (j = 0; j < cells.length; j++) {
-				if ($(cells[j]).hasClass('status-seat')) {
-					$(cells[j]).click();
-					break rowLoop;
-				}
-			}
-		}
-	});
-});
+// // fill in incorrect user name and password
+// // casper.then(function() {
+// //     casper.echo("Enter Incorrect passenger login information");
+// //     casper.evaluate(function() {
+// //         $('input[name="username"]').not('#login-form input[name="username"]').val('InvalidCredentials');
+// //         $('input[name="password"]').not('#login-form input[name="password"]').val('Invalid');
+// //         $('#login_1 button[type="submit"]').click();
+// //     });
+// // });
 
-casper.wait(2000);
+// // wait until the error overlay appears with incorrect login cred details
+// // casper.waitFor(function() {
+// //     return casper.evaluate(function() {
+// //         return !$('#loading').is(':visible') && $('#overlay').is(':visible');
+// //     })
+// // });
 
-// make sure the Overlay opens up with the seat info
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#seat-popup').is(':visible');
-	})
-});
+// // casper.wait(2000);
 
-// Take a screen shot of the error screen
-casper.then(function() {
-	camera.capture('#app-container', 'Seat Selection - First Flight Seat Pick');
-});
+// // casper.then(function() {
+// //     camera.capture('#app-container', 'Log In Page - Incorrect Login Information provided');
+// // });
 
-// click select seat
-casper.then(function() {
-	casper.echo("Select the picked seat");
-	casper.evaluate(function() {
-		$('#seat-popup #popup-select').click();
-	});
-});
+// // // close the over lay
+// // casper.then(function() {
+// //     casper.echo("Close incorrect login information provided overlay");
+// //     casper.evaluate(function() {
+// //         $('#modal button').click();
+// //     });
+// // });
 
-// make sure the Overlay opens up with the seat info
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		if ($('#seatmap-container .seats>ul>li').length > 1) {
-			return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#popup-next-flight').is(':visible');
-		}
-		else {
-			return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && !$('#seat-popup').is(':visible');
-		}
+// // // wait until the error overlay disappears with incorrect login cred details
+// // casper.waitFor(function() {
+// //     return casper.evaluate(function() {
+// //         return !$('#loading').is(':visible') && !$('#overlay').is(':visible');
+// //     })
+// // });
 
-	})
-});
+// // casper.wait(2000);
 
-casper.wait(3000);
+// // // fill in user name and password
+// // casper.then(function() {
+// //     casper.echo("Enter passenger login information");
+// //     casper.evaluate(function() {
+// //         $('input[name="username"]').not('#login-form input[name="username"]').val('100104793084');
+// //         $('input[name="password"]').not('#login-form input[name="password"]').val('awPTCesx');
+// //         $('#login_1 button[type="submit"]').click();
+// //         $('#login_1 button[type="submit"]').click();
+// //         $('#login_1 button[type="submit"]').submit();
+// //     });
+// // });
 
-// Take a screen shot of the error screen
-casper.then(function() {
-	camera.capture('#app-container', 'Seat Selection - Next Step');
-});
+// // // wait for the login process to compelte
+// // casper.waitFor(function() {
+// //     return casper.evaluate(function() {
+// //         return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#sign-in span:nth-child(-n + 2)').text() === "My Etihad Guest,Sumera";
+// //     })
+// // });
 
-// click on save seat button
-casper.then(function() {
-	casper.echo("Click Save Seat");
-	casper.evaluate(function() {
-		$('#continue').click();
-	});
-});
+// // casper.wait('4000');
 
-// wait until the previous page re appears
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && !$('#seatmap-container').is(':visible');
-	})
-});
+// // // capture image
+// // casper.then(function() {
+// //     camera.capture('#app-container', 'Log In Page - Passenger Logged In');
+// // });
 
-casper.wait(3000);
+// // click the continue button and move to next screen
+// // casper.then(function() {
+// //     casper.echo("Proceed to Personalize Flight Section");
+// //     casper.evaluate(function() {
+// //         $('#continue').click();
+// //     });
+// // });
 
-// Take a screen shot of the error screen
-casper.then(function() {
-	camera.capture('#app-container', 'Personalize Your Flight - Seats Saved');
-});
+// // // this user has incorrect phone number details, so this needs to be captured and handled
+// // casper.waitFor(function() {
+// //     return casper.evaluate(function() {
+// //     	var errorText = "There was an error with your submission, please review your entries.";
+// //         return !$('#loading').is(':visible') && $('#overlay').is(':visible') && $('#modal p').text() === errorText;
+// //     })
+// // });
 
-// proceed to click continue ont personalize flight screen to move to the next page
-casper.then(function() {
-	casper.echo("Click Continue on Personalize Flight Screen to move to the next screen");
-	casper.evaluate(function() {
-		$('#sbmt_1 button').click();
-	});
-});
+// // // Take a screen shot of the error screen
+// // casper.then(function() {
+// //     camera.capture('#app-container', 'Log In Page - Submission Error');
+// // });
 
-// wait until the  page appears
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && document.title === 'Purchase Page';
-	})
-});
+// // // click on the close button on the overlay
+// // casper.then(function() {
+// //     casper.echo("Close the error submission overlay");
+// //     casper.evaluate(function() {
+// //         $('#modal button').click();
+// //     });
+// // });
 
-casper.wait(3000);
+// // casper.waitFor(function() {
+// //     return casper.evaluate(function() {
+// //         return !$('#loading').is(':visible') && !$('#overlay').is(':visible');
+// //     })
+// // });
 
-// take a screen grab of the purchase page
-casper.then(function() {
-	camera.capture('#app-container', 'Purchase Page - Landing Page');
-});
+// // casper.wait('2000');
 
-// remove all animations from the page
-casper.evaluate(function() {
-	var style = document.createElement('style');
-	style.innerHTML = '* { -webkit-animation-delay: 0.01s !important; -webkit-animation-duration: 0.01s !important; }';
-	document.body.appendChild(style);
-});
+// // // click on edit details and correct the passenger phone number info
+// // casper.then(function() {
+// //     casper.echo("Edit passenger information");
+// //     casper.evaluate(function() {
+// //         $('#psng-1 .edit-details').click();
+// //     });
+// // });
 
-// exoand the fare rules section
-casper.then(function() {
-	casper.echo("Expand the fare rules section");
-	casper.evaluate(function() {
-		$('#fare-rules a').click();
-	});
-});
+// // casper.wait(8000);
 
-// wait for the fare rules to show up
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		return $('.fare-rule').is(':visible');
-	})
-});
 
-casper.wait('2000');
+// // casper.waitUntilVisible('#passenger-1',
+// //     function() {
+// //         //camera.capture('#app-container', 'Passengers Page - Add Details Section Extended');
+// //     },
+// //     function(){
+// //         casper.echo('Edit Passenger Details operation has expired');
+// //     },
+// //     10000
+// // );
 
-// snap a pic
-casper.then(function() {
-	camera.capture('#app-container', 'Purchase Page - Fare Rules');
-});
+// // casper.wait(2000);
 
-// seletct a payment option
-casper.then(function() {
-	casper.echo("Select VISA for payment");
-	casper.evaluate(function() {
-		$('ul#credit-cards>li').find('#credit-card-BA').click();
-	});
-});
 
-//wait for details section to show up
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		return !$('#payment-details').is(':empty');
-	})
-});
+// // // fill out the phone number details
+// // casper.then(function() {
+// //     casper.echo("Correct Passnger Phone Number");
+// //     camera.capture('#app-container', 'Log In Page - Phone Number too short error');
+// //     casper.evaluate(function() {
+// //         // st the phone number
+// //         $('#passenger-1 input[name="passengers[0].info.phone.number"]').val(8179869123);
+// //         $('#passenger-1 input[name="passengers[0].info.email"]').val('john.doe@gmail.com')
+// //         //setting the birth Date
+// //         var now = new Date();
+// //         var day = ("0" + now.getDate()).slice(-2);
+// //         var month = ("0" + (now.getMonth() + 1)).slice(-2);
+// //         var today = now.getFullYear() - 30 +"-"+(month)+"-"+(day) ;
+// //         $('input[type="date"]').val(today);
+// //     });
+// // });
 
-// snap a pic
-casper.then(function() {
-	camera.capture('#app-container', 'Purchase Page - Payment Detiails');
-});
+// // // Save user details
+// // casper.then(function() {
+// //     casper.echo("Save Passenger Information");
+// //     casper.evaluate(function() {
+// //         $('#passenger-1 button[type="submit"]').click();
+// //     });
+// // });
 
-casper.then(function() {
-	casper.echo("Purchase without entering Card Details");
-	casper.evaluate(function() {
-		$('#continue').click();
-	});
-});
+// // // wait for the save function to finish
+// // casper.waitFor(function() {
+// //     return casper.evaluate(function() {
+// //         return !$('#passenger-1').find('.save-psng').is(':visible') && $('#psng-1 a.edit-details').is(':visible')
+// //     })
+// // });
 
-// wait for overlay
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		return $('#modal').is(':visible')
-	})
-}, function then() {}, function timeout() { casper.echo("Waiting for overlay timed out!"); }, 50000);
+// // casper.wait(5000);
 
-casper.then(function() {
-	casper.echo("Close error Overlay");
-	casper.evaluate(function() {
-		$('#modal button').click();
-	});
-});
+// // Re-click the continue button and move to next screen
+// casper.then(function() {
+// 	casper.echo("Proceed to Personalize Flight Section Second Time");
+// 	casper.evaluate(function() {
+// 		$('#continue').click();
+// 	});
+// });
 
-// wait for overlay to disappear
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		return !$('#modal').is(':visible')
-	})
-});
+// // wait for the next page to laod
+// casper.waitFor(function() {
+// 	return casper.evaluate(function() {
+// 		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#ancillary_1').length === 1;
+// 	})
+// });
 
-casper.wait(4000);
+// casper.wait('8000');
 
-casper.then(function() {
-	camera.capture('#app-container', 'Purchase Page - Missing Payment Details');
-});
+// casper.waitFor(function() {
+// 	return casper.evaluate(function() {
+// 		var images = document.getElementsByTagName('img');
+// 		return Array.prototype.every.call(images, function(i) {
+// 			return i.complete;
+// 		});
+// 	});
+// }, function then() {
+// 	camera.capture('#app-container', 'Personalize Flight - Landing Page');
+// });
 
-// fil in the payment details
-casper.then(function() {
-	casper.echo("Fill Payment information");
-	casper.evaluate(function() {
-		$('input[name="selectedCards[0].cardNumber"]').val('4111111111111111');
-		$('input[name="selectedCards[0].nameOnCard"]').val('John Doe');
-		$('select[name="selectedCards[0].expDate.month"]').val('01');
-		$('select[name="selectedCards[0].expDate.year"]').val(new Date().getFullYear() + 1);
-		$('input[name="selectedCards[0].cvcNumber"]').val('123');
-		$('input[name="selectedCards[0].billingData.street1"]').val('904 Greek Row Dr');
-		$('input[name="selectedCards[0].billingData.street2"]').val('Apt 222');
-		$('input[name="selectedCards[0].billingData.city"]').val('Arlington');
-		$('input[name="selectedCards[0].billingData.zipCode"]').val('76013');
-		$('select[name="selectedCards[0].billingData.country"]').val('US');
-	});
-});
+// // Click On seats option
+// casper.then(function() {
+// 	casper.echo("Select Seats for the flight");
+// 	casper.evaluate(function() {
+// 		var style = document.createElement('style');
+// 		style.innerHTML = '* { -webkit-animation-delay: 0.01s !important; -webkit-animation-duration: 0.01s !important; }';
+// 		document.body.appendChild(style);
+// 		$('#seats_1 ul li').first().find('header').click();
+// 	});
+// });
 
-casper.then(function() {
-	camera.capture('#app-container', 'Purchase Page - Payment Details Filled out');
-});
+// // wait for the Seat Selection page laods
+// casper.waitFor(function() {
+// 	return casper.evaluate(function() {
+// 		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#seatmap-container').is(':visible');
+// 	})
+// });
 
-// click on purchase button to complete the payment
-casper.then(function() {
-	casper.echo("click on purchase button to complete the payment ");
-	casper.evaluate(function() {
-		$('#continue').click();
-	});
-});
+// casper.wait('4000');
 
-// wait for the confirmation page to load
-casper.waitFor(function() {
-	return casper.evaluate(function() {
-		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && document.title === 'Confirmation Page';
-	})
-});
+// // Take a screen shot of the landing page
+// casper.then(function() {
+// 	camera.capture('#app-container', 'Seat Selection - Landing Page');
+// });
 
-casper.wait(5000);
+// casper.wait(2000);
 
-casper.then(function() {
-	camera.capture('#app-container', 'Confirmation Page Landing page');
-});
+// // expand the flight
+// // casper.then(function() {
+// //     casper.echo("Expand the first flight seating avaiablilty");
+// //     casper.evaluate(function() {
+// //         $('#seatmap-container .seats>ul>li').first().find('.plus-minus-icon').click();
+// //     });
+// // });
+
+// casper.wait(2000);
+
+// // make sure the seat loading page opens up
+// casper.waitFor(function() {
+// 	return casper.evaluate(function() {
+// 		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('.seat-map-legend').is(':visible');
+// 	})
+// });
+
+// casper.wait(2000);
+
+// // Take a screen shot of the error screen
+// casper.then(function() {
+// 	camera.capture('#app-container', 'Seat Selection - First Flight avaiable seats');
+// });
+
+// // proceed to make a selection
+// // select an available seat
+// casper.then(function() {
+// 	casper.echo("Pick a seat that is avaible");
+// 	casper.evaluate(function() {
+// 		var rows = $('#seatmap-container .seats>ul>li').first().find('.seat-map table>tbody>tr');
+// 		rowLoop: for (i = 0; i < rows.length; i++) {
+// 			var cells = $(rows[i]).find('td');
+// 			cellLoop: for (j = 0; j < cells.length; j++) {
+// 				if ($(cells[j]).hasClass('status-seat')) {
+// 					$(cells[j]).click();
+// 					break rowLoop;
+// 				}
+// 			}
+// 		}
+// 	});
+// });
+
+// casper.wait(2000);
+
+// // make sure the Overlay opens up with the seat info
+// casper.waitFor(function() {
+// 	return casper.evaluate(function() {
+// 		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#seat-popup').is(':visible');
+// 	})
+// });
+
+// // Take a screen shot of the error screen
+// casper.then(function() {
+// 	camera.capture('#app-container', 'Seat Selection - First Flight Seat Pick');
+// });
+
+// // click select seat
+// casper.then(function() {
+// 	casper.echo("Select the picked seat");
+// 	casper.evaluate(function() {
+// 		$('#seat-popup #popup-select').click();
+// 	});
+// });
+
+// // make sure the Overlay opens up with the seat info
+// casper.waitFor(function() {
+// 	return casper.evaluate(function() {
+// 		if ($('#seatmap-container .seats>ul>li').length > 1) {
+// 			return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && $('#popup-next-flight').is(':visible');
+// 		}
+// 		else {
+// 			return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && !$('#seat-popup').is(':visible');
+// 		}
+
+// 	})
+// });
+
+// casper.wait(3000);
+
+// // Take a screen shot of the error screen
+// casper.then(function() {
+// 	camera.capture('#app-container', 'Seat Selection - Next Step');
+// });
+
+// // click on save seat button
+// casper.then(function() {
+// 	casper.echo("Click Save Seat");
+// 	casper.evaluate(function() {
+// 		$('#continue').click();
+// 	});
+// });
+
+// // wait until the previous page re appears
+// casper.waitFor(function() {
+// 	return casper.evaluate(function() {
+// 		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && !$('#seatmap-container').is(':visible');
+// 	})
+// });
+
+// casper.wait(3000);
+
+// // Take a screen shot of the error screen
+// casper.then(function() {
+// 	camera.capture('#app-container', 'Personalize Your Flight - Seats Saved');
+// });
+
+// // proceed to click continue ont personalize flight screen to move to the next page
+// casper.then(function() {
+// 	casper.echo("Click Continue on Personalize Flight Screen to move to the next screen");
+// 	casper.evaluate(function() {
+// 		$('#sbmt_1 button').click();
+// 	});
+// });
+
+// // wait until the  page appears
+// casper.waitFor(function() {
+// 	return casper.evaluate(function() {
+// 		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && document.title === 'Purchase Page';
+// 	})
+// });
+
+// casper.wait(3000);
+
+// // take a screen grab of the purchase page
+// casper.then(function() {
+// 	camera.capture('#app-container', 'Purchase Page - Landing Page');
+// });
+
+// // remove all animations from the page
+// casper.evaluate(function() {
+// 	var style = document.createElement('style');
+// 	style.innerHTML = '* { -webkit-animation-delay: 0.01s !important; -webkit-animation-duration: 0.01s !important; }';
+// 	document.body.appendChild(style);
+// });
+
+// // exoand the fare rules section
+// casper.then(function() {
+// 	casper.echo("Expand the fare rules section");
+// 	casper.evaluate(function() {
+// 		$('#fare-rules a').click();
+// 	});
+// });
+
+// // wait for the fare rules to show up
+// casper.waitFor(function() {
+// 	return casper.evaluate(function() {
+// 		return $('.fare-rule').is(':visible');
+// 	})
+// });
+
+// casper.wait('2000');
+
+// // snap a pic
+// casper.then(function() {
+// 	camera.capture('#app-container', 'Purchase Page - Fare Rules');
+// });
+
+// // seletct a payment option
+// casper.then(function() {
+// 	casper.echo("Select VISA for payment");
+// 	casper.evaluate(function() {
+// 		$('ul#credit-cards>li').find('#credit-card-BA').click();
+// 	});
+// });
+
+// //wait for details section to show up
+// casper.waitFor(function() {
+// 	return casper.evaluate(function() {
+// 		return !$('#payment-details').is(':empty');
+// 	})
+// });
+
+// // snap a pic
+// casper.then(function() {
+// 	camera.capture('#app-container', 'Purchase Page - Payment Detiails');
+// });
+
+// casper.then(function() {
+// 	casper.echo("Purchase without entering Card Details");
+// 	casper.evaluate(function() {
+// 		$('#continue').click();
+// 	});
+// });
+
+// // wait for overlay
+// casper.waitFor(function() {
+// 	return casper.evaluate(function() {
+// 		return $('#modal').is(':visible')
+// 	})
+// }, function then() {}, function timeout() { casper.echo("Waiting for overlay timed out!"); }, 50000);
+
+// casper.then(function() {
+// 	casper.echo("Close error Overlay");
+// 	casper.evaluate(function() {
+// 		$('#modal button').click();
+// 	});
+// });
+
+// // wait for overlay to disappear
+// casper.waitFor(function() {
+// 	return casper.evaluate(function() {
+// 		return !$('#modal').is(':visible')
+// 	})
+// });
+
+// casper.wait(4000);
+
+// casper.then(function() {
+// 	camera.capture('#app-container', 'Purchase Page - Missing Payment Details');
+// });
+
+// // fil in the payment details
+// casper.then(function() {
+// 	casper.echo("Fill Payment information");
+// 	casper.evaluate(function() {
+// 		$('input[name="selectedCards[0].cardNumber"]').val('4111111111111111');
+// 		$('input[name="selectedCards[0].nameOnCard"]').val('John Doe');
+// 		$('select[name="selectedCards[0].expDate.month"]').val('01');
+// 		$('select[name="selectedCards[0].expDate.year"]').val(new Date().getFullYear() + 1);
+// 		$('input[name="selectedCards[0].cvcNumber"]').val('123');
+// 		$('input[name="selectedCards[0].billingData.street1"]').val('904 Greek Row Dr');
+// 		$('input[name="selectedCards[0].billingData.street2"]').val('Apt 222');
+// 		$('input[name="selectedCards[0].billingData.city"]').val('Arlington');
+// 		$('input[name="selectedCards[0].billingData.zipCode"]').val('76013');
+// 		$('select[name="selectedCards[0].billingData.country"]').val('US');
+// 	});
+// });
+
+// casper.then(function() {
+// 	camera.capture('#app-container', 'Purchase Page - Payment Details Filled out');
+// });
+
+// // click on purchase button to complete the payment
+// casper.then(function() {
+// 	casper.echo("click on purchase button to complete the payment ");
+// 	casper.evaluate(function() {
+// 		$('#continue').click();
+// 	});
+// });
+
+// // wait for the confirmation page to load
+// casper.waitFor(function() {
+// 	return casper.evaluate(function() {
+// 		return !$('#loading').is(':visible') && !$('#overlay').is(':visible') && document.title === 'Confirmation Page';
+// 	})
+// });
+
+// casper.wait(5000);
+
+// casper.then(function() {
+// 	camera.capture('#app-container', 'Confirmation Page Landing page');
+// });
 
 casper.run(function() {
 	casper.echo("CASPER COMPLETED.");

@@ -125,7 +125,6 @@ define(function(require) {
         that.renderResults();
         that.adjustButtons();
         that.renderStatus();
-        //_.delay(that.checkStatus.bind(that), 5000);
     };
 
     Page.prototype.adjustButtons = function() {
@@ -155,7 +154,6 @@ define(function(require) {
             B.resolve(that.model.fetch())
                 .then(function() {
                     if (that.model.get('statusId') != statusBefore) {
-                        console.log('status changed');
                         that.trigger('status-change');
                     }
 
@@ -184,17 +182,13 @@ define(function(require) {
         });
 
         that.children.result.render();
-
     };
 
     Page.prototype.renderStatus = function() {
         var that = this;
         var status = that.statuses.get(that.model.get('statusId'));
-        console.log('STATUS: ', status);
-        // var status = that.statuses.get(that.model.attributes[0].statusId);
 
         that.controls.statusId.html(status.toHTML());
-
     };
 
     Page.prototype.onStatusChangeHandler = function() {
@@ -227,8 +221,8 @@ define(function(require) {
     Page.prototype.rerunButtonClickHandler = function(event) {
         var that = this;
         event.preventDefault();
-        console.log('rerun clicked');
-        B.resolve()
+
+        return B.resolve()
             .then(function() {
                 return that.model.save({
                     statusId: ExecutionStatus.ID_SCHEDULED
@@ -240,7 +234,6 @@ define(function(require) {
             .then(function() {
                 that.toast.success('The execution has been scheduled.');
                 that.trigger('status-change');
-                _.delay(that.checkStatus.bind(that), 5000);
             });
     };
     

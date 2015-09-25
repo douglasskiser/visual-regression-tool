@@ -83,6 +83,25 @@ module.exports = function(app, agenda) {
                 });
             });
         },
+        patch: function(req) {
+            Execution.findById(req.data._id, function(err, exc) {
+                if (err) {
+                    return errors.handleSocketError(req, err);
+                }
+                _.extend(exc, req.data);
+                
+                exc.save(function(err, updatedExecution) {
+                    if (err) {
+                        return errors.handleSocketError(req, err);
+                    }
+                    
+                    agenda.create({_id: updatedExecution._id});
+                    
+                    req.io.emit('data:execution:patch', updatedExecution);
+                    app.io.broadcast('data:execution:patch', updatedExecution);
+                });
+            });
+        },
         delete: function(req) {
             Execution.findByIdAndRemove(req.data._id, function(err) {
                 if (err) {
@@ -113,7 +132,7 @@ module.exports = function(app, agenda) {
                 
                 var ss = executionCtrl.methods.getScreenshots(exc);
                 
-                return req.io.emit('data:execution:screenshots', ss);
+                return req.io.respond('data:execution:screenshots', {_id: req.data._id, oldScreenshots: ss.oldScreenshots, newScreenshots: ss.newScreenshots});
             });
         }
     };

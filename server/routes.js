@@ -17,20 +17,16 @@ module.exports = function(app, agenda) {
         });
     });
 
-    // HTTP Routes
-    if (env === 'development') {
-        require('./api/box')(app);
-        require('./api/device')(app);
-        require('./api/job')(app);
-        require('./api/job-type')(app);
-        require('./api/script')(app);
-        require('./api/execution-status')(app);
-        require('./api/health-check')(app);
-    }
-
+    require('./api/box')(app);
+    require('./api/device')(app);
+    require('./api/job')(app);
+    require('./api/job-type')(app);
+    require('./api/script')(app);
+    require('./api/health-check')(app);
     require('./api/user')(app);
     require('./auth')(app);
     require('./api/execution')(app, agenda);
+    require('./api/execution-status')(app);
 
     // Web Socket Routes
     app.io.route('box', require('./api/box/box.socket')(app));
