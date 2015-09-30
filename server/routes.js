@@ -27,6 +27,7 @@ module.exports = function(app, agenda) {
     require('./auth')(app);
     require('./api/execution')(app, agenda);
     require('./api/execution-status')(app);
+    require('./api/image-compare')(app);
 
     // Web Socket Routes
     app.io.route('box', require('./api/box/box.socket')(app));

@@ -9,7 +9,11 @@ define(function(require) {
         StatusCollection = require('collections/execution-status'),
         ExecutionCollection = require('collections/execution'),
         Collection = require('collections/job'),
+        Execution = require('models/execution'),
+        ExecutionStatus = require('models/execution-status'),
         MAIN = require('hbs!./new.tpl'),
+        Dialog = require('views/controls/dialog'),
+        NProgress = require('nprogress'),
         Panel = require('views/controls/panel');
 
     var Page = Super.extend({});
@@ -161,12 +165,131 @@ define(function(require) {
             })
             .then(function() {
                 var events = {};
+                events['click .run-btn'] = 'onRunClickHandler';
+                events['click .run-all-btn'] = 'onRunAllClickHandler';
+                events['click .job-checkbox'] = 'onCheckboxClickHandler';
+                events['click .job-delete-btn'] = 'deleteButtonClickHandler';
                 that.delegateEvents(events);
             })
             .finally(function() {
                 console.log(that);
                 that.ready();
             });
+    };
+    
+    Page.prototype.onCheckboxClickHandler = function(event) {
+        event.stopPropagation();
+        console.log('hello checkbox');
+        var runAllBtn = $('.run-all-btn');
+        var numChecked = $('.job-checkbox:checked').length;
+        
+        if (numChecked > 1) {
+            runAllBtn.removeClass('hidden');
+        } else {
+            runAllBtn.addClass('hidden');
+        }
+    };
+    
+     Page.prototype.onRunClickHandler = function(event) {
+        var that = this;
+
+        event.preventDefault();
+
+        var id = $(event.target).data('id');
+
+        var execution = new Execution({
+            jobId: id,
+            statusId: ExecutionStatus.ID_SCHEDULED,
+            ownerId: app.user.get('_id') || ''
+        });
+
+        return B.resolve(execution.save())
+            .then(function(data) {
+                that.toast.success('Job has been scheduled to run.');
+                //that.goTo('#index/view/id/' + execution.id);
+            });
+    };
+    
+    Page.prototype.onRunAllClickHandler = function(event) {
+        // var that = this;
+        // var excs = [];
+
+        // event.preventDefault();
+        
+        // var excsToRun = $('.job-checkbox:checked');
+        
+        // $.each(excsToRun, function(i, job) {
+        //     var thisExc = new Execution({
+        //         jobId: job.attributes.name.nodeValue,
+        //         statusId: ExecutionStatus.ID_SCHEDULED,
+        //         ownerId: app.user.get('_id') || ''
+        //     });
+            
+        //     excs.push(thisExc.save());
+        // });
+        
+        // return B.all(excs)
+        //     .then(function() {
+        //         that.toast.success('All executions have been scheduled to run.');
+        //     });
+
+        // var id = $(event.target).data('id');
+
+        // var execution = new Execution({
+        //     jobId: id,
+        //     statusId: ExecutionStatus.ID_SCHEDULED,
+        //     ownerId: app.user.get('_id') || ''
+        // });
+
+        // return B.resolve(execution.save())
+        //     .then(function(data) {
+        //         that.toast.success('Job has been scheduled to run.');
+        //         //that.goTo('#index/view/id/' + execution.id);
+        //     });
+    };
+    
+    Page.prototype.deleteButtonClickHandler = function(event){
+        var that = this; 
+        var id = $(event.target).data('id');
+        
+        event.preventDefault();
+        
+        var job = that.jobCollection.get(id);
+        
+        
+        var confirmDlg = new Dialog({
+            body: 'Are you sure you want to delete this job?',
+            buttons: [{
+                id: 'yes',
+                label: "Yes. I'm sure.",
+                iconClass: 'fa fa-check',
+                buttonClass: 'btn-danger'
+        }, {
+                id: 'no',
+                label: 'Nope!',
+                iconClass: 'fa fa-times',
+                buttonClass: 'btn-default',
+                autoClose: true
+        }]
+        });
+        confirmDlg.on('yes', function() {
+            B.resolve()
+                .then(function() {
+                    NProgress.start();
+                })
+                .then(function() {
+                    return job.destroy();
+                })
+                .then(function() {
+                    that.toast.success('Job has been deleted successfully.');
+                    confirmDlg.close();
+                    that.goTo('job/new'); //if already here then just render or something!!!!!!!!
+                })
+                .catch(that.error.bind(that))
+                .finally(function() {
+                    NProgress.done();
+                });
+        });
     };
     
     Page.prototype.fetch = function() {

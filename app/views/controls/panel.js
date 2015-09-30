@@ -30,6 +30,17 @@ define(function(require) {
         this.listenTo(this.model, 'change', this.render.bind(this));
         this.statusCollection = new StatusCollection();
         this.scriptCollection = new ScriptCollection();
+        this.executions = 
+        this.createSocketListener();
+    };
+    
+    View.prototype.createSocketListener = function() {
+        var that = this;
+        app.webSocket.on('data:execution:status', function(data) {
+            console.log('GOT SOCKET DATA : ', data);
+            
+            console.log('EXCS COL: ', new Backbone.Collection(that.model.get('executions')));
+        });
     };
     
     View.prototype.getPanelClass = function(data) {
@@ -68,7 +79,7 @@ define(function(require) {
                 panelClass = 'fa-check-circle';
                 break;
             case 'Running':
-                panelClass = 'fa-check-circle';
+                panelClass = 'fa-spin fa-spinner';
                 break;
             case 'Completed':
                 panelClass = 'fa-check-circle';
@@ -162,6 +173,7 @@ define(function(require) {
     
     View.prototype.onCheckboxClickHandler = function(event) {
         event.stopPropagation();
+        console.log('hello checkbox');
         var runAllBtn = $('.run-all-btn');
         var numChecked = $('.job-checkbox:checked').length;
         

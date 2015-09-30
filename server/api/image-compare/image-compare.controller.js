@@ -1,11 +1,13 @@
 var env = process.env.NODE_ENV || 'development',
     config = require('../../config/config')[env],
     path = require('path'),
-    fs = require('fs'),
+    
     _ = require('underscore'),
     pkg = require('../../../package.json'),
     errors = require('../../components/errors/errors'),
-    resemblejs = require('resemble');
+    
+    
+console.log('image-compare');
 
 exports.view = function(req, res) {
     if (req.query && req.query.imgA && req.query.imgB) {
@@ -21,6 +23,9 @@ exports.view = function(req, res) {
 };
 
 exports.compare = function(req, res) {
+    var fs = require('fs'),
+        resemblejs = require('resemble');
+
     // TODO Validate parameters buildNumber, box, email
     
     
