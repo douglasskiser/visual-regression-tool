@@ -16,7 +16,7 @@ define(function(require) {
     };
 
     Page.prototype.getPageName = function() {
-        return 'Box';
+        return 'Device';
     };
     
     return Page;

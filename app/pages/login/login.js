@@ -84,7 +84,7 @@ define(function(require) {
                             if (logoutBtn.hasClass('hidden')) {
                                 logoutBtn.removeClass('hidden');
                             }
-                            that.goTo('index/index', {
+                            that.goTo('job/new', {
                                 trigger: true,
                                 replace: true
                             });
@@ -94,7 +94,7 @@ define(function(require) {
                         });
                 }
                 else {
-                    that.goTo('index/index', {
+                    that.goTo('login/login', {
                         trigger: true,
                         replace: true
                     });

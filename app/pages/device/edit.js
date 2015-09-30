@@ -10,7 +10,9 @@ define(function(require) {
     var Page = Super.extend({});
 
     Page.prototype.getPageName = function() {
-        return 'Box' + (this.model.id ? (' #' + this.model.id) : '');
+        console.log('MY ID IS ', this.params);
+        //return 'Device' + (this.model.id ? (' #' + this.model.id) : '');
+        return 'Device' + (this.params.id ? (' #' + this.params.id) : '');
     };
 
     Page.prototype.getModelClass = function() {

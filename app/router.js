@@ -21,10 +21,16 @@ define(function (require) {
     Router.prototype.defaultAction = function (url) {
         var that = this;
         if (!url) {
-            url = 'index/index';
+            url = 'job/new'
+            //url = 'index/index';
         }
-
-        if (url !== 'login/login') {
+        
+        // if (url === 'login/signup') {
+        //     that.navigate('login/signup', {trigger: false, replace: false});
+        //     return;
+        // }
+        
+        if (['login/login', 'login/signup'].indexOf(url) < 0) {
             if (!that.app.cookieStore.get('token')) {
                 that.navigate('login/login', {trigger: true, replace: true});
                 return;

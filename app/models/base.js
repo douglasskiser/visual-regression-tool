@@ -25,10 +25,16 @@ define(function(require) {
                 socket;
 
             opts.url = this.name;
+            
+            if (method === 'patch') {
+                opts.type = 'update';
+            }
 
             if (!opts.url) {
                 urlError();
             }
+            
+            console.log(opts);
 
             namespace = Backbone.Model.prototype.namespace.call(this, opts.url);
 
@@ -60,6 +66,8 @@ define(function(require) {
 
                 defer.reject(data);
             });
+            
+            console.log('socket emiting this : ', namespace + method);
             
             socket.emit(namespace + method, opts.data);
 

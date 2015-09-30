@@ -638,6 +638,8 @@ module.exports = function (grunt) {
                         "pages/script/edit",
                         "pages/script/view",
                         "pages/device/index",
+                        "pages/device/edit",
+                        "pages/device/view",
                         "pages/change-moderator/index",
                         "pages/change-moderator/edit",
                         "pages/change-moderator/view",

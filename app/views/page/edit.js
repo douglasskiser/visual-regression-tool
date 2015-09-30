@@ -21,8 +21,10 @@ define(function(require) {
 
     Page.prototype.getModel = function() {
         var Model = this.getModelClass();
+
         return new Model({
-            id: this.options.params.id
+            id: this.options.params.id,
+            _id: this.options.params.id
         });
     };
 
@@ -43,14 +45,13 @@ define(function(require) {
                     return that.model.fetch();
                 }
                 return B.resolve();
-
             })
             .then(function() {
                 return that.prepareForOutput();
             })
             .then(function(data) {
                 that.$el.html(Template({
-                    id: that.id, //id: that._id,
+                    id: that.id,
                     header: that.getHeaderHtml(data),
                     form: that.getFormHtml(data)
                 }));
@@ -88,7 +89,7 @@ define(function(require) {
         var template = that.getHeaderTemplate();
 
         return template({
-            id: that.id, //id: that._id,
+            id: that.id,
             data: data,
             name: that.getPageName()
         });
@@ -99,7 +100,7 @@ define(function(require) {
         var template = that.getFormTemplate();
 
         return template({
-            id: that.id, //id: that._id,
+            id: that.id,
             fields: that.getFieldsHtml(data),
             buttons: that.getButtonsHtml(data)
         });
@@ -113,7 +114,7 @@ define(function(require) {
         var that = this;
         var template = that.getFieldsTemplate();
         return template({
-            id: that.id, //id: that._id,
+            id: that.id,
             data: data
         });
     };
@@ -177,6 +178,10 @@ define(function(require) {
         var l = Ladda.create(event.currentTarget);
         l.start();
         NProgress.start();
+        
+        
+        
+        console.log('Saving Model', that.model);
 
         B.resolve(that.model.save(params))
             .then(function() {
@@ -196,6 +201,4 @@ define(function(require) {
 
 
     return Page;
-
-
 });

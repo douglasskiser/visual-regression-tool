@@ -1,4 +1,4 @@
-/*global _, _s, app*/
+/*global _, _s, Backbone, app*/
 define(function(require) {
     var Super = require('views/page'),
         B = require('bluebird'),
@@ -9,7 +9,8 @@ define(function(require) {
         StatusCollection = require('collections/execution-status'),
         ExecutionCollection = require('collections/execution'),
         Collection = require('collections/job'),
-        MAIN = require('hbs!./new.tpl');
+        MAIN = require('hbs!./new.tpl'),
+        Panel = require('views/controls/panel');
 
     var Page = Super.extend({});
 
@@ -50,6 +51,97 @@ define(function(require) {
                 ]);
     };
 
+    Page.prototype.getPanelClass = function(data) {
+        var panelClass = '';
+        
+        console.log('status-id: ', data);
+        
+        switch (data) {
+            case 'Scheduled':
+                panelClass = 'info';
+                break;
+            case 'Running':
+                panelClass = 'info';
+                break;
+            case 'Completed':
+                panelClass = 'success';
+                break;
+            case 'Error':
+                panelClass = 'danger';
+                break;
+            case 'Terminated':
+                panelClass = 'warning';
+                break;
+        }        
+        
+        return panelClass;
+    };
+    
+    Page.prototype.getPanelIcon = function(data) {
+        var panelClass = '';
+        
+        console.log('status-id: ', data);
+        
+        switch (data) {
+            case 'Scheduled':
+                panelClass = 'fa-check-circle';
+                break;
+            case 'Running':
+                panelClass = 'fa-check-circle';
+                break;
+            case 'Completed':
+                panelClass = 'fa-check-circle';
+                break;
+            case 'Error':
+                panelClass = 'fa-exclamation-circle';
+                break;
+            case 'Terminated':
+                panelClass = 'fa-exclamation-circle';
+                break;
+        }        
+        
+        return panelClass;
+    };
+    
+    Page.prototype.getData = function() {
+        var that = this;
+        
+        var jobs = [];
+        
+        var excsCollection = new Backbone.Collection(that.executionCollection.where({ownerId: app.user.get('_id')}));
+        
+        var jobIds = _.uniq(excsCollection.pluck('jobId'));
+        
+        _.each(jobIds, function(id) {
+            var excs = _.each(excsCollection.where({jobId: id}), function(item) {
+                item.set({
+                    status: that.getPanelClass(that.statusCollection.get(item.get('statusId')).get('name')),
+                    icon: that.getPanelIcon(that.statusCollection.get(item.get('statusId')).get('name'))
+                });
+            });
+            
+            var j = that.jobCollection.get(id);
+            
+            if (j !== undefined) {
+                j.set({
+                    idAttribute: '_id',
+                    executions: excs
+                });
+                jobs.push(j);
+            }
+        });
+        
+        return jobs;
+    };
+    
+    Page.prototype.createPanels = function(data) {
+        var view = this.$el.find('.panel-container');
+        _.each(data, function(model) {
+            var panel = new Panel({model: model});
+            view.append(panel.render()); 
+        });
+    };
+
     Page.prototype.render = function() {
         var that = this;
         
@@ -57,26 +149,13 @@ define(function(require) {
         
         this.preRender()
             .then(function() {
-                var executions = [];
-                
-                _.each(that.executionCollection.models, function(model) {
-                    var jobModel = that.jobCollection.get(model.attributes.jobId);
-                    console.log('DATA: ', {
-                        model: model.attributes,
-                        job: jobModel.attributes
-                    })
-                    executions.push({
-                        model: model.attributes,
-                        job: jobModel.attributes
-                    });
-                });
-                
-                console.log('Executions : ', executions);
+                var data = that.getData();
                 
                 that.$el.html(MAIN({
-                    id: that.id,
-                    data: executions
+                    id: that.id
                 }));
+                
+                that.createPanels(data);
                 
                 that.mapControls();
             })

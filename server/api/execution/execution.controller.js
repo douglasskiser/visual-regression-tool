@@ -142,7 +142,8 @@ var _methods = {
 
                         socket.io.broadcast('data:execution:status', {
                             _id: exc._id,
-                            statusId: exc.statusId
+                            statusId: exc.statusId,
+                            jobId: exc.jobId
                         });
 
                         return resolve();
@@ -174,8 +175,8 @@ var _methods = {
 
                     paths.newUrl = newBox.url;
 
-                    cmds.old = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.oldScreenshotsPath, '--url=' + paths.url, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
-                    cmds.new = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.newScreenshotsPath, '--url=' + paths.newUrl, '--width=' + device.width, '--height=' + device.height, ' > ', paths.logPath, '2>&1'].join(' ');
+                    cmds.old = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.oldScreenshotsPath, '--url=' + paths.url, '--width=' + device.width, '--height=' + device.height, '>>', paths.logPath, '2>&1'].join(' ');
+                    cmds.new = [config.casper.absolutePath, paths.scriptAbsPath, '--target=' + paths.newScreenshotsPath, '--url=' + paths.newUrl, '--width=' + device.width, '--height=' + device.height, '>>', paths.logPath, '2>&1'].join(' ');
 
                     return B.resolve(new B(function(resolve, reject) {
 

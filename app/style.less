@@ -15,6 +15,31 @@ body {
   top: @nav-height + 12px;
 }
 
+.remove-side-padding {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.wrap-text {
+    overflow-wrap: break-word;
+}
+
+.execution-list {
+  height: 175px;
+  overflow-y: scroll;
+}
+
+@media (min-width: 700px) {
+  .add-side-margin {
+    margin-left: 0.15em;
+    margin-right: 0.15em;
+  }
+  .job-panel {
+    width: 47%;
+    margin-left: 1.5%;
+    margin-right: 1.5%;
+  }
+}
 
 .navbar-header {
   margin-right: 100px;

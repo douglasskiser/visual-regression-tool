@@ -1,0 +1,38 @@
+<div class="panel panel-{{this.model.status}} col-xs-12 col-sm-12 col-md-6 col-lg-4 remove-side-padding job-panel">
+            <div class="panel-heading" data-toggle="collapse" href="#collapse-{{this.model._id}}" aria-expanded="false" aria-controls="collapse-{{this.model._id}}">
+                <span class="pull-right">
+                    <i class="fa {{this.model.icon}}"></i>
+                </span>
+                <input type="checkbox" id="{{this.model.id}}" class="job-checkbox" />
+                <p class="text-center"><strong>Job # {{this.model._id}}</strong></p>
+            </div>
+            <ul class="list-group collapse" id="collapse-{{this.model._id}}">
+                <li class="list-group-item clearfix">
+                    <div class="well wrap-text">
+                        <p><strong>Old Box URL :</strong> <a href="{{this.model.oldBoxId}}">{{this.model.oldBoxId}}</a></p>
+                        <p><strong>New Box URL :</strong> <a href="{{this.model.newBoxId}}">{{this.model.newBoxId}}</a></p>
+                        <p><strong>Script Type :</strong> {{this.model.scriptName}}</p>
+                        <p><strong>Last Ran On :</strong> {{this.model.date}}</p>
+                    </div>
+                </li>
+                <li class="list-group-item execution-list">
+                    <ul class="list-group">
+                        {{#each this.model.executions}}
+                        <li class="list-group-item clearfix list-group-item-{{this.attributes.status}}">
+                            <i class="pull-right fa {{this.attributes.icon}}"></i>
+                            <a href="#">ID# {{this.id}}</a>
+                        </li>
+                        {{/each}}
+                    </ul>
+                </li>
+                <li class="list-group-item clearfix">
+                    <span class="pull-right">
+                        <a href="#job/edit/id/{{this.model._id}}" class="btn btn-default btn-info" data-id="{{this.model._id}}"><i class="fa fa-pencil"></i> Edit</a>
+                        <a href"#" class="btn btn-danger job-delete-btn" data-id="{{this.model._id}}"><i class="fa fa-trash-o"></i> Delete</a>
+                    </span>
+                    <span class="pull-left">
+                        <a href="#" class="btn btn-default run-btn btn-success" data-id="{{this.model._id}}"><i class="fa fa-play"></i> Run Now!</a>
+                    </span>
+                </li>
+            </ul>
+        </div>

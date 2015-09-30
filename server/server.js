@@ -15,7 +15,6 @@ var path = require('path'),
     executionCtrl = require('./api/execution/execution.controller');
 
 var app = expressIO().http().io();
-
     
 B.all([odm.initialize()])
     .then(function() {

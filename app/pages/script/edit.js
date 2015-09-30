@@ -3,6 +3,7 @@ define(function(require) {
     var Super = require('views/page/edit'),
         B = require('bluebird'),
         TypeCollection = require('collections/job-type'),
+        ScriptCollection = require('collections/script'),
         FIELDS = require('hbs!./edit/fields.tpl'),
         Model = require('models/script'),
         Select2 = require('select2'),
@@ -25,12 +26,13 @@ define(function(require) {
 
     Page.prototype.preRender = function() {
         var that = this;
+        that.scripts = new ScriptCollection();
         that.types = new TypeCollection();
         return B.all([that.types.fetch({
             data: {
                 columns: ['id', 'name', 'scriptTemplate']
             }
-        })]);
+        }), that.scripts.fetch()]);
     };
 
     Page.prototype.postRender = function() {
@@ -40,7 +42,7 @@ define(function(require) {
         that.editor.setTheme("ace/theme/monokai");
         that.editor.getSession().setMode("ace/mode/javascript");
 
-        that.types.toDropdown(that.controls.typeId);
+        //that.types.toDropdown(that.controls.typeId);
 
     };
 
@@ -52,10 +54,11 @@ define(function(require) {
 
     Page.prototype.prepareForOutput = function() {
         var that = this;
-        var data = that.model.toJSON();
-        if (!data.typeId) {
-            data.typeId = that.types.at(0).id;
-        }
+        
+        var jsonModel = that.model.toJSON();
+        
+        var data = that.scripts.get(jsonModel.id);
+
         return data;
     };
 

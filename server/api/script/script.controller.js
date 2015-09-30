@@ -31,10 +31,11 @@ exports.get = function(req, res) {
 };
 
 exports.getOne = function(req, res) {
-    Script.findById(req.params.id, function(err, script) { //Script.findById(req.params.id, function(err, script) {
+    Script.findById(req.params.id, function(err, script) {
         if (err) {
             return errors.handleResponseError(res, 500, err);
         }
+        
         return res.json(script);
     });
 };
@@ -44,7 +45,9 @@ exports.create = function(req, res) {
         if (err) {
             return errors.handleResponseError(res, 500, err);
         }
-        return res.json(script);
+        fs.writeFile(path.normalize(__dirname + '/../../../data/scripts/' + script._id + '.js'), script.code, function() {
+            return res.json(script);
+        });
     });
 };
 
@@ -59,7 +62,9 @@ exports.update = function(req, res) {
             if (err) {
                 return errors.handleResponseError(res, 500, err);
             }
-            return res.json(updatedBox);
+            fs.writeFile(path.normalize(__dirname + '/../../../data/scripts/' + req.params._id + '.js'), updatedBox.code, function() {
+                return res.json(updatedBox);
+            });
         });
     });
 };
