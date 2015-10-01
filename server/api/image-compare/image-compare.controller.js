@@ -1,10 +1,9 @@
 var env = process.env.NODE_ENV || 'development',
     config = require('../../config/config')[env],
     path = require('path'),
-    
     _ = require('underscore'),
     pkg = require('../../../package.json'),
-    errors = require('../../components/errors/errors'),
+    errors = require('../../components/errors/errors');
     
     
 console.log('image-compare');

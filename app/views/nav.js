@@ -30,7 +30,7 @@ define(function(require) {
         this.mapControls();
         var events = {};
         events['click .logout'] = 'onLogoutClick';
-
+        events['click a'] = 'onNavItemClick';
         this.delegateEvents(events);
 
         this.listenTo(window.app, 'page-rendered', this.onPageRendered.bind(this));
@@ -41,6 +41,10 @@ define(function(require) {
         that.controls.items.find('>li').removeClass('active');
         that.controls.items.find('[data-controller=' + page.options.controller + ']').addClass('active');
     };
+    
+    View.prototype.onNavItemClick = function(event) {
+        $('button.navbar-toggle').click();
+    }
     
     View.prototype.onLogoutClick = function(event) {
         event.preventDefault();

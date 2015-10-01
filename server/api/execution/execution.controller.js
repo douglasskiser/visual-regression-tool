@@ -249,7 +249,8 @@ var _methods = {
                                 logger.info('execution finished');
                                 socket.io.broadcast('data:execution:status', {
                                     _id: exc._id,
-                                    statusId: exc.statusId
+                                    statusId: exc.statusId,
+                                    jobId: exc.jobId
                                 });
                                 callback();
                             });
@@ -268,7 +269,8 @@ var _methods = {
                                 logger.info('execution saved with error', err);
                                 socket.io.broadcast('data:execution:status', {
                                     _id: exc._id,
-                                    statusId: exc.statusId
+                                    statusId: exc.statusId,
+                                    jobId: exc.jobId
                                 });
                                 callback();
                             });

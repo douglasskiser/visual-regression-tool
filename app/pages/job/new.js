@@ -14,6 +14,7 @@ define(function(require) {
         MAIN = require('hbs!./new.tpl'),
         Dialog = require('views/controls/dialog'),
         NProgress = require('nprogress'),
+        moment = require('moment'),
         Panel = require('views/controls/panel');
 
     var Page = Super.extend({});
@@ -22,7 +23,7 @@ define(function(require) {
         var that = this;
 
         Super.prototype.initialize.call(that, options);
-        
+
         that.boxCollection = new BoxCollection();
         that.typeCollection = new TypeCollection();
         that.scriptCollection = new ScriptCollection();
@@ -30,8 +31,28 @@ define(function(require) {
         that.statusCollection = new StatusCollection();
         that.executionCollection = new ExecutionCollection();
         this.jobCollection = new Collection();
+
+        this.createListener();
+
+        this.myjobs = new Collection();
     };
-    
+
+    Page.prototype.createListener = function() {
+        var that = this;
+        app.webSocket.on('data:execution:status', function(data) {
+            console.log('GOT SOCKET DATA : ', data);
+            
+            _.each(that.myjobs.get(data.jobId).get('executions'), function(item) {
+                if (item.id === data._id) {
+                    item.set({
+                        status: that.getPanelClass(that.statusCollection.get(data.statusId).get('name'))
+                    });
+                    console.log('Execution Set::');
+                }
+            });
+        });
+    };
+
     Page.prototype.getCollection = function() {
         return new Collection();
     };
@@ -41,25 +62,26 @@ define(function(require) {
             pageName: 'Jobs'
         };
     };
-    
+
     Page.prototype.preRender = function() {
-        var that = this;
+        var that = this
+        
         return B.all([
-                that.boxCollection.fetch(),
-                that.scriptCollection.fetch(),
-                that.deviceCollection.fetch(),
-                that.typeCollection.fetch(),
-                that.statusCollection.fetch(),
-                that.executionCollection.fetch(),
-                that.jobCollection.fetch()
-                ]);
+            that.boxCollection.fetch(),
+            that.scriptCollection.fetch(),
+            that.deviceCollection.fetch(),
+            that.typeCollection.fetch(),
+            that.statusCollection.fetch(),
+            that.executionCollection.fetch(),
+            that.jobCollection.fetch()
+        ]);
     };
 
     Page.prototype.getPanelClass = function(data) {
         var panelClass = '';
-        
+
         console.log('status-id: ', data);
-        
+
         switch (data) {
             case 'Scheduled':
                 panelClass = 'info';
@@ -76,22 +98,22 @@ define(function(require) {
             case 'Terminated':
                 panelClass = 'warning';
                 break;
-        }        
-        
+        }
+
         return panelClass;
     };
-    
+
     Page.prototype.getPanelIcon = function(data) {
         var panelClass = '';
-        
+
         console.log('status-id: ', data);
-        
+
         switch (data) {
             case 'Scheduled':
                 panelClass = 'fa-check-circle';
                 break;
             case 'Running':
-                panelClass = 'fa-check-circle';
+                panelClass = 'fa-spin fa-spinner';
                 break;
             case 'Completed':
                 panelClass = 'fa-check-circle';
@@ -102,73 +124,124 @@ define(function(require) {
             case 'Terminated':
                 panelClass = 'fa-exclamation-circle';
                 break;
-        }        
-        
+        }
+
         return panelClass;
     };
-    
+
+    Page.prototype.fetchData = function() {
+        var that = this;
+        return B.all([
+            that.statusCollection.fetch(),
+            that.scriptCollection.fetch(),
+            that.boxCollection.fetch(),
+            that.scriptCollection.fetch(),
+            that.deviceCollection.fetch(),
+            that.typeCollection.fetch(),
+            that.statusCollection.fetch(),
+            that.executionCollection.fetch(),
+            that.jobCollection.fetch()
+        ]);
+    };
+
     Page.prototype.getData = function() {
         var that = this;
-        
-        var jobs = [];
-        
-        var excsCollection = new Backbone.Collection(that.executionCollection.where({ownerId: app.user.get('_id')}));
-        
-        var jobIds = _.uniq(excsCollection.pluck('jobId'));
-        
-        _.each(jobIds, function(id) {
-            var excs = _.each(excsCollection.where({jobId: id}), function(item) {
-                item.set({
-                    status: that.getPanelClass(that.statusCollection.get(item.get('statusId')).get('name')),
-                    icon: that.getPanelIcon(that.statusCollection.get(item.get('statusId')).get('name'))
+
+        // that.myjobs = [];
+
+        return that.fetchData()
+            .then(function() {
+                that.excsCollection = new Backbone.Collection(that.executionCollection.where({
+                    ownerId: app.user.get('_id')
+                }));
+
+                var jobIds = _.uniq(that.excsCollection.pluck('jobId'));
+
+                _.each(jobIds, function(id) {
+                    var excs = _.each(that.excsCollection.where({
+                        jobId: id
+                    }), function(item) {
+                        item.set({
+                            status: that.getPanelClass(that.statusCollection.get(item.get('statusId')).get('name')),
+                            icon: that.getPanelIcon(that.statusCollection.get(item.get('statusId')).get('name'))
+                        });
+                    });
+
+                    var j = that.jobCollection.get(id);
+
+                    if (j !== undefined) {
+                        j.set({
+                            idAttribute: '_id',
+                            executions: excs,
+                            status: that.getPanelClass(that.statusCollection.get(excs.reverse()[0].get('statusId')).get('name')),
+                            icon: that.getPanelIcon(that.statusCollection.get(excs.reverse()[0].get('statusId')).get('name')),
+                            scriptName: that.scriptCollection.get(j.get('scriptId')).get('name'),
+                            date: moment(j.get('updatedAt')).format('MMM Do YYYY, h:mm:ss a'),
+                            oldBox: that.boxCollection.get(j.get('oldBoxId')).get('url'),
+                            newBox: that.boxCollection.get(j.get('newBoxId')).get('url')
+                        });
+                        
+                        that.listenTo(j, 'change', that.render.bind(that));
+
+                        that.myjobs.push(j);
+                    }
                 });
+
+                console.log('From Jobs: ', that.myjobs);
+
+                return B.resolve(that.myjobs);
             });
-            
-            var j = that.jobCollection.get(id);
-            
-            if (j !== undefined) {
-                j.set({
-                    idAttribute: '_id',
-                    executions: excs
-                });
-                jobs.push(j);
-            }
-        });
-        
-        return jobs;
     };
-    
+
     Page.prototype.createPanels = function(data) {
         var view = this.$el.find('.panel-container');
         _.each(data, function(model) {
-            var panel = new Panel({model: model});
-            view.append(panel.render()); 
+
+            var panel = new Panel({
+                model: model,
+                el: view
+            });
+
+            panel.render();
         });
     };
 
     Page.prototype.render = function() {
         var that = this;
-        
-        console.log(this);
-        
-        this.preRender()
+        that.getData()
             .then(function() {
-                var data = that.getData();
-                
                 that.$el.html(MAIN({
                     id: that.id
                 }));
+
+                var view = $('.panel-container');
                 
-                that.createPanels(data);
-                
+                _.each(that.myjobs.models, function(model) {
+                    //that.myjobs.each(function(model) {
+                    var panel = new Panel({
+                        model: model,
+                        el: view
+                    });
+                    
+                    that.listenTo(model, 'change', panel.render.bind(that));
+
+                    panel.render();
+                });
+
                 that.mapControls();
             })
             .then(function() {
+
                 var events = {};
-                events['click .run-btn'] = 'onRunClickHandler';
+                // events['click .run-btn'] = 'onRunClickHandler';
+                that.myjobs.each(function(model) {
+                    events['click .run-btn-' + model.get('_id')] = 'onRunClickHandler';
+                    events['click .job-delete-btn-' + model.get('_id')] = 'deleteButtonClickHandler';
+                    events['click .job-checkbox-' + model.get('_id')] = 'onCheckboxClickHandler';
+                });
+
                 events['click .run-all-btn'] = 'onRunAllClickHandler';
-                events['click .job-checkbox'] = 'onCheckboxClickHandler';
-                events['click .job-delete-btn'] = 'deleteButtonClickHandler';
+
                 that.delegateEvents(events);
             })
             .finally(function() {
@@ -176,21 +249,22 @@ define(function(require) {
                 that.ready();
             });
     };
-    
+
     Page.prototype.onCheckboxClickHandler = function(event) {
         event.stopPropagation();
-        console.log('hello checkbox');
+        
         var runAllBtn = $('.run-all-btn');
         var numChecked = $('.job-checkbox:checked').length;
-        
+
         if (numChecked > 1) {
-            runAllBtn.removeClass('hidden');
-        } else {
-            runAllBtn.addClass('hidden');
+            runAllBtn.removeAttr('disabled');
+        }
+        else {
+            runAllBtn.attr('disabled', 'disabled');
         }
     };
-    
-     Page.prototype.onRunClickHandler = function(event) {
+
+    Page.prototype.onRunClickHandler = function(event) {
         var that = this;
 
         event.preventDefault();
@@ -205,33 +279,39 @@ define(function(require) {
 
         return B.resolve(execution.save())
             .then(function(data) {
-                that.toast.success('Job has been scheduled to run.');
+                // add execution to proper job model
+                var j = that.myjobs.get(data.jobId);
+
+                j.get('executions').unshift(execution);
+
+                console.log('just pushed data to collection');
+                //that.toast.success('Job has been scheduled to run.');
                 //that.goTo('#index/view/id/' + execution.id);
             });
     };
-    
-    Page.prototype.onRunAllClickHandler = function(event) {
-        // var that = this;
-        // var excs = [];
 
-        // event.preventDefault();
-        
-        // var excsToRun = $('.job-checkbox:checked');
-        
-        // $.each(excsToRun, function(i, job) {
-        //     var thisExc = new Execution({
-        //         jobId: job.attributes.name.nodeValue,
-        //         statusId: ExecutionStatus.ID_SCHEDULED,
-        //         ownerId: app.user.get('_id') || ''
-        //     });
-            
-        //     excs.push(thisExc.save());
-        // });
-        
-        // return B.all(excs)
-        //     .then(function() {
-        //         that.toast.success('All executions have been scheduled to run.');
-        //     });
+    Page.prototype.onRunAllClickHandler = function(event) {
+        var that = this;
+        var excs = [];
+
+        event.preventDefault();
+
+        var excsToRun = $('.job-checkbox:checked');
+
+        _.each(excsToRun, function(job) {
+            var thisExc = new Execution({
+                jobId: job.attributes.name.nodeValue,
+                statusId: ExecutionStatus.ID_SCHEDULED,
+                ownerId: app.user.get('_id') || ''
+            });
+
+            excs.push(thisExc.save());
+        });
+
+        return B.all(excs)
+            .then(function() {
+                that.toast.success('All executions have been scheduled to run.');
+            });
 
         // var id = $(event.target).data('id');
 
@@ -247,16 +327,16 @@ define(function(require) {
         //         //that.goTo('#index/view/id/' + execution.id);
         //     });
     };
-    
-    Page.prototype.deleteButtonClickHandler = function(event){
-        var that = this; 
+
+    Page.prototype.deleteButtonClickHandler = function(event) {
+        var that = this;
         var id = $(event.target).data('id');
-        
+
         event.preventDefault();
-        
+
         var job = that.jobCollection.get(id);
-        
-        
+
+
         var confirmDlg = new Dialog({
             body: 'Are you sure you want to delete this job?',
             buttons: [{
@@ -264,13 +344,13 @@ define(function(require) {
                 label: "Yes. I'm sure.",
                 iconClass: 'fa fa-check',
                 buttonClass: 'btn-danger'
-        }, {
+            }, {
                 id: 'no',
                 label: 'Nope!',
                 iconClass: 'fa fa-times',
                 buttonClass: 'btn-default',
                 autoClose: true
-        }]
+            }]
         });
         confirmDlg.on('yes', function() {
             B.resolve()
@@ -291,7 +371,7 @@ define(function(require) {
                 });
         });
     };
-    
+
     Page.prototype.fetch = function() {
         var that = this;
         var data = that.children.filter.serialize();
@@ -304,7 +384,7 @@ define(function(require) {
                 return memo;
             }, []);
         };
-        
+
         var selection = _.reduce(_.omit(data, 'perPage', 'page', 'orderBy'), function(memo, value, key) {
             if (value) {
                 switch (key) {
@@ -358,6 +438,6 @@ define(function(require) {
             }
         });
     };
-    
+
     return Page;
 });
