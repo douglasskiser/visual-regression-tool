@@ -23,18 +23,18 @@ define(function(require) {
         //     // }
         // }
 
-        this.createSocketListener.call(this);
+        // this.createSocketListener.call(this);
     };
     
     Collection.prototype.createSocketListener = function() {
-         app.webSocket.on('data:execution:status', this.onSocketHandler.bind(this));
+         //app.webSocket.on('data:execution:status', this.onSocketHandler.bind(this));
          app.webSocket.on('data:execution:create', this.onExecutionCreateHandler.bind(this));
          app.webSocket.on('data:execution:delete', this.onExecutionDeleteHandler.bind(this));
     };
     
     Collection.prototype.onExecutionCreateHandler = function(data) {
         var m = new Model(data);
-        this.add(m);
+        this.unshift(m);
     };
     
     Collection.prototype.onExecutionDeleteHandler = function(data) {

@@ -18,7 +18,7 @@ body {
 .main-container {
   padding: 4px;
   padding-top: 24px;
-  height: 100vh;
+  
   
   &>.breadcrumb{
     margin-left: 10px;
@@ -42,7 +42,11 @@ body {
   }
 }
 
-
+@media (max-width: 400px) {
+  .navbar-title a {
+    font-size: medium;
+  }
+}
 
 .btn-list-item {
   text-align: left;

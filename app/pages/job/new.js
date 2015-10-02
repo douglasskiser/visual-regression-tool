@@ -31,27 +31,27 @@ define(function(require) {
         that.statusCollection = new StatusCollection();
         that.executionCollection = new ExecutionCollection();
         this.jobCollection = new Collection();
+        this.panels = [];
 
-        this.createListener();
+        // this.createListener();
 
         this.myjobs = new Collection();
     };
 
-    Page.prototype.createListener = function() {
-        var that = this;
-        app.webSocket.on('data:execution:status', function(data) {
-            console.log('GOT SOCKET DATA : ', data);
+    // Page.prototype.createListener = function() {
+    //     var that = this;
+    //     app.webSocket.on('data:execution:status', function(data) {
+    //         console.log('GOT SOCKET DATA IN NEW : ', data);
             
-            _.each(that.myjobs.get(data.jobId).get('executions'), function(item) {
-                if (item.id === data._id) {
-                    item.set({
-                        status: that.getPanelClass(that.statusCollection.get(data.statusId).get('name'))
-                    });
-                    console.log('Execution Set::');
-                }
-            });
-        });
-    };
+    //         console.log('And Here IS myjobs : ', that.myjobs);
+            
+    //         var excs = that.myjobs.get(data.jobId).get('executions');
+            
+    //         excs.get(data._id).set({
+    //             status: that.getPanelClass(that.statusCollection.get(excs.models.reverse()[0].get('statusId')).get('name'))
+    //         });
+    //     });
+    // };
 
     Page.prototype.getCollection = function() {
         return new Collection();
@@ -80,8 +80,6 @@ define(function(require) {
     Page.prototype.getPanelClass = function(data) {
         var panelClass = '';
 
-        console.log('status-id: ', data);
-
         switch (data) {
             case 'Scheduled':
                 panelClass = 'info';
@@ -105,8 +103,6 @@ define(function(require) {
 
     Page.prototype.getPanelIcon = function(data) {
         var panelClass = '';
-
-        console.log('status-id: ', data);
 
         switch (data) {
             case 'Scheduled':
@@ -172,7 +168,7 @@ define(function(require) {
                     if (j !== undefined) {
                         j.set({
                             idAttribute: '_id',
-                            executions: excs,
+                            executions: new Backbone.Collection(excs.reverse()),
                             status: that.getPanelClass(that.statusCollection.get(excs.reverse()[0].get('statusId')).get('name')),
                             icon: that.getPanelIcon(that.statusCollection.get(excs.reverse()[0].get('statusId')).get('name')),
                             scriptName: that.scriptCollection.get(j.get('scriptId')).get('name'),
@@ -181,30 +177,34 @@ define(function(require) {
                             newBox: that.boxCollection.get(j.get('newBoxId')).get('url')
                         });
                         
-                        that.listenTo(j, 'change', that.render.bind(that));
+                        // that.listenTo(j, 'change', that.render.bind(that));
 
                         that.myjobs.push(j);
                     }
                 });
 
                 console.log('From Jobs: ', that.myjobs);
+                
+                // that.listenTo(that.myjobs, 'change', function() {
+                //     console.log('I heard a change in the model');
+                // });
 
                 return B.resolve(that.myjobs);
             });
     };
 
-    Page.prototype.createPanels = function(data) {
-        var view = this.$el.find('.panel-container');
-        _.each(data, function(model) {
+    // Page.prototype.createPanels = function(data) {
+    //     var view = this.$el.find('.panel-container');
+    //     _.each(data, function(model) {
 
-            var panel = new Panel({
-                model: model,
-                el: view
-            });
+    //         var panel = new Panel({
+    //             model: model,
+    //             el: view
+    //         });
 
-            panel.render();
-        });
-    };
+    //         panel.render();
+    //     });
+    // };
 
     Page.prototype.render = function() {
         var that = this;
@@ -222,10 +222,10 @@ define(function(require) {
                         model: model,
                         el: view
                     });
-                    
-                    that.listenTo(model, 'change', panel.render.bind(that));
 
                     panel.render();
+                    
+                    that.panels.push(panel);
                 });
 
                 that.mapControls();
@@ -245,7 +245,6 @@ define(function(require) {
                 that.delegateEvents(events);
             })
             .finally(function() {
-                console.log(that);
                 that.ready();
             });
     };
@@ -281,11 +280,21 @@ define(function(require) {
             .then(function(data) {
                 // add execution to proper job model
                 var j = that.myjobs.get(data.jobId);
-
+                
+                // console.log('before pushed data to model : ', j.attributes.executions.length);
+                that.excsCollection.unshift(execution);
                 j.get('executions').unshift(execution);
+                
+                // _.each(that.panels, function(panel) {
+                //     // if (panel.model.get('_id') == data.jobId) {
+                //     //     // panel.model = j;
+                //     //     panel.render(j);
+                //     //     console.log('FOund Match And Rendered Panel');
+                //     // } 
+                // });
 
-                console.log('just pushed data to collection');
-                //that.toast.success('Job has been scheduled to run.');
+                // console.log('after pushed data to model : ', j.attributes.executions.length);
+                that.toast.success('Job has been scheduled to run.');
                 //that.goTo('#index/view/id/' + execution.id);
             });
     };
