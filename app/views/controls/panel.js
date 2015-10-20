@@ -39,7 +39,7 @@ define(function(require) {
     View.prototype.createListener = function() {
         var that = this;
         app.webSocket.on('data:execution:status', function(data) {
-            if (data.jobId == that.model.get('_id')) {
+            if (data.jobId === that.model.get('_id')) {
                 var excs = that.model.get('executions');
                 
                 that.model.set({
@@ -65,7 +65,7 @@ define(function(require) {
         
         app.webSocket.on('data:execution:create', function(data) {
             console.log('Got data from create', data);
-            if (data.jobId == that.model.get('_id')) {
+            if (data.jobId === that.model.get('_id')) {
                 var excs = that.model.get('executions');
                 
                 data.status = 'info';
@@ -89,10 +89,10 @@ define(function(require) {
                 panelClass = 'info';
                 break;
             case 'Completed':
-                panelClass = 'success';
+                panelClass = 'material-green-A400';
                 break;
             case 'Error':
-                panelClass = 'danger';
+                panelClass = 'material-red-A700';
                 break;
             case 'Terminated':
                 panelClass = 'warning';
@@ -139,6 +139,9 @@ define(function(require) {
         var panelEl = that.$el.find('div.panel-' + that.model.id);
         
         if (newModel) {
+            newModel.set({
+                collapsed: that.model.get('collapsed')
+            });
             that.model = newModel;
         }
 
@@ -169,9 +172,24 @@ define(function(require) {
         events['click .run-all-btn'] = 'onRunAllClickHandler';
         events['click .job-checkbox'] = 'onCheckboxClickHandler';
         events['click .job-delete-btn'] = 'deleteButtonClickHandler';
+        events['click [href="#collapse-' + that.model.id + '"]'] = 'onPanelToggleHandler';
 
         that.delegateEvents(events);
 
+    };
+    
+    View.prototype.onPanelToggleHandler = function(event) {
+        if (this.model.get('collapsed') === undefined) {
+            this.model.set({
+                collapsed: true
+            });
+        }
+        
+        var currentState = this.model.get('collapsed');
+        
+        console.log('Before collapse toggle ', this.model.get('collapsed'));
+        this.model.set({collapsed: !currentState});
+        console.log('After collapse toggle ', this.model.get('collapsed'));
     };
 
     return View;

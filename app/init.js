@@ -8,6 +8,8 @@ requirejs.config({
     paths: {
         backbone: '//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min',
         bootstrap: '//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min',
+        material: 'vendors/bootstrap-material-design/scripts/material',
+        ripples: 'vendors/bootstrap-material-design/scripts/ripples',
         'bootstrap-switch': '//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.0.0/js/bootstrap-switch.min',
         text: 'vendors/requirejs-text/text',
         goog: 'vendors/requirejs-plugins/src/goog',
@@ -101,6 +103,13 @@ requirejs.config({
         socket: {
             deps: ['backbone']  
         },
+        'material': {
+            deps: ['jquery'],
+            exports: '$.material.init'
+        },
+        'ripples': {
+            deps: ['jquery', 'material']  
+        },
         app: {
             deps: [
                 'jquery',
@@ -112,7 +121,9 @@ requirejs.config({
                 'moment',
                 'nprogress',
                 'scrollTo',
-                'select2'
+                'select2',
+                'material',
+                'ripples'
             ]
         }
         

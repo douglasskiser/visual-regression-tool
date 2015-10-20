@@ -31,6 +31,7 @@ define(function(require) {
         });
         this.backoffCounter = 0;
         this.screenshots = new BaseCollection();
+        console.log('in here');
     };
 
 

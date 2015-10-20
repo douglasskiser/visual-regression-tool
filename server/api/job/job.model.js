@@ -7,6 +7,10 @@ var JobSchema = new Schema({
     scriptId: Schema.Types.ObjectId,
     deviceId: Schema.Types.ObjectId,
     typeId: Schema.Types.ObjectId,
+    name: {
+        type: String,
+        default: 'Unnamed'
+    },
     createdAt: {
         type: Date,
         default: Date.now

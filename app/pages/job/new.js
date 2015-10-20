@@ -88,10 +88,10 @@ define(function(require) {
                 panelClass = 'info';
                 break;
             case 'Completed':
-                panelClass = 'success';
+                panelClass = 'material-green-A400';
                 break;
             case 'Error':
-                panelClass = 'danger';
+                panelClass = 'material-red-A700';
                 break;
             case 'Terminated':
                 panelClass = 'warning';
@@ -174,7 +174,8 @@ define(function(require) {
                             scriptName: that.scriptCollection.get(j.get('scriptId')).get('name'),
                             date: moment(j.get('updatedAt')).format('MMM Do YYYY, h:mm:ss a'),
                             oldBox: that.boxCollection.get(j.get('oldBoxId')).get('url'),
-                            newBox: that.boxCollection.get(j.get('newBoxId')).get('url')
+                            newBox: that.boxCollection.get(j.get('newBoxId')).get('url'),
+                            collapsed: true
                         });
                         
                         // that.listenTo(j, 'change', that.render.bind(that));
@@ -193,18 +194,6 @@ define(function(require) {
             });
     };
 
-    // Page.prototype.createPanels = function(data) {
-    //     var view = this.$el.find('.panel-container');
-    //     _.each(data, function(model) {
-
-    //         var panel = new Panel({
-    //             model: model,
-    //             el: view
-    //         });
-
-    //         panel.render();
-    //     });
-    // };
 
     Page.prototype.render = function() {
         var that = this;
@@ -280,20 +269,10 @@ define(function(require) {
             .then(function(data) {
                 // add execution to proper job model
                 var j = that.myjobs.get(data.jobId);
-                
-                // console.log('before pushed data to model : ', j.attributes.executions.length);
+
                 that.excsCollection.unshift(execution);
                 j.get('executions').unshift(execution);
                 
-                // _.each(that.panels, function(panel) {
-                //     // if (panel.model.get('_id') == data.jobId) {
-                //     //     // panel.model = j;
-                //     //     panel.render(j);
-                //     //     console.log('FOund Match And Rendered Panel');
-                //     // } 
-                // });
-
-                // console.log('after pushed data to model : ', j.attributes.executions.length);
                 that.toast.success('Job has been scheduled to run.');
                 //that.goTo('#index/view/id/' + execution.id);
             });
